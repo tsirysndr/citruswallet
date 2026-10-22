@@ -11,6 +11,7 @@ import citruswallet/linking.{type Links}
 import citruswallet/network.{type Network}
 import citruswallet/oauth
 import citruswallet/payments.{type Payments}
+import citruswallet/profiles
 import citruswallet/rate_limit.{type Limiter}
 import citruswallet/store.{type Store}
 import citruswallet/validate
@@ -476,6 +477,11 @@ fn finish_login(
   ))
   let #(state, session) = binding
   use <- guard(node.secure_equal(session, key), wrong_browser())
+  use _ <- promise.try_await(profiles.refresh(
+    server.settings.store,
+    server.settings.directory,
+    callback.did,
+  ))
   store.delete(server.settings.store, namespace: "oauth-binding", key: state)
   store.delete(server.settings.store, namespace: "browser", key: key)
   store.forget_challenges(server.settings.store, key)
@@ -830,15 +836,16 @@ fn account_profile(
   ctx: Context,
 ) -> Promise(Result(Reply, HttpError)) {
   use #(_, did) <- attempt(authenticated(server, ctx))
-  use actor <- promise.try_await(server.settings.directory.profile(did))
+  use actor <- promise.try_await(profiles.refresh(
+    server.settings.store,
+    server.settings.directory,
+    did,
+  ))
   done(
     Ok(Payload(
       200,
       json.object([
-        #("actor", case actor {
-          Some(actor) -> directory.to_json(actor)
-          None -> json.null()
-        }),
+        #("actor", directory.to_json(actor)),
       ]),
     )),
   )

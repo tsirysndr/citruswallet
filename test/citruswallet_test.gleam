@@ -7,6 +7,7 @@ import citruswallet/linking
 import citruswallet/network
 import citruswallet/oauth
 import citruswallet/payments
+import citruswallet/profiles
 import citruswallet/rate_limit
 import citruswallet/store
 import citruswallet/validate
@@ -599,4 +600,102 @@ pub fn rate_limit_trusts_only_configured_hops_test() {
   assert rate_limit.client(behind_two, Some("10.0.0.1"), Some("9.9.9.9"))
     == "9.9.9.9"
   assert rate_limit.client(direct, None, None) == "unknown"
+}
+
+pub fn profile_upsert_preserves_creation_and_updates_optional_fields_test() {
+  let store = open_store()
+  let actor =
+    Actor(
+      "did:plc:abc123",
+      "alice.bsky.social",
+      Some("Alice"),
+      Some("https://cdn.bsky.app/avatar.jpg"),
+    )
+  assert profiles.save(store, actor, 1000) == Ok(actor)
+  let changed =
+    Actor(
+      ..actor,
+      handle: "alice.example.com",
+      display_name: None,
+      avatar: None,
+    )
+  assert profiles.save(store, changed, 2000) == Ok(changed)
+  let assert Some(saved) = profiles.get(store, actor.did)
+  assert saved.actor == changed
+  assert saved.created_at == Some(1000)
+  assert saved.updated_at == Some(2000)
+  store.close(store)
+}
+
+pub fn profile_refresh_saves_authenticated_profile_test() {
+  let store = open_store()
+  let actor =
+    Actor(
+      "did:plc:abc123",
+      "alice.bsky.social",
+      Some("Alice"),
+      Some("https://cdn.bsky.app/avatar.jpg"),
+    )
+  let directory =
+    directory.Directory(
+      search: fn(_) { promise.resolve(Ok([])) },
+      profile: fn(_) { promise.resolve(Ok(Some(actor))) },
+    )
+  use outcome <- promise.map(profiles.refresh(store, directory, actor.did))
+  assert outcome == Ok(actor)
+  let assert Some(saved) = profiles.get(store, actor.did)
+  assert saved.actor == actor
+  assert saved.created_at != None
+  assert saved.created_at == saved.updated_at
+  store.close(store)
+}
+
+pub fn profile_refresh_keeps_saved_data_on_failure_or_wrong_did_test() {
+  let store = open_store()
+  let actor = Actor("did:plc:abc123", "alice.bsky.social", Some("Alice"), None)
+  let assert Ok(_) = profiles.save(store, actor, 1000)
+  let missing =
+    directory.Directory(
+      search: fn(_) { promise.resolve(Ok([])) },
+      profile: fn(_) { promise.resolve(Ok(None)) },
+    )
+  use absent <- promise.await(profiles.refresh(store, missing, actor.did))
+  assert absent == Ok(actor)
+  let failing =
+    directory.Directory(..missing, profile: fn(_) {
+      promise.resolve(Error(error.unavailable("Offline")))
+    })
+  use failed <- promise.await(profiles.refresh(store, failing, actor.did))
+  assert failed == Ok(actor)
+  let wrong =
+    directory.Directory(..missing, profile: fn(_) {
+      promise.resolve(Ok(Some(Actor(..actor, did: "did:plc:another"))))
+    })
+  use mismatch <- promise.map(profiles.refresh(store, wrong, actor.did))
+  assert mismatch == Ok(actor)
+  let assert Some(saved) = profiles.get(store, actor.did)
+  assert saved.updated_at == Some(1000)
+  assert profiles.get(store, "did:plc:another") == None
+  store.close(store)
+}
+
+pub fn first_login_records_did_when_appview_is_unavailable_test() {
+  let store = open_store()
+  let directory =
+    directory.Directory(
+      search: fn(_) { promise.resolve(Ok([])) },
+      profile: fn(_) { promise.resolve(Ok(None)) },
+    )
+  use outcome <- promise.map(profiles.refresh(
+    store,
+    directory,
+    "did:plc:abc123",
+  ))
+  let assert Ok(actor) = outcome
+  assert actor.did == "did:plc:abc123"
+  assert actor.handle == ""
+  assert actor.display_name == None
+  assert actor.avatar == None
+  assert profiles.get(store, actor.did) != None
+  store.close(store)
 }

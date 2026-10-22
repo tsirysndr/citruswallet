@@ -6,9 +6,12 @@ import {
   kv,
   links,
   payments,
+  user_profiles,
 } from "../build/dev/javascript/citruswallet/citruswallet/drizzle/tables.mjs";
 
 export const kvTable = kv();
 export const challengesTable = challenges();
 export const linksTable = links();
 export const paymentsTable = payments();
+
+export const userProfilesTable = user_profiles();

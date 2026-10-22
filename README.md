@@ -90,6 +90,8 @@ The server applies pending migrations at startup, so no separate migrate step is
 
 The same Ethereum address can be independently linked on different chains, with at most one DID owning an `(address, chain)` association. Each DID has at most one public receiving default per chain.
 
+OAuth login upserts `user_profiles` by DID, storing the handle, display name, avatar URL, and creation/update timestamps in Unix milliseconds. Only `did` and `handle` are non-nullable. Updates preserve `created_at`; `/api/profile` also refreshes the stored profile and falls back to it when the AppView is unavailable. A first login without an available profile records the DID with an empty handle until a later successful lookup. Avatar image files are not copied into the database.
+
 ## Mainnet / configuration
 
 ```sh
