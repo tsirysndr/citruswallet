@@ -8,6 +8,7 @@ import gleam/option.{type Option, None, Some}
 import gleam/result
 import gleam/string
 import wallet/chain.{type Chain}
+import wallet/directory
 import wallet/error.{type HttpError, HttpError}
 import wallet/ffi/atproto
 import wallet/ffi/hono.{type Context, type Response}
@@ -31,6 +32,7 @@ pub type Settings {
     proxy_hops: Int,
     network: Network,
     identities: Lookup,
+    directory: directory.Search,
     chain: Option(Chain),
     public_directory: String,
   )
@@ -42,6 +44,7 @@ type Server {
     links: Links,
     payments: Payments,
     limiter: Limiter,
+    search_limiter: Limiter,
     cookie: hono.Cookie,
     cookie_name: String,
   )
@@ -66,11 +69,19 @@ const binding_lifetime = 600_000
 
 const guarded = ["/api/*", "/auth/*"]
 
+const suggesting = ["/api/actors/*"]
+
 pub fn build(settings: Settings) -> hono.App {
   let server = configure(settings)
   let app = hono.new()
 
-  hono.use_(app, hono.security(is_secure(settings.origin)))
+  hono.use_(
+    app,
+    hono.security(
+      is_secure(settings.origin),
+      image_sources: directory.avatar_hosts,
+    ),
+  )
   hono.use_on(
     app,
     guarded,
@@ -78,7 +89,8 @@ pub fn build(settings: Settings) -> hono.App {
       promise.resolve(refuse(ctx, HttpError(413, "Request body is too large.")))
     }),
   )
-  hono.use_on(app, guarded, limiting(server))
+  hono.use_on(app, suggesting, limiting(server.search_limiter))
+  hono.use_on(app, guarded, limiting(server.limiter))
   hono.use_on(app, guarded, no_store())
   hono.use_(app, same_origin(server))
   hono.use_on(app, guarded, csrf(server))
@@ -107,6 +119,7 @@ pub fn build(settings: Settings) -> hono.App {
   )
   hono.post(app, "/api/logout", serve(server, logout))
   hono.get(app, "/api/resolve/:did", serve(server, public_links))
+  hono.get(app, "/api/actors/search", serve(server, suggest_actors))
 
   hono.use_(app, hono.files(settings.public_directory))
   hono.not_found(app, fn(ctx) {
@@ -134,7 +147,20 @@ fn configure(settings: Settings) -> Server {
       chain_id: settings.network.chain_id,
       chain: settings.chain,
     ),
-    limiter: rate_limit.new(settings.store, 60, settings.proxy_hops),
+    limiter: rate_limit.new(
+      settings.store,
+      namespace: "rate",
+      limit: 60,
+      proxy_hops: settings.proxy_hops,
+    ),
+    // Typeahead gets its own, more generous budget: one keystroke burst must
+    // not spend the budget that payment requests need.
+    search_limiter: rate_limit.new(
+      settings.store,
+      namespace: "rate-suggest",
+      limit: 240,
+      proxy_hops: settings.proxy_hops,
+    ),
     cookie: hono.Cookie(
       http_only: True,
       secure: secure,
@@ -177,16 +203,21 @@ fn refuse(ctx: Context, reason: HttpError) -> Response {
   )
 }
 
-fn limiting(server: Server) -> hono.Middleware {
+fn limiting(limiter: Limiter) -> hono.Middleware {
   hono.gate(fn(ctx) {
+    // The dedicated suggestion limiter already covers these requests.
+    use <- skip_when(
+      limiter.namespace == "rate"
+      && string.starts_with(hono.path(ctx), "/api/actors/"),
+    )
     let client =
       rate_limit.client(
-        server.limiter,
+        limiter,
         hono.remote_address(ctx),
         hono.header(ctx, "x-forwarded-for"),
       )
-    let decision = rate_limit.check(server.limiter, client, now: node.now())
-    hono.set_header(ctx, "RateLimit-Policy", rate_limit.policy(server.limiter))
+    let decision = rate_limit.check(limiter, client, now: node.now())
+    hono.set_header(ctx, "RateLimit-Policy", rate_limit.policy(limiter))
     hono.set_header(ctx, "RateLimit", rate_limit.report(decision))
     promise.resolve(case decision {
       rate_limit.Allowed(_, _) -> None
@@ -199,6 +230,16 @@ fn limiting(server: Server) -> hono.Middleware {
       }
     })
   })
+}
+
+fn skip_when(
+  skip: Bool,
+  continue: fn() -> Promise(Option(Response)),
+) -> Promise(Option(Response)) {
+  case skip {
+    True -> promise.resolve(None)
+    False -> continue()
+  }
 }
 
 fn no_store() -> hono.Middleware {
@@ -746,6 +787,37 @@ fn public_links(
       ]),
     ))
   })
+}
+
+fn suggest_actors(
+  server: Server,
+  ctx: Context,
+) -> Promise(Result(Reply, HttpError)) {
+  // A session, but not a DID: the login field suggests handles before sign-in.
+  use _ <- attempt(browser(server, ctx, create: False))
+  let query =
+    hono.query_parameter(ctx, "q")
+    |> option.unwrap("")
+    |> string.trim
+    |> string.replace("@", "")
+  case
+    string.is_empty(query)
+    || string.length(query) > 64
+    || identity.is_did(query)
+  {
+    True -> done(Ok(suggested([])))
+    False -> {
+      use actors <- promise.try_await(server.settings.directory(query))
+      done(Ok(suggested(actors)))
+    }
+  }
+}
+
+fn suggested(actors: List(directory.Actor)) -> Reply {
+  Payload(
+    200,
+    json.object([#("actors", json.array(actors, directory.to_json))]),
+  )
 }
 
 fn read_body(ctx: Context) -> Promise(Result(Js, HttpError)) {

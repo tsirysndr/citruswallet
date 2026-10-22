@@ -3,6 +3,7 @@ import gleam/option.{type Option, None, Some}
 import gleam/result
 import wallet/app
 import wallet/chain.{type Chain}
+import wallet/directory
 import wallet/ffi/hono
 import wallet/ffi/node
 import wallet/ffi/url
@@ -37,6 +38,12 @@ fn start() -> Result(Nil, String) {
     option.unwrap(node.environment("EVM_CHAIN_ID"), "1"),
   ))
   use chain <- result.try(reader(network))
+  use directory <- result.try(
+    directory.appview(option.unwrap(
+      node.environment("APPVIEW_URL"),
+      "https://public.api.bsky.app",
+    )),
+  )
   use store <- result.try(database(network))
   let app =
     app.build(app.Settings(
@@ -48,6 +55,7 @@ fn start() -> Result(Nil, String) {
         |> option.unwrap(0),
       network: network,
       identities: identity.resolver(),
+      directory: directory,
       chain: chain,
       public_directory: option.unwrap(
         node.environment("PUBLIC_DIR"),
@@ -116,7 +124,8 @@ fn database(network: Network) -> Result(Store, String) {
     node.make_directory(node.parent(path), 0o700),
     "Could not create the database directory at " <> node.parent(path) <> ".",
   ))
-  let migrations = option.unwrap(node.environment("MIGRATIONS_DIR"), "./drizzle")
+  let migrations =
+    option.unwrap(node.environment("MIGRATIONS_DIR"), "./drizzle")
   use store <- result.try(result.replace_error(
     store.open(path, migrations: migrations),
     "Could not open or migrate the database at " <> path <> ".",

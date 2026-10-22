@@ -103,6 +103,14 @@ pub fn url(context: Context) -> String {
   option.unwrap(js.string_field(request(context), "url"), "")
 }
 
+pub fn path(context: Context) -> String {
+  option.unwrap(js.string_field(request(context), "path"), "/")
+}
+
+pub fn query_parameter(context: Context, name: String) -> Option(String) {
+  js.as_string(js.call(request(context), "query", [js.string(name)]))
+}
+
 pub fn header(context: Context, name: String) -> Option(String) {
   js.as_string(js.call(request(context), "header", [js.string(name)]))
 }
@@ -193,10 +201,13 @@ fn cookie_options(cookie: Cookie) -> Js {
 @external(javascript, "hono/secure-headers", "secureHeaders")
 fn secure_headers(options: Js) -> Middleware
 
-pub fn security(secure: Bool) -> Middleware {
+pub fn security(
+  secure: Bool,
+  image_sources image_sources: List(String),
+) -> Middleware {
   secure_headers(
     js.object([
-      #("contentSecurityPolicy", content_security_policy(secure)),
+      #("contentSecurityPolicy", content_security_policy(secure, image_sources)),
       #("strictTransportSecurity", case secure {
         True -> js.string("max-age=15552000; includeSubDomains")
         False -> js.bool(False)
@@ -205,7 +216,7 @@ pub fn security(secure: Bool) -> Middleware {
   )
 }
 
-fn content_security_policy(secure: Bool) -> Js {
+fn content_security_policy(secure: Bool, image_sources: List(String)) -> Js {
   let directives = [
     #("defaultSrc", js.list([js.string("'self'")])),
     #("baseUri", js.list([js.string("'self'")])),
@@ -215,7 +226,15 @@ fn content_security_policy(secure: Bool) -> Js {
     ),
     #("formAction", js.list([js.string("'self'")])),
     #("frameAncestors", js.list([js.string("'self'")])),
-    #("imgSrc", js.list([js.string("'self'"), js.string("data:")])),
+    #(
+      "imgSrc",
+      js.list(
+        list.flatten([
+          [js.string("'self'"), js.string("data:")],
+          list.map(image_sources, fn(host) { js.string("https://" <> host) }),
+        ]),
+      ),
+    ),
     #("objectSrc", js.list([js.string("'none'")])),
     #("scriptSrc", js.list([js.string("'self'")])),
     #("scriptSrcAttr", js.list([js.string("'none'")])),

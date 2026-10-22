@@ -1,9 +1,11 @@
 import gleam/dynamic/decode
 import gleam/javascript/promise
 import gleam/list
-import gleam/option.{None, Some}
+import gleam/option.{type Option, None, Some}
+import gleam/result
 import gleam/string
 import gleeunit
+import wallet/directory.{type Actor, Actor}
 import wallet/drizzle/orm
 import wallet/drizzle/schema/links as links_schema
 import wallet/error
@@ -436,11 +438,91 @@ pub fn cancel_only_applies_before_preparation_test() {
     ))
 }
 
+// Handle suggestions.
+
+fn suggestion(
+  did: String,
+  handle: String,
+  display_name: Option(String),
+  avatar: Option(String),
+) -> Actor {
+  Actor(did: did, handle: handle, display_name: display_name, avatar: avatar)
+}
+
+pub fn suggestions_keep_only_addressable_actors_test() {
+  let accepted =
+    suggestion("did:plc:abc123", "Alice.BSky.Social", Some("Alice"), None)
+  let unsupported_method =
+    suggestion("did:key:abc123", "bob.bsky.social", None, None)
+  let bad_handle = suggestion("did:plc:abc123", "not a handle", None, None)
+  let vetted = directory.vetted([accepted, unsupported_method, bad_handle])
+  assert list.map(vetted, fn(actor) { actor.handle }) == ["alice.bsky.social"]
+}
+
+pub fn suggestions_only_keep_permitted_avatars_test() {
+  let allowed = "https://cdn.bsky.app/img/avatar/plain/x@jpeg"
+  let cases = [
+    #(Some(allowed), Some(allowed)),
+    #(Some("http://cdn.bsky.app/img/avatar/x@jpeg"), None),
+    #(Some("https://evil.example/x.png"), None),
+    #(Some("not a url"), None),
+    #(None, None),
+  ]
+  list.each(cases, fn(pair) {
+    let #(given, expected) = pair
+    let assert [actor] =
+      directory.vetted([
+        suggestion("did:plc:abc123", "alice.bsky.social", None, given),
+      ])
+    assert actor.avatar == expected
+  })
+}
+
+pub fn suggestions_tidy_display_names_test() {
+  let assert [blank] =
+    directory.vetted([
+      suggestion("did:plc:abc123", "alice.bsky.social", Some("   "), None),
+    ])
+  assert blank.display_name == None
+  let assert [named] =
+    directory.vetted([
+      suggestion("did:plc:abc123", "alice.bsky.social", Some("Alice"), None),
+    ])
+  assert named.display_name == Some("Alice")
+  let assert [long] =
+    directory.vetted([
+      suggestion(
+        "did:plc:abc123",
+        "alice.bsky.social",
+        Some(string.repeat("a", 200)),
+        None,
+      ),
+    ])
+  assert option.map(long.display_name, string.length) == Some(64)
+}
+
+pub fn suggestions_are_capped_test() {
+  let many =
+    list.repeat(
+      suggestion("did:plc:abc123", "alice.bsky.social", None, None),
+      20,
+    )
+  assert list.length(directory.vetted(many)) == directory.suggestions
+}
+
+pub fn appview_must_be_trusted_test() {
+  assert result.is_ok(directory.appview("https://public.api.bsky.app"))
+  assert result.is_ok(directory.appview("http://127.0.0.1:2583"))
+  assert result.is_error(directory.appview("http://appview.example"))
+  assert result.is_error(directory.appview("not a url"))
+}
+
 // Rate limiting.
 
 pub fn rate_limit_counts_a_fixed_window_test() {
   let store = open_store()
-  let limiter = rate_limit.new(store, 2, 0)
+  let limiter =
+    rate_limit.new(store, namespace: "rate", limit: 2, proxy_hops: 0)
   assert rate_limit.check(limiter, "1.2.3.4", now: 0)
     == rate_limit.Allowed(1, 60)
   assert rate_limit.check(limiter, "1.2.3.4", now: 10_000)
@@ -455,17 +537,20 @@ pub fn rate_limit_counts_a_fixed_window_test() {
 
 pub fn rate_limit_trusts_only_configured_hops_test() {
   let store = open_store()
-  let direct = rate_limit.new(store, 60, 0)
+  let direct =
+    rate_limit.new(store, namespace: "rate", limit: 60, proxy_hops: 0)
   assert rate_limit.client(direct, Some("10.0.0.1"), Some("1.1.1.1, 2.2.2.2"))
     == "10.0.0.1"
-  let behind_one = rate_limit.new(store, 60, 1)
+  let behind_one =
+    rate_limit.new(store, namespace: "rate", limit: 60, proxy_hops: 1)
   assert rate_limit.client(
       behind_one,
       Some("10.0.0.1"),
       Some("1.1.1.1, 2.2.2.2"),
     )
     == "2.2.2.2"
-  let behind_two = rate_limit.new(store, 60, 2)
+  let behind_two =
+    rate_limit.new(store, namespace: "rate", limit: 60, proxy_hops: 2)
   assert rate_limit.client(
       behind_two,
       Some("10.0.0.1"),

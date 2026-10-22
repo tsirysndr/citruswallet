@@ -16,6 +16,10 @@ pub fn parse_relative(href: String, base: String) -> Result(Url, Nil) {
   |> drop_reason
 }
 
+pub fn encode_component(value: String) -> String {
+  js.coerce(js.apply(js.global("encodeURIComponent"), [js.string(value)]))
+}
+
 pub fn origin(url: Url) -> String {
   part(url, "origin")
 }

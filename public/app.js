@@ -50,6 +50,115 @@ function balanceOf(address) {
 const labels = {waiting:'Awaiting recipient setup',ready:'Ready for review',prepared:'Prepared · awaiting wallet approval',submitted:'Submitted · checking chain',confirming:'Confirming',confirmed:'Confirmed',failed:'Transaction verification failed',cancelled:'Cancelled',expired:'Expired'};
 function text(tag, value, className) { const node = document.createElement(tag); node.textContent = value; if (className) node.className = className; return node; }
 function action(label, handler) { const button = text('button',label,'subtle'); button.type='button'; button.disabled=busy; button.onclick=()=>run(handler); return button; }
+/* Handle suggestions. A pick only fills the field: the server still verifies
+   the identity in both directions before anything is addressed to it. */
+const suggestionCache = new Map();
+function initials(actor) {
+  const source = actor.displayName ?? actor.handle;
+  return ([...source][0] ?? '?').toUpperCase();
+}
+function avatarHue(did) {
+  let hash = 0;
+  for (const character of did) hash = (hash * 31 + character.codePointAt(0)) % 360;
+  return hash;
+}
+function placeholderAvatar(actor) {
+  const node = text('div', initials(actor), 'avatar placeholder');
+  node.style.setProperty('--avatar-hue', String(avatarHue(actor.did)));
+  node.setAttribute('aria-hidden', 'true');
+  return node;
+}
+function avatar(actor) {
+  if (!actor.avatar) return placeholderAvatar(actor);
+  const image = document.createElement('img');
+  image.className = 'avatar'; image.src = actor.avatar; image.alt = '';
+  image.loading = 'lazy'; image.decoding = 'async'; image.referrerPolicy = 'no-referrer';
+  image.onerror = () => image.replaceWith(placeholderAvatar(actor));
+  return image;
+}
+function typeahead(input, onPick) {
+  const row = input.closest('.input-row') ?? input.parentElement;
+  const list = text('ul', '', 'suggestions');
+  list.id = `${input.id}-suggestions`; list.hidden = true; list.setAttribute('role', 'listbox');
+  row.classList.add('typeahead'); row.append(list);
+  input.setAttribute('role', 'combobox');
+  input.setAttribute('aria-autocomplete', 'list');
+  input.setAttribute('aria-controls', list.id);
+  input.setAttribute('aria-expanded', 'false');
+  input.setAttribute('autocomplete', 'off');
+  let actors = [], active = -1, timer, controller;
+
+  const close = () => {
+    actors = []; active = -1; list.hidden = true; list.replaceChildren();
+    input.setAttribute('aria-expanded', 'false');
+    input.removeAttribute('aria-activedescendant');
+  };
+  const highlight = () => {
+    [...list.children].forEach((item, index) => {
+      item.setAttribute('aria-selected', String(index === active));
+      if (index === active) { item.scrollIntoView({block: 'nearest'}); input.setAttribute('aria-activedescendant', item.id); }
+    });
+    if (active < 0) input.removeAttribute('aria-activedescendant');
+  };
+  const move = step => {
+    if (!actors.length) return;
+    active = (active + step + actors.length) % actors.length;
+    highlight();
+  };
+  const pick = actor => {
+    input.value = actor.handle;
+    close();
+    onPick(actor);
+  };
+  const show = found => {
+    actors = found; active = -1;
+    if (!actors.length) return close();
+    list.replaceChildren(...actors.map((actor, index) => {
+      const item = text('li', '', 'suggestion');
+      item.id = `${list.id}-${index}`;
+      item.setAttribute('role', 'option');
+      item.setAttribute('aria-selected', 'false');
+      const identity = text('div', '', 'suggestion-identity');
+      if (actor.displayName) identity.append(text('span', actor.displayName, 'suggestion-name'));
+      identity.append(text('span', `@${actor.handle}`, actor.displayName ? 'suggestion-handle' : 'suggestion-name'));
+      item.append(avatar(actor), identity);
+      /* mousedown, so the pick lands before the input loses focus. */
+      item.onmousedown = event => { event.preventDefault(); pick(actor); };
+      item.onmouseenter = () => { active = index; highlight(); };
+      return item;
+    }));
+    list.hidden = false;
+    input.setAttribute('aria-expanded', 'true');
+  };
+  const search = async query => {
+    if (suggestionCache.has(query)) return show(suggestionCache.get(query));
+    controller?.abort();
+    controller = new AbortController();
+    try {
+      const response = await fetch(`/api/actors/search?q=${encodeURIComponent(query)}`, {signal: controller.signal});
+      if (!response.ok) return close();
+      const found = (await response.json()).actors ?? [];
+      suggestionCache.set(query, found);
+      if (queryOf() === query) show(found);
+    } catch { /* A failed suggestion lookup never interrupts typing. */ }
+  };
+  const queryOf = () => input.value.trim().replace(/^@/, '').toLowerCase();
+
+  input.addEventListener('input', () => {
+    clearTimeout(timer);
+    const query = queryOf();
+    if (query.length < 2 || query.startsWith('did:')) return close();
+    timer = setTimeout(() => search(query), 220);
+  });
+  input.addEventListener('keydown', event => {
+    if (event.key === 'ArrowDown') { event.preventDefault(); move(1); }
+    else if (event.key === 'ArrowUp') { event.preventDefault(); move(-1); }
+    else if (event.key === 'Enter' && active >= 0) { event.preventDefault(); pick(actors[active]); }
+    else if (event.key === 'Escape' && !list.hidden) { event.stopPropagation(); close(); }
+    else if (event.key === 'Tab') close();
+  });
+  input.addEventListener('blur', () => setTimeout(close, 0));
+}
 function render() {
   const loggedIn = Boolean(session?.did);
   $('login-form').hidden=loggedIn; $('identity').hidden=!loggedIn; $('did').textContent=session?.did??'';
@@ -171,6 +280,8 @@ async function checkWallet(wallet,address) {
   const accounts=await wallet.request({method:'eth_accounts'});
   if(accounts[0]?.toLowerCase()!==address.toLowerCase()||await wallet.request({method:'eth_chainId'})!==session.network.chainIdHex)throw new Error('Account or network changed. Review and try again.');
 }
+typeahead($('identifier'), () => $('login-button').focus());
+typeahead($('recipient'), () => $('recipient-form').requestSubmit());
 $('login-form').onsubmit=event=>{event.preventDefault();run(async()=>{status('Finding your account provider…');const{url}=await api('/auth/start',{method:'POST',body:JSON.stringify({identifier:$('identifier').value})});window.location.assign(url);});};
 $('logout').onclick=()=>run(async()=>{await api('/api/logout',{method:'POST',body:'{}'});await refresh();status('Signed out.');});
 $('connect').onclick=()=>run(async()=>{

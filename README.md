@@ -38,6 +38,14 @@ AT Protocol login still uses your actual account provider over the internet. The
 
 The invitation is **not a funded claim link** and does not promise that the sender will pay. Intents expire after seven days. Only the pinned recipient DID can accept, even if the original handle changes hands. Invitation tokens are hashed at rest; generating a new invitation invalidates the old link. URL fragments keep the initial token out of ordinary page request URLs, and the frontend preserves it in session storage across OAuth redirects.
 
+### Handle suggestions
+
+Both handle fields — sign-in and recipient — suggest accounts as you type: a rounded avatar (or a generated placeholder with the initial), the display name, and the `@handle`. Arrow keys and Enter pick one; Escape closes the list.
+
+Suggestions come from an AT Protocol AppView's typeahead, called by **this server** rather than the browser, so the page keeps its `connect-src 'self'` policy and your keystrokes are not sent to a third party by the page itself. The server drops any result it would refuse to address anyway — an invalid handle, or a DID method this app does not support — and only passes through an avatar URL on an allow-listed HTTPS host, which is also the only remote host added to the page's `img-src`. Avatar images are then loaded by the browser from that CDN directly, with `referrerpolicy="no-referrer"`; anything else falls back to the placeholder.
+
+A suggestion is a convenience, never a source of truth: picking one only fills the field. The identity is still resolved and verified in both directions through `/api/recipients/resolve` before a payment intent can name it.
+
 ### Account balances
 
 The linked-addresses panel shows each address's balance on the active chain, read through MetaMask's own provider with `eth_getBalance`. No server RPC is involved, and no connection prompt is triggered: balances simply stay hidden until MetaMask is connected and on the configured network. **Refresh balances** re-reads them.
@@ -74,11 +82,12 @@ See `.env.example`. Variables are read from the process; to explicitly load an `
 | `DATABASE_PATH` | `data/wallet.sqlite`, or `data/local.sqlite` on Anvil |
 | `MIGRATIONS_DIR` | `./drizzle`; applied at startup |
 | `PUBLIC_DIR` | `./public`; static frontend, resolved against the working directory |
+| `APPVIEW_URL` | `https://public.api.bsky.app`; HTTPS or loopback, serves handle suggestions |
 | `TRUST_PROXY_HOPS` | `0`; set only for your trusted reverse-proxy topology |
 
 For HTTPS hosting, make `/client-metadata.json` publicly reachable by the user's OAuth server and use a persistent, access-controlled database volume. HTTPS enables Secure cookies and HSTS. Use a single Node process; multiple workers require shared OAuth locking, shared rate limiting, and coordinated database access.
 
-Request rate limiting is built in: 60 requests per minute per client across `/api` and `/auth`, counted in a fixed window in the database and reported with `RateLimit-Policy` and `RateLimit` headers. The client address comes from the socket unless `TRUST_PROXY_HOPS` says how many proxy hops to trust, so a forwarded header cannot invent more hops than you configure.
+Request rate limiting is built in: 60 requests per minute per client across `/api` and `/auth`, counted in a fixed window in the database and reported with `RateLimit-Policy` and `RateLimit` headers. Handle suggestions are metered separately, at 240 per minute, so a burst of keystrokes cannot spend the budget that payment requests need. The client address comes from the socket unless `TRUST_PROXY_HOPS` says how many proxy hops to trust, so a forwarded header cannot invent more hops than you configure.
 
 ## Payment behavior and recovery
 
@@ -108,6 +117,7 @@ Authenticated mutations require the HttpOnly cookie, exact `Origin`, and `x-csrf
 | POST | `/api/links/default` | `{ address }` → choose a public receiving default for the active chain |
 | DELETE | `/api/links/:address` | Unlink the current DID's wallet on the active chain |
 | GET | `/api/resolve/:did` | Public links, chain IDs, proofs, and default flags |
+| GET | `/api/actors/search?q=` | Handle suggestions: DID, handle, display name, avatar |
 | POST | `/api/recipients/resolve` | `{ identifier }` → verified DID/handle and active-chain default |
 | POST | `/api/payments` | `{ identifier, expectedDid, amount }` → intent and invitation URL; amount is a decimal ETH string |
 | GET | `/api/payments` | Sender's most recent 50 intents on the active chain |
@@ -130,7 +140,7 @@ npm run build
 npm start
 ```
 
-`npm test` covers identifier and amount validation, network configuration, the expiring key/value table, challenge issuance, link listing and receiving defaults, payment creation and pinning, invitation scoping and rotation, cancellation, preparation without an RPC, and rate limiting, using an in-memory database migrated by drizzle-kit and an injected identity resolver.
+`npm test` covers identifier and amount validation, network configuration, the expiring key/value table, challenge issuance, link listing and receiving defaults, payment creation and pinning, invitation scoping and rotation, cancellation, preparation without an RPC, suggestion vetting and avatar allow-listing, and rate limiting, using an in-memory database migrated by drizzle-kit and an injected identity resolver.
 
 `foundry.toml` reserves the `contracts/` workspace and an `anvil` RPC alias. Anvil is included as a dev dependency. For future Solidity work, install the full [Foundry toolchain](https://getfoundry.sh/introduction/installation/) and add contracts/tests before running `forge build` / `forge test`. Wallet linking and these payments need no deployed contract.
 
@@ -139,15 +149,16 @@ npm start
 - `src/atproto_wallet.gleam`: startup, configuration, and shutdown.
 - `src/wallet/app.gleam`: HTTP routes, sessions, CSRF, host and rate-limit middleware.
 - `src/wallet/oauth.gleam`, `src/wallet/identity.gleam`: official OAuth client and bidirectional identity resolution.
+- `src/wallet/directory.gleam`: AppView handle suggestions, vetted before they reach the page.
 - `src/wallet/linking.gleam`: SIWE challenges, verification, wallet ownership, and receiving defaults.
 - `src/wallet/payments.gleam`, `src/wallet/chain.gleam`: unfunded intents, recipient invitations, preparation, and RPC verification.
 - `src/wallet/store.gleam`, `src/wallet/drizzle/`: schema, migrations, typed queries, and session state.
 - `src/wallet/network.gleam`, `src/wallet/validate.gleam`, `src/wallet/rate_limit.gleam`, `src/wallet/error.gleam`: chain configuration, input shapes, request limits, and failures.
-- `src/wallet/ffi/`: Gleam bindings for Hono, Drizzle, better-sqlite3, viem, the AT Protocol SDKs, Node, and `URL`.
-- `public/`: responsive frontend, MetaMask integration, and balance display.
+- `src/wallet/ffi/`: Gleam bindings for Hono, Drizzle, better-sqlite3, viem, the AT Protocol SDKs, Node, `fetch`, and `URL`.
+- `public/`: responsive frontend, MetaMask integration, handle suggestions, and balance display.
 - `scripts/`: Anvil + app launcher.
 
-The wallet signature proves that the Ethereum account signed a message naming the DID. DID-owner consent relies on this app's OAuth verification; a copied wallet signature alone is not an independently verifiable DID-owner attestation. Public resolution and recipient selections are app-local database state, not on-chain or PDS records. Consumers trust this server's mapping and configured RPC.
+The wallet signature proves that the Ethereum account signed a message naming the DID. DID-owner consent relies on this app's OAuth verification; a copied wallet signature alone is not an independently verifiable DID-owner attestation. Public resolution and recipient selections are app-local database state, not on-chain or PDS records. Consumers trust this server's mapping and configured RPC. Handle suggestions additionally trust the configured AppView for discovery only, and loading a suggested avatar reveals the viewer's IP address to that image CDN; neither affects what the app will accept as a payment recipient.
 
 Only the base `atproto` OAuth scope is requested, with no repository write permissions. OAuth credentials are discarded after authentication. Browser sessions and temporary OAuth state are sensitive; keep the SQLite files private. Wallet keys, seed phrases, and transaction-signing credentials never reach the server.
 

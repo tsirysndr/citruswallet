@@ -5,7 +5,13 @@ import gleam/string
 import wallet/store.{type Store}
 
 pub type Limiter {
-  Limiter(store: Store, limit: Int, window: Int, proxy_hops: Int)
+  Limiter(
+    store: Store,
+    namespace: String,
+    limit: Int,
+    window: Int,
+    proxy_hops: Int,
+  )
 }
 
 pub type Decision {
@@ -13,8 +19,19 @@ pub type Decision {
   Exceeded(resets_in: Int)
 }
 
-pub fn new(store: Store, limit: Int, proxy_hops: Int) -> Limiter {
-  Limiter(store: store, limit: limit, window: 60_000, proxy_hops: proxy_hops)
+pub fn new(
+  store: Store,
+  namespace namespace: String,
+  limit limit: Int,
+  proxy_hops proxy_hops: Int,
+) -> Limiter {
+  Limiter(
+    store: store,
+    namespace: namespace,
+    limit: limit,
+    window: 60_000,
+    proxy_hops: proxy_hops,
+  )
 }
 
 pub fn check(limiter: Limiter, client: String, now now: Int) -> Decision {
@@ -23,7 +40,7 @@ pub fn check(limiter: Limiter, client: String, now now: Int) -> Decision {
   let used =
     store.increment(
       limiter.store,
-      namespace: "rate",
+      namespace: limiter.namespace,
       key: client <> ":" <> int.to_string(window),
       expires: expires,
       now: now,
