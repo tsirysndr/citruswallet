@@ -1,0 +1,12 @@
+node_modules/
+build/
+data/
+.env
+*.sqlite*
+contracts/out/
+contracts/cache/
+contracts/lib/
+broadcast/
+.anvil/
+.DS_Store
+

@@ -1,0 +1,479 @@
+import gleam/dynamic/decode
+import gleam/javascript/promise
+import gleam/list
+import gleam/option.{None, Some}
+import gleam/string
+import gleeunit
+import wallet/drizzle/orm
+import wallet/drizzle/schema/links as links_schema
+import wallet/error
+import wallet/identity.{Identity}
+import wallet/linking
+import wallet/network
+import wallet/payments
+import wallet/rate_limit
+import wallet/store
+import wallet/validate
+
+pub fn main() -> Nil {
+  gleeunit.main()
+}
+
+const alice_wallet = "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266"
+
+const bob_wallet = "0x70997970c51812dc3a010c7d01b50e0d17dc79c8"
+
+fn open_store() -> store.Store {
+  let assert Ok(store) = store.open(":memory:", migrations: "./drizzle")
+  store
+}
+
+fn token_of(invitation_url: String) -> String {
+  let assert [_, token] = string.split(invitation_url, "#invite=")
+  token
+}
+
+fn open_links() -> #(store.Store, linking.Links) {
+  let store = open_store()
+  #(store, linking.new(store, "http://127.0.0.1:3000", 31_337))
+}
+
+fn link_row(
+  links: linking.Links,
+  did: String,
+  address: String,
+  is_public: Bool,
+  is_default: Bool,
+) -> Nil {
+  let schema = links_schema.define(decode.success(Nil))
+  let assert Ok(_) =
+    orm.insert(schema.table, [
+      orm.set(schema.did, did),
+      orm.set(schema.address, address),
+      orm.set(schema.chain_id, 31_337),
+      orm.set(schema.message, "message"),
+      orm.set(schema.signature, "0x00"),
+      orm.set(schema.linked_at, "2026-01-01T00:00:00.000Z"),
+      orm.set(schema.is_public, is_public),
+      orm.set(schema.is_default, is_default),
+    ])
+    |> orm.run(links.store.database)
+  Nil
+}
+
+// Validation.
+
+pub fn hex_shapes_test() {
+  assert validate.is_hex("0123456789abcdef", length: 16)
+  assert !validate.is_hex("0123456789ABCDEF", length: 16)
+  assert !validate.is_hex("abc", length: 16)
+  assert validate.is_hex_quantity("0xAbC1", digits: 4)
+  assert !validate.is_hex_quantity("AbC1", digits: 4)
+  assert !validate.is_hex_quantity("0xzz", digits: 2)
+}
+
+pub fn ether_amounts_test() {
+  assert validate.is_ether_amount("0")
+  assert validate.is_ether_amount("0.01")
+  assert validate.is_ether_amount("1.000000000000000001")
+  assert !validate.is_ether_amount("01")
+  assert !validate.is_ether_amount("1.2.3")
+  assert !validate.is_ether_amount("1.")
+  assert !validate.is_ether_amount("1.0000000000000000001")
+  assert !validate.is_ether_amount("-1")
+  assert !validate.is_ether_amount("")
+}
+
+// Network configuration.
+
+pub fn network_requires_loopback_for_anvil_test() {
+  assert network.configured("http://127.0.0.1:3000", "1") == Ok(network.mainnet)
+  assert network.configured("http://127.0.0.1:3000", "31337")
+    == Ok(network.anvil)
+  assert network.configured("https://wallet.example", "31337")
+    != Ok(network.anvil)
+  assert network.configured("https://wallet.example", "5")
+    != Ok(network.mainnet)
+}
+
+// The expiring key/value table.
+
+pub fn store_expires_values_test() {
+  let store = open_store()
+  store.put(store, namespace: "ns", key: "k", value: "v", expires: 2000)
+  assert store.get(store, namespace: "ns", key: "k", now: 1000) == Some("v")
+  assert store.get(store, namespace: "ns", key: "k", now: 2000) == None
+  store.put(store, namespace: "ns", key: "k", value: "w", expires: 3000)
+  assert store.get(store, namespace: "ns", key: "k", now: 1000) == Some("w")
+  store.delete(store, namespace: "ns", key: "k")
+  assert store.get(store, namespace: "ns", key: "k", now: 1000) == None
+}
+
+pub fn store_cleanup_removes_expired_test() {
+  let store = open_store()
+  store.put(store, namespace: "ns", key: "old", value: "v", expires: 500)
+  store.put(store, namespace: "ns", key: "new", value: "v", expires: 5000)
+  store.cleanup(store, 1000)
+  assert store.get(store, namespace: "ns", key: "old", now: 400) == None
+  assert store.get(store, namespace: "ns", key: "new", now: 400) == Some("v")
+}
+
+// Wallet linking.
+
+pub fn challenge_names_the_did_test() {
+  let #(_, links) = open_links()
+  let assert Ok(challenge) =
+    linking.create(
+      links,
+      session: "session",
+      did: "did:plc:alice",
+      address: Some("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"),
+      discoverable: True,
+    )
+  assert challenge.address == "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266"
+  assert challenge.is_public
+}
+
+pub fn challenge_rejects_bad_address_test() {
+  let #(_, links) = open_links()
+  assert linking.create(
+      links,
+      session: "session",
+      did: "did:plc:alice",
+      address: Some("0xnope"),
+      discoverable: False,
+    )
+    == Error(error.bad_request("Invalid Ethereum address."))
+  assert linking.create(
+      links,
+      session: "session",
+      did: "did:plc:alice",
+      address: None,
+      discoverable: False,
+    )
+    == Error(error.bad_request("Invalid Ethereum address."))
+}
+
+pub fn only_one_challenge_per_session_test() {
+  let #(_, links) = open_links()
+  let address = Some("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266")
+  let assert Ok(first) =
+    linking.create(
+      links,
+      session: "session",
+      did: "did:plc:alice",
+      address: address,
+      discoverable: False,
+    )
+  let assert Ok(second) =
+    linking.create(
+      links,
+      session: "session",
+      did: "did:plc:alice",
+      address: address,
+      discoverable: False,
+    )
+  assert first.id != second.id
+}
+
+pub fn links_round_trip_test() {
+  let #(_, links) = open_links()
+  link_row(links, "did:plc:alice", alice_wallet, True, True)
+  link_row(links, "did:plc:alice", bob_wallet, False, False)
+  let all = linking.list(links, "did:plc:alice", public_only: False)
+  assert list.length(all) == 2
+  let public = linking.list(links, "did:plc:alice", public_only: True)
+  assert list.map(public, fn(link) { link.address }) == [alice_wallet]
+  assert option.map(
+      linking.default_address(links, "did:plc:alice", 31_337),
+      fn(link) { link.address },
+    )
+    == Some(alice_wallet)
+  assert option.map(
+      linking.find(
+        links,
+        did: "did:plc:alice",
+        address: bob_wallet,
+        chain_id: 31_337,
+      ),
+      fn(link) { link.is_public },
+    )
+    == Some(False)
+}
+
+pub fn default_must_be_public_test() {
+  let #(_, links) = open_links()
+  link_row(links, "did:plc:alice", alice_wallet, True, True)
+  link_row(links, "did:plc:alice", bob_wallet, False, False)
+  assert linking.set_default(links, "did:plc:alice", Some(bob_wallet))
+    == Error(error.bad_request(
+      "Choose a publicly discoverable linked address on this network.",
+    ))
+}
+
+pub fn unlink_removes_the_link_test() {
+  let #(_, links) = open_links()
+  link_row(links, "did:plc:alice", alice_wallet, True, True)
+  let assert Ok(_) = linking.unlink(links, "did:plc:alice", alice_wallet)
+  assert linking.list(links, "did:plc:alice", public_only: False) == []
+}
+
+// Identity.
+
+pub fn normalize_identifiers_test() {
+  assert identity.normalize(Some(" @Alice.Bsky.Social "))
+    == Ok("alice.bsky.social")
+  assert identity.normalize(Some("did:plc:abc123")) == Ok("did:plc:abc123")
+  assert identity.normalize(Some("did:key:abc")) != Ok("did:key:abc")
+  assert identity.normalize(Some("not a handle")) != Ok("not a handle")
+  assert identity.normalize(None)
+    == Error(error.bad_request("Enter an AT Protocol handle or DID."))
+}
+
+// Payments.
+
+fn open_payments(handle: String) -> #(linking.Links, payments.Payments) {
+  let #(store, links) = open_links()
+  let identities = fn(_) {
+    promise.resolve(Ok(Identity(did: "did:plc:bob", handle: Some(handle))))
+  }
+  #(
+    links,
+    payments.new(
+      store: store,
+      links: links,
+      identities: identities,
+      origin: "http://127.0.0.1:3000",
+      chain_id: 31_337,
+      chain: None,
+    ),
+  )
+}
+
+pub fn create_payment_waits_for_a_receiving_address_test() {
+  let #(_, payments) = open_payments("bob.bsky.social")
+  use outcome <- promise.map(payments.create(
+    payments,
+    sender_did: "did:plc:alice",
+    identifier: Some("bob.bsky.social"),
+    expected_did: Some("did:plc:bob"),
+    amount: Some("0.25"),
+  ))
+  let assert Ok(#(payment, invitation)) = outcome
+  assert payment.state == payments.Waiting
+  assert payment.amount_wei == "250000000000000000"
+  assert payment.recipient_label == "bob.bsky.social"
+  assert payment.address == None
+  assert invitation != "http://127.0.0.1:3000/#invite="
+}
+
+pub fn create_payment_is_ready_when_a_default_exists_test() {
+  let #(links, payments) = open_payments("bob.bsky.social")
+  link_row(links, "did:plc:bob", bob_wallet, True, True)
+  use outcome <- promise.map(payments.create(
+    payments,
+    sender_did: "did:plc:alice",
+    identifier: Some("bob.bsky.social"),
+    expected_did: Some("did:plc:bob"),
+    amount: Some("1"),
+  ))
+  let assert Ok(#(payment, _)) = outcome
+  assert payment.state == payments.Ready
+  assert payment.address == Some(bob_wallet)
+  assert payment.source == payments.FromDefault
+}
+
+pub fn create_payment_rejects_a_changed_identity_test() {
+  let #(_, payments) = open_payments("bob.bsky.social")
+  use outcome <- promise.map(payments.create(
+    payments,
+    sender_did: "did:plc:alice",
+    identifier: Some("bob.bsky.social"),
+    expected_did: Some("did:plc:someone-else"),
+    amount: Some("1"),
+  ))
+  assert outcome
+    == Error(error.conflict(
+      "Recipient identity changed. Resolve and review it again.",
+    ))
+}
+
+pub fn create_payment_rejects_self_payment_test() {
+  let #(_, payments) = open_payments("bob.bsky.social")
+  use outcome <- promise.map(payments.create(
+    payments,
+    sender_did: "did:plc:bob",
+    identifier: Some("bob.bsky.social"),
+    expected_did: Some("did:plc:bob"),
+    amount: Some("1"),
+  ))
+  assert outcome
+    == Error(error.bad_request(
+      "Choose another AT Protocol account as recipient.",
+    ))
+}
+
+pub fn create_payment_rejects_bad_amounts_test() {
+  let #(_, payments) = open_payments("bob.bsky.social")
+  use zero <- promise.await(payments.create(
+    payments,
+    sender_did: "did:plc:alice",
+    identifier: Some("bob.bsky.social"),
+    expected_did: Some("did:plc:bob"),
+    amount: Some("0"),
+  ))
+  assert zero
+    == Error(error.bad_request("ETH amount must be greater than zero."))
+  use malformed <- promise.map(payments.create(
+    payments,
+    sender_did: "did:plc:alice",
+    identifier: Some("bob.bsky.social"),
+    expected_did: Some("did:plc:bob"),
+    amount: Some("1,5"),
+  ))
+  assert malformed
+    == Error(error.bad_request(
+      "Enter a positive ETH amount with at most 18 decimal places.",
+    ))
+}
+
+pub fn payment_cannot_be_prepared_without_an_rpc_test() {
+  let #(links, payments) = open_payments("bob.bsky.social")
+  link_row(links, "did:plc:bob", bob_wallet, True, True)
+  link_row(links, "did:plc:alice", alice_wallet, False, False)
+  use created <- promise.await(payments.create(
+    payments,
+    sender_did: "did:plc:alice",
+    identifier: Some("bob.bsky.social"),
+    expected_did: Some("did:plc:bob"),
+    amount: Some("1"),
+  ))
+  let assert Ok(#(payment, _)) = created
+  use outcome <- promise.map(payments.prepare(
+    payments,
+    "did:plc:alice",
+    Some(payment.id),
+    Some(payment.revision),
+    Some(bob_wallet),
+    Some(alice_wallet),
+  ))
+  assert outcome
+    == Error(error.unavailable(
+      "Configure ETH_RPC_URL on the server to enable verified ETH payments.",
+    ))
+}
+
+pub fn payment_history_is_private_to_its_sender_test() {
+  let #(_, payments) = open_payments("bob.bsky.social")
+  use created <- promise.await(payments.create(
+    payments,
+    sender_did: "did:plc:alice",
+    identifier: Some("bob.bsky.social"),
+    expected_did: Some("did:plc:bob"),
+    amount: Some("1"),
+  ))
+  let assert Ok(#(payment, _)) = created
+  assert list.length(payments.list(payments, "did:plc:alice")) == 1
+  assert payments.list(payments, "did:plc:carol") == []
+  use outcome <- promise.map(payments.get(
+    payments,
+    "did:plc:carol",
+    Some(payment.id),
+  ))
+  assert outcome == Error(error.not_found("Payment not found."))
+}
+
+pub fn invitation_is_bound_to_the_pinned_recipient_test() {
+  let #(links, payments) = open_payments("bob.bsky.social")
+  use created <- promise.map(payments.create(
+    payments,
+    sender_did: "did:plc:alice",
+    identifier: Some("bob.bsky.social"),
+    expected_did: Some("did:plc:bob"),
+    amount: Some("1"),
+  ))
+  let assert Ok(#(payment, _)) = created
+  let assert Ok(url) =
+    payments.invitation(payments, "did:plc:alice", Some(payment.id))
+  let token = token_of(url)
+  assert payments.read_invitation(payments, Some(token), "did:plc:carol")
+    == Error(error.forbidden(
+      "Sign in with the AT Protocol account this invitation was sent to.",
+    ))
+  let assert Ok(seen) =
+    payments.read_invitation(payments, Some(token), "did:plc:bob")
+  assert seen.id == payment.id
+  // A recipient may share a private address with this sender alone.
+  link_row(links, "did:plc:bob", bob_wallet, False, False)
+  let assert Ok(accepted) =
+    payments.accept(payments, Some(token), "did:plc:bob", Some(bob_wallet))
+  assert accepted.state == payments.Ready
+  assert accepted.source == payments.FromRecipient
+  assert accepted.address == Some(bob_wallet)
+  // Rotating the invitation invalidates the previous link.
+  let assert Ok(_) =
+    payments.invitation(payments, "did:plc:alice", Some(payment.id))
+  assert payments.read_invitation(payments, Some(token), "did:plc:bob")
+    == Error(error.not_found("Invitation not found."))
+}
+
+pub fn cancel_only_applies_before_preparation_test() {
+  let #(_, payments) = open_payments("bob.bsky.social")
+  use created <- promise.map(payments.create(
+    payments,
+    sender_did: "did:plc:alice",
+    identifier: Some("bob.bsky.social"),
+    expected_did: Some("did:plc:bob"),
+    amount: Some("1"),
+  ))
+  let assert Ok(#(payment, _)) = created
+  let assert Ok(cancelled) =
+    payments.cancel(payments, "did:plc:alice", Some(payment.id))
+  assert cancelled.state == payments.Cancelled
+  assert payments.cancel(payments, "did:plc:alice", Some(payment.id))
+    == Error(error.conflict(
+      "Only an unprepared payment intent can be cancelled.",
+    ))
+}
+
+// Rate limiting.
+
+pub fn rate_limit_counts_a_fixed_window_test() {
+  let store = open_store()
+  let limiter = rate_limit.new(store, 2, 0)
+  assert rate_limit.check(limiter, "1.2.3.4", now: 0)
+    == rate_limit.Allowed(1, 60)
+  assert rate_limit.check(limiter, "1.2.3.4", now: 10_000)
+    == rate_limit.Allowed(0, 50)
+  assert rate_limit.check(limiter, "1.2.3.4", now: 20_000)
+    == rate_limit.Exceeded(40)
+  assert rate_limit.check(limiter, "5.6.7.8", now: 20_000)
+    == rate_limit.Allowed(1, 40)
+  assert rate_limit.check(limiter, "1.2.3.4", now: 60_000)
+    == rate_limit.Allowed(1, 60)
+}
+
+pub fn rate_limit_trusts_only_configured_hops_test() {
+  let store = open_store()
+  let direct = rate_limit.new(store, 60, 0)
+  assert rate_limit.client(direct, Some("10.0.0.1"), Some("1.1.1.1, 2.2.2.2"))
+    == "10.0.0.1"
+  let behind_one = rate_limit.new(store, 60, 1)
+  assert rate_limit.client(
+      behind_one,
+      Some("10.0.0.1"),
+      Some("1.1.1.1, 2.2.2.2"),
+    )
+    == "2.2.2.2"
+  let behind_two = rate_limit.new(store, 60, 2)
+  assert rate_limit.client(
+      behind_two,
+      Some("10.0.0.1"),
+      Some("1.1.1.1, 2.2.2.2"),
+    )
+    == "1.1.1.1"
+  // A header cannot invent more hops than the configuration trusts.
+  assert rate_limit.client(behind_two, Some("10.0.0.1"), Some("9.9.9.9"))
+    == "9.9.9.9"
+  assert rate_limit.client(direct, None, None) == "unknown"
+}

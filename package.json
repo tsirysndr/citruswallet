@@ -1,0 +1,36 @@
+{
+  "name": "atproto-ethereum-link",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "AT Protocol OAuth and MetaMask wallet linking, written in Gleam on Node.js",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "gleam run",
+    "build": "gleam build",
+    "start": "gleam run",
+    "check": "gleam check",
+    "test": "gleam test",
+    "db:generate": "gleam build && drizzle-kit generate",
+    "db:check": "gleam build && drizzle-kit check",
+    "anvil": "anvil --host 127.0.0.1 --port 8545 --chain-id 31337",
+    "dev:local": "node scripts/dev-local.mjs"
+  },
+  "dependencies": {
+    "@atproto/identity": "^0.5.20",
+    "@atproto/oauth-client-node": "^0.5.12",
+    "@atproto/syntax": "^0.7.7",
+    "@hono/node-server": "^2.1.5",
+    "better-sqlite3": "^13.0.3",
+    "drizzle-orm": "^0.45.4",
+    "hono": "^4.13.13",
+    "viem": "^2.0.0"
+  },
+  "devDependencies": {
+    "@foundry-rs/anvil": "^1.7.1",
+    "@types/node": "^24.0.0",
+    "drizzle-kit": "^0.31.11"
+  }
+}
