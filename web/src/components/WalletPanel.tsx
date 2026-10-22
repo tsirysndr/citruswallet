@@ -1,3 +1,4 @@
+import { isMobileWalletBrowser } from "../mobile-wallet";
 import { useState } from "react";
 import { metamaskStoreUrl, useMetaMask } from "../metamask";
 import { rpc } from "../api";
@@ -5,7 +6,7 @@ import { balanceOf } from "../balances";
 import { useRefresh, useRun, useStatus } from "../hooks";
 import { shortAddress } from "../format";
 import { useBalances, useSession } from "../queries";
-import { checkWallet, provider, walletAccount } from "../wallet";
+import { checkWallet, connectWallet, walletAccount } from "../wallet";
 import {
   Badge,
   Balance,
@@ -40,7 +41,7 @@ export function WalletPanel({ className }: { className?: string }) {
   const link = () =>
     run(async () => {
       const network = session!.network;
-      const wallet = provider();
+      const wallet = await connectWallet(network);
       const account = await walletAccount(wallet, network);
       const challenge = await rpc.createChallenge({
         address: account,
@@ -78,9 +79,9 @@ export function WalletPanel({ className }: { className?: string }) {
         Publish this address to my AT Protocol repository and allow public
         payments (first public wallet becomes my receiving default)
       </Checkbox>
-      {hasMetaMask ? (
+      {hasMetaMask || isMobileWalletBrowser() ? (
         <Button className="mt-4 w-full" disabled={!signedIn} onClick={link}>
-          Connect MetaMask &amp; link
+          {isMobileWalletBrowser() ? "Open MetaMask & link" : "Connect MetaMask & link"}
         </Button>
       ) : (
         <div className="mt-4">
@@ -95,6 +96,11 @@ export function WalletPanel({ className }: { className?: string }) {
           </a>
           <Hint className="mt-2">MetaMask was not detected. On mobile, open this site in the MetaMask app’s browser.</Hint>
         </div>
+      )}
+      {isMobileWalletBrowser() && !hasMetaMask && (
+        <Hint className="mt-2">Approve the connection and linking message in MetaMask, then return here.
+          {" "}<a href="https://metamask.io/download/" target="_blank" rel="noopener noreferrer" className="font-semibold underline">Get the MetaMask app</a>
+        </Hint>
       )}
       {signedIn && address && session && (
         <Balance>

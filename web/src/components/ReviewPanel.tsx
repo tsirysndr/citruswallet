@@ -13,7 +13,7 @@ import { useRefresh, useRun, useStatus } from "../hooks";
 import { usePayment, useSession } from "../queries";
 import type { Payment } from "../types";
 import { recoverForm } from "../validation";
-import { checkWallet, provider, walletAccount } from "../wallet";
+import { checkWallet, connectWallet, walletAccount } from "../wallet";
 import {
   Badge,
   Button,
@@ -84,7 +84,7 @@ export function ReviewPanel({ className }: { className?: string }) {
         throw new Error("Review and acknowledge the payment details first.");
       const shown = payment;
       if (!shown.address) throw new Error("The recipient has no receiving address.");
-      const wallet = provider();
+      const wallet = await connectWallet(session.network);
       const fromAddress = await walletAccount(wallet, session.network);
       if (pendingBroadcast(did))
         throw new Error(

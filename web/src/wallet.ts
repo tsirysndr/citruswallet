@@ -1,4 +1,7 @@
 import type { Network, Session } from "./types";
+import { isMobileWalletBrowser, mobileWalletClient } from "./mobile-wallet";
+
+let connectedMobileWallet: Eip1193Provider | null = null;
 
 export type WalletBalances = {
   address: string | null;
@@ -17,12 +20,31 @@ export function detectedMetaMask(): Eip1193Provider | null {
 }
 
 export function provider(): Eip1193Provider {
-  const wallet = detectedMetaMask();
+  const wallet = detectedMetaMask() ?? connectedMobileWallet;
   if (!wallet)
     throw new Error(
       "Open this page in a browser with MetaMask installed, or in the MetaMask in-app browser.",
     );
   return wallet;
+}
+
+// Only explicit wallet actions may open the MetaMask app. Balance reads never connect.
+export async function connectWallet(network: Network): Promise<Eip1193Provider> {
+  const injected = detectedMetaMask();
+  if (injected) return injected;
+  if (!isMobileWalletBrowser()) return provider();
+  const client = await mobileWalletClient();
+  if (client.status !== "connected") await client.connect({ chainIds: [network.chainIdHex as `0x${string}`] });
+  const wallet = client.getProvider();
+  if (connectedMobileWallet !== wallet) {
+    connectedMobileWallet = wallet;
+    wallet.once("disconnect", () => {
+      connectedMobileWallet = null;
+      window.dispatchEvent(new Event("citrus:wallet-connected"));
+    });
+  }
+  window.dispatchEvent(new Event("citrus:wallet-connected"));
+  return connectedMobileWallet;
 }
 
 export async function walletAccount(wallet: Eip1193Provider, network: Network) {

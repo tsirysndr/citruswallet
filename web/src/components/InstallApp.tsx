@@ -33,7 +33,7 @@ export function InstallApp() {
       <div className="date-dialog-inner">
         <div className="flex items-center justify-between"><h2 id="install-title" className="text-lg font-semibold">Keep Citrus close.</h2><button type="button" className="date-icon-button" aria-label="Close install instructions" onClick={() => dialog.current?.close()}><X size={18} /></button></div>
         <p className="mt-4 text-sm leading-relaxed">Use your browser’s <strong>Install app</strong> or <strong>Add to Home Screen</strong> option. On iPhone or iPad, open Citrus in Safari, tap Share, then Add to Home Screen.</p>
-        <p className="mt-3 text-xs leading-relaxed text-ink-muted">Payments still need MetaMask. If it isn’t available in the installed app, open Citrus in your MetaMask-enabled browser or the MetaMask mobile browser.</p>
+        <p className="mt-3 text-xs leading-relaxed text-ink-muted">Payments still need MetaMask. On mobile, tap Connect MetaMask to open the wallet app, approve the request, then return to Citrus. You can also use the MetaMask mobile browser.</p>
         <Button className="mt-5" onClick={() => dialog.current?.close()}>Got it</Button>
       </div>
     </dialog>

@@ -269,3 +269,21 @@ Profile-name activity searches use correlated, indexed DID lookups instead of sc
 ### Desktop keyboard shortcuts
 
 The floating keyboard button opens the shortcut guide. Press `G`, then `A`, `W`, `P`, or `H` to open Account, Wallet, Payments, or Activity. `/` opens Activity and focuses search; `?` opens the guide. Native Escape closes dialogs and calendar arrow keys continue to work. Navigation shortcuts ignore text fields, editable content, active dialogs, modifier combinations, and IME composition. They are disabled on mobile/touch layouts; desktop users can also turn them off in the guide.
+
+### MetaMask on mobile
+
+Phones and tablets offer **Connect MetaMask** through the official MetaMask
+Connect EVM client. Connections open the mobile app using a universal link;
+return to Citrus after approving the connection, linking signature, or payment.
+The MetaMask in-app browser continues to use its injected provider, and desktop
+browsers continue to use the extension. Device hints choose the UI; Citrus does
+not claim it can inspect which apps are installed. A download link is available
+in the wallet card if MetaMask is missing.
+
+The SDK loads only for an explicit mobile connection, with analytics disabled.
+Mobile balance reads use the public mainnet RPC at `https://eth.drpc.org` and
+connections use MetaMask’s WebSocket relay. The CSP explicitly allows those two
+origins. Background balance reads never initiate a connection or app handoff.
+After a page reload, tap Connect MetaMask to resume the SDK session. Account and
+chain checks, signed ownership challenges, and payment broadcast recovery apply
+to both app and extension connections.
