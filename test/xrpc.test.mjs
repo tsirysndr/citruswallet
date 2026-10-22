@@ -320,3 +320,27 @@ test('only senders may delete cancelled intents; prepared, broadcast, and other-
   await assert.rejects(f.query('getPayment', { id }), e => e.error === 'NotFound');
   await assert.rejects(f.call('deletePayment', { id }), e => e.error === 'NotFound');
 });
+
+test('KLIPY attachments remain participant-only and reject unsafe media URLs', async t => {
+  const f = fixture(t);
+  await f.login();
+  const input = { identifier: 'bob.test', expectedDid: bob, amount: '0.01' };
+  const media = { kind: 'clips', slug: 'thank-you', title: 'Thank you', url: 'https://static.klipy.com/test.mp4?delivery=original', preview: 'https://static1.klipy.com/test.webp?delivery=original' };
+  const created = await f.call('createPayment', { ...input, description: 'Thanks!', media });
+  assert.deepEqual(created.payment.media, media);
+  assert.deepEqual(JSON.parse(f.store.client.prepare('SELECT media FROM payments WHERE id=?').get(created.payment.id).media), media);
+  assert.deepEqual((await f.query('getPayment', { id: created.payment.id })).payment.media, media);
+  assert.deepEqual((await f.query('listPayments')).payments[0].media, media);
+  assert.equal((await f.call('createPayment', input)).payment.media, null);
+  for (const change of [
+    { url: 'javascript:alert(1)' }, { url: 'https://static.klipy.com.evil.test/x' },
+    { url: 'https://static.klipy.com@evil.test/x' }, { preview: 'https://example.com/x.webp' },
+    { url: 'https://static.klipy.com/\\evil.test/x' }, { kind: 'html' }, { slug: '' },
+    { title: 'x'.repeat(301) },
+  ]) await assert.rejects(f.call('createPayment', { ...input, media: { ...media, ...change } }), e => e.status === 400);
+  await f.login(bob);
+  assert.deepEqual((await f.query('getPayment', { id: created.payment.id })).payment.media, media);
+  await f.login('did:plc:outsider');
+  await assert.rejects(f.query('getPayment', { id: created.payment.id }), e => e.status === 404);
+  assert.equal(f.writes.length, 0, 'attachments are never published to AT Protocol');
+});

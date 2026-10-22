@@ -52,6 +52,7 @@ pub fn create_payment(
     expected_did: js.string_field(body, "expectedDid"),
     amount: js.string_field(body, "amount"),
     description: js.string_field(body, "description"),
+    media: js.field(body, "media") |> option.map(js.stringify),
   ))
   context.done(
     Ok(Payload(

@@ -22,6 +22,10 @@
               "type": "string",
               "maxLength": 2048
             },
+            "media": {
+              "type": "ref",
+              "ref": "app.citruswallet.defs#paymentMedia"
+            },
             "description": {
               "type": "string",
               "maxLength": 2000,

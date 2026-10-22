@@ -150,6 +150,10 @@ defs = new Dynamic {
       `amount` = new Dynamic {
         `type` = "string"
       }
+      `media` = new Dynamic {
+        `type` = "ref"
+        `ref` = "app.citruswallet.defs#paymentMedia"
+      }
       `description` = new Dynamic {
         `type` = "string"
         `maxLength` = 2000
@@ -204,7 +208,7 @@ defs = new Dynamic {
         `type` = "integer"
       }
     }
-    `nullable` = List("address", "txHash", "error", "attemptId", "fromAddress", "nonce", "description", "sender", "recipient")
+    `nullable` = List("address", "txHash", "error", "attemptId", "fromAddress", "nonce", "description", "media", "sender", "recipient")
   }
   `transaction` = new Dynamic {
     `type` = "object"
@@ -319,6 +323,32 @@ defs = new Dynamic {
     `properties` = new Dynamic {
       `invitationUrl` = new Dynamic {
         `type` = "string"
+      }
+    }
+  }
+  `paymentMedia` = new Dynamic {
+    `type` = "object"
+    `required` = List("kind", "slug", "url", "preview", "title")
+    `properties` = new Dynamic {
+      `kind` = new Dynamic {
+        `type` = "string"
+        `enum` = List("gifs", "stickers", "static-memes", "clips")
+      }
+      `slug` = new Dynamic {
+        `type` = "string"
+        `maxLength` = 200
+      }
+      `url` = new Dynamic {
+        `type` = "string"
+        `maxLength` = 2048
+      }
+      `preview` = new Dynamic {
+        `type` = "string"
+        `maxLength` = 2048
+      }
+      `title` = new Dynamic {
+        `type` = "string"
+        `maxLength` = 300
       }
     }
   }

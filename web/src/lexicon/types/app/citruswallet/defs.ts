@@ -127,6 +127,7 @@ export interface Payment {
   chainId: number
   asset: string
   amount: string
+  media?: PaymentMedia | null
   description?: string | null
   sender?: Actor | null
   recipient?: Actor | null
@@ -290,4 +291,25 @@ export function isInvitationResult(v: unknown): v is InvitationResult {
 
 export function validateInvitationResult(v: unknown): ValidationResult {
   return lexicons.validate('app.citruswallet.defs#invitationResult', v)
+}
+
+export interface PaymentMedia {
+  kind: 'gifs' | 'stickers' | 'static-memes' | 'clips'
+  slug: string
+  url: string
+  preview: string
+  title: string
+  [k: string]: unknown
+}
+
+export function isPaymentMedia(v: unknown): v is PaymentMedia {
+  return (
+    isObj(v) &&
+    hasProp(v, '$type') &&
+    v.$type === 'app.citruswallet.defs#paymentMedia'
+  )
+}
+
+export function validatePaymentMedia(v: unknown): ValidationResult {
+  return lexicons.validate('app.citruswallet.defs#paymentMedia', v)
 }

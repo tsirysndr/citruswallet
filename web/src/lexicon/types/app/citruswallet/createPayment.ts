@@ -9,6 +9,7 @@ export interface QueryParams {}
 export interface InputSchema {
   identifier: string
   expectedDid: string
+  media?: AppCitruswalletDefs.PaymentMedia
   description?: string
   amount: string
   [k: string]: unknown

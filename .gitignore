@@ -3,6 +3,7 @@ build/
 web/dist/
 data/
 .env
+.env.prod
 *.sqlite*
 contracts/out/
 contracts/cache/

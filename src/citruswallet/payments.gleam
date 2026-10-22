@@ -12,6 +12,7 @@ import citruswallet/ffi/node
 import citruswallet/ffi/viem
 import citruswallet/identity.{type Identity, type Lookup}
 import citruswallet/linking.{type Link, type Links}
+import citruswallet/payment_media
 import citruswallet/profiles
 import citruswallet/store.{type Store}
 import citruswallet/validate
@@ -51,6 +52,7 @@ pub type Payment {
     chain_id: Int,
     amount_wei: String,
     description: Option(String),
+    media: Option(String),
     state: State,
     source: Source,
     address: Option(String),
@@ -133,7 +135,12 @@ pub fn create(
   expected_did expected_did: Option(String),
   amount amount: Option(String),
   description description: Option(String),
+  media media: Option(String),
 ) -> Promise(Result(#(Payment, String), HttpError)) {
+  use <- guard(
+    payment_media.valid(media),
+    error.bad_request("Invalid KLIPY attachment."),
+  )
   let description = option.map(description, string.trim)
   use <- guard(
     string.length(option.unwrap(description, "")) <= 500,
@@ -179,6 +186,7 @@ pub fn create(
           set(table.chain_id, payments.chain_id),
           set(table.amount_wei, amount_wei),
           set(table.description, description),
+          set(table.media, media),
           set(
             table.state,
             state_name(case link {
@@ -1000,6 +1008,7 @@ pub fn to_json(
     #("amount", json.string(viem.to_ether(payment.amount_wei))),
     #("amountWei", json.string(payment.amount_wei)),
     #("description", json.nullable(payment.description, json.string)),
+    #("media", payment_media.to_json(payment.media)),
     #("sender", profile_json(payments, payment.sender_did)),
     #("recipient", profile_json(payments, payment.recipient_did)),
     #("state", json.string(state_name(displayed))),
@@ -1094,6 +1103,7 @@ fn payment_decoder() -> Decoder(Payment) {
   use chain_id <- decode.field("chain_id", decode.int)
   use amount_wei <- decode.field("amount_wei", decode.string)
   use description <- decode.field("description", decode.optional(decode.string))
+  use media <- decode.field("media", decode.optional(decode.string))
   use state <- decode.field("state", decode.string)
   use source <- decode.field("source", decode.string)
   use address <- decode.field("address", decode.optional(decode.string))
@@ -1117,6 +1127,7 @@ fn payment_decoder() -> Decoder(Payment) {
     chain_id: chain_id,
     amount_wei: amount_wei,
     description: description,
+    media: media,
     state: option.unwrap(state_of(state), Failed),
     source: case source {
       "recipient" -> FromRecipient

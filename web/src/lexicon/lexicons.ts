@@ -188,6 +188,10 @@ export const schemaDict = {
                 type: 'string',
                 maxLength: 2048,
               },
+              media: {
+                type: 'ref',
+                ref: 'lex:app.citruswallet.defs#paymentMedia',
+              },
               description: {
                 type: 'string',
                 maxLength: 2000,
@@ -415,6 +419,10 @@ export const schemaDict = {
           amount: {
             type: 'string',
           },
+          media: {
+            type: 'ref',
+            ref: 'lex:app.citruswallet.defs#paymentMedia',
+          },
           description: {
             type: 'string',
             maxLength: 2000,
@@ -477,6 +485,7 @@ export const schemaDict = {
           'fromAddress',
           'nonce',
           'description',
+          'media',
           'sender',
           'recipient',
         ],
@@ -594,6 +603,32 @@ export const schemaDict = {
         properties: {
           invitationUrl: {
             type: 'string',
+          },
+        },
+      },
+      paymentMedia: {
+        type: 'object',
+        required: ['kind', 'slug', 'url', 'preview', 'title'],
+        properties: {
+          kind: {
+            type: 'string',
+            enum: ['gifs', 'stickers', 'static-memes', 'clips'],
+          },
+          slug: {
+            type: 'string',
+            maxLength: 200,
+          },
+          url: {
+            type: 'string',
+            maxLength: 2048,
+          },
+          preview: {
+            type: 'string',
+            maxLength: 2048,
+          },
+          title: {
+            type: 'string',
+            maxLength: 300,
           },
         },
       },

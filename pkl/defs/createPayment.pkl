@@ -18,6 +18,10 @@ defs = new Dynamic {
             `type` = "string"
             `maxLength` = 2048
           }
+          `media` = new Dynamic {
+            `type` = "ref"
+            `ref` = "app.citruswallet.defs#paymentMedia"
+          }
           `description` = new Dynamic {
             `type` = "string"
             `maxLength` = 2000

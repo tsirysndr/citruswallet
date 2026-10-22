@@ -202,6 +202,10 @@ export const schemas = [
                 "type": "string",
                 "maxLength": 2048
               },
+              "media": {
+                "type": "ref",
+                "ref": "app.citruswallet.defs#paymentMedia"
+              },
               "description": {
                 "type": "string",
                 "maxLength": 2000,
@@ -451,6 +455,10 @@ export const schemas = [
           "amount": {
             "type": "string"
           },
+          "media": {
+            "type": "ref",
+            "ref": "app.citruswallet.defs#paymentMedia"
+          },
           "description": {
             "type": "string",
             "maxLength": 2000,
@@ -513,6 +521,7 @@ export const schemas = [
           "fromAddress",
           "nonce",
           "description",
+          "media",
           "sender",
           "recipient"
         ]
@@ -661,6 +670,43 @@ export const schemas = [
         "properties": {
           "invitationUrl": {
             "type": "string"
+          }
+        }
+      },
+      "paymentMedia": {
+        "type": "object",
+        "required": [
+          "kind",
+          "slug",
+          "url",
+          "preview",
+          "title"
+        ],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "gifs",
+              "stickers",
+              "static-memes",
+              "clips"
+            ]
+          },
+          "slug": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "url": {
+            "type": "string",
+            "maxLength": 2048
+          },
+          "preview": {
+            "type": "string",
+            "maxLength": 2048
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 300
           }
         }
       }

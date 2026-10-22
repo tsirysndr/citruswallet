@@ -263,6 +263,7 @@ pub fn create_payment_waits_for_a_receiving_address_test() {
     expected_did: Some("did:plc:bob"),
     amount: Some("0.25"),
     description: None,
+    media: None,
   ))
   let assert Ok(#(payment, invitation)) = outcome
   assert payment.state == payments.Waiting
@@ -282,6 +283,7 @@ pub fn create_payment_is_ready_when_a_default_exists_test() {
     expected_did: Some("did:plc:bob"),
     amount: Some("1"),
     description: None,
+    media: None,
   ))
   let assert Ok(#(payment, _)) = outcome
   assert payment.state == payments.Ready
@@ -298,6 +300,7 @@ pub fn create_payment_rejects_a_changed_identity_test() {
     expected_did: Some("did:plc:someone-else"),
     amount: Some("1"),
     description: None,
+    media: None,
   ))
   assert outcome
     == Error(error.conflict(
@@ -314,6 +317,7 @@ pub fn create_payment_rejects_self_payment_test() {
     expected_did: Some("did:plc:bob"),
     amount: Some("1"),
     description: None,
+    media: None,
   ))
   assert outcome
     == Error(error.bad_request(
@@ -351,6 +355,7 @@ pub fn create_payment_rejects_bad_amounts_test() {
     expected_did: Some("did:plc:bob"),
     amount: Some("0"),
     description: None,
+    media: None,
   ))
   assert zero
     == Error(error.bad_request("ETH amount must be greater than zero."))
@@ -361,6 +366,7 @@ pub fn create_payment_rejects_bad_amounts_test() {
     expected_did: Some("did:plc:bob"),
     amount: Some("1,5"),
     description: None,
+    media: None,
   ))
   assert malformed
     == Error(error.bad_request(
@@ -379,6 +385,7 @@ pub fn payment_cannot_be_prepared_without_an_rpc_test() {
     expected_did: Some("did:plc:bob"),
     amount: Some("1"),
     description: None,
+    media: None,
   ))
   let assert Ok(#(payment, _)) = created
   use outcome <- promise.map(payments.prepare(
@@ -404,6 +411,7 @@ pub fn payment_history_is_private_to_its_sender_test() {
     expected_did: Some("did:plc:bob"),
     amount: Some("1"),
     description: None,
+    media: None,
   ))
   let assert Ok(#(payment, _)) = created
   assert list.length(payments.list(payments, "did:plc:alice")) == 1
@@ -425,6 +433,7 @@ pub fn invitation_is_bound_to_the_pinned_recipient_test() {
     expected_did: Some("did:plc:bob"),
     amount: Some("1"),
     description: None,
+    media: None,
   ))
   let assert Ok(#(payment, _)) = created
   let assert Ok(url) =
@@ -460,6 +469,7 @@ pub fn cancel_only_applies_before_preparation_test() {
     expected_did: Some("did:plc:bob"),
     amount: Some("1"),
     description: None,
+    media: None,
   ))
   let assert Ok(#(payment, _)) = created
   let assert Ok(cancelled) =
