@@ -9,5 +9,5 @@ export function Activity() {
   if (!session?.did)
     return <SignedOut>Your payment intents are listed once you sign in.</SignedOut>;
 
-  return <div className="page-content"><PageHeading title="Your activity." description="Every payment, all in one place." /><HistoryPanel /></div>;
+  return <div className="page-content"><PageHeading title="Your activity." description="Every payment, all in one place." /><HistoryPanel advanced /></div>;
 }

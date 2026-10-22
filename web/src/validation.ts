@@ -40,7 +40,7 @@ export const transactionHash = z
 
 export const signInForm = z.object({ identifier });
 export const recipientForm = z.object({ recipient: identifier });
-export const amountForm = z.object({ amount: etherAmount });
+export const amountForm = z.object({ amount: etherAmount, description: z.string().trim().max(500, "Use 500 characters or fewer.").optional() });
 export const recoverForm = z.object({ txHash: transactionHash });
 export const inviteForm = z.object({
   address: z.string().min(1, "Choose a linked address."),

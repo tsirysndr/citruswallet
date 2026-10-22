@@ -9,6 +9,7 @@ import { inviteTokenAtom } from "../atoms";
 import { useRefresh, useRun, useStatus } from "../hooks";
 import { useBalances, useProfile, useSession } from "../queries";
 import type { Actor } from "../types";
+import AtmosphereApps from "./AtmosphereApps";
 import { Avatar } from "./Avatar";
 import { Typeahead } from "./Typeahead";
 import { signInForm } from "../validation";
@@ -73,7 +74,8 @@ export function IdentityPanel({ className }: { className?: string }) {
             start({ identifier }, "Finding your account provider…"),
           )}
         >
-          <Label htmlFor="identifier">AT Protocol handle or DID</Label>
+          <AtmosphereApps />
+          <Label htmlFor="identifier">Handle</Label>
           <Row>
             <Controller
               control={form.control}
@@ -100,14 +102,7 @@ export function IdentityPanel({ className }: { className?: string }) {
           </Hint>
           <Hint className="mt-2.5">
             You’ll sign in with your account provider.{" "}
-            <a
-              href="https://atmosphereaccount.com/"
-              target="_blank"
-              rel="noreferrer noopener"
-              className="font-semibold text-info underline underline-offset-2 hover:decoration-2"
-            >
-              What is an atmosphere account?
-            </a>
+
           </Hint>
           <Hint>
             Don’t have an account?{" "}
@@ -125,10 +120,10 @@ export function IdentityPanel({ className }: { className?: string }) {
           <div className="mb-4 flex items-center gap-3">
             <Avatar actor={actor} size="size-[46px]" />
             <div className="flex min-w-0 flex-col gap-0.5">
-              <p className="m-0 truncate text-[15px] font-[650]">
+              <p className="m-0 truncate text-[17px] font-[650]">
                 {actor.displayName ?? actor.handle ?? "Signed in"}
               </p>
-              <p className="m-0 truncate font-mono text-[12.5px] text-ink-muted">
+              <p className="m-0 truncate font-mono text-[14px] text-ink-muted">
                 {actor.handle ? `@${actor.handle}` : "Handle unavailable"}
               </p>
             </div>

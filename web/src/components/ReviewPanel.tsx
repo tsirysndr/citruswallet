@@ -52,6 +52,7 @@ export function ReviewPanel({ className }: { className?: string }) {
   if (!payment || !session?.did) return null;
 
   const did = session.did;
+  const isSender = payment.senderDid === did;
   const cache = (updated: Payment) =>
     queries.setQueryData(["payment", payment.id], updated);
 
@@ -63,6 +64,7 @@ export function ReviewPanel({ className }: { className?: string }) {
     ["Address", payment.address ?? "Recipient has not selected an address"],
     ["Expires", new Date(payment.expiresAt).toLocaleString()],
   ];
+  if (!isSender) details.unshift(["Sender", payment.sender?.handle ? `@${payment.sender.handle}` : payment.senderDid]);
   if (payment.fromAddress) details.push(["From", payment.fromAddress]);
   if (payment.txHash)
     details.push(
@@ -70,9 +72,9 @@ export function ReviewPanel({ className }: { className?: string }) {
       ["Confirmations", `${payment.confirmationsRequired} required`],
     );
 
-  const sendable = ["ready", "prepared"].includes(payment.state);
+  const sendable = isSender && ["ready", "prepared"].includes(payment.state);
   const recoverable =
-    Boolean(payment.attemptId) &&
+    isSender && Boolean(payment.attemptId) &&
     ["prepared", "expired", "submitted"].includes(payment.state);
 
   const pay = () =>
@@ -142,6 +144,12 @@ export function ReviewPanel({ className }: { className?: string }) {
           </div>
         ))}
       </dl>
+      {payment.description && (
+        <div className="mt-5 rounded-[6px] bg-sunken p-4">
+          <p className="mb-2 text-xs text-ink-muted">Description · only in Citrus Wallet</p>
+          <p className="whitespace-pre-wrap text-sm leading-relaxed [overflow-wrap:anywhere]">{payment.description}</p>
+        </div>
+      )}
       {payment.error && <p className="mt-3 text-xs text-bad">{payment.error}</p>}
 
       {sendable && (
@@ -164,7 +172,7 @@ export function ReviewPanel({ className }: { className?: string }) {
         </>
       )}
 
-      {payment.state === "waiting" && (
+      {isSender && payment.state === "waiting" && (
         <div className="mt-4">
           <Button
             onClick={() =>
@@ -266,7 +274,7 @@ export function ReviewPanel({ className }: { className?: string }) {
         >
           Refresh status
         </Button>
-        {["waiting", "ready"].includes(payment.state) && (
+        {isSender && ["waiting", "ready"].includes(payment.state) && (
           <Button
             variant="subtle"
             onClick={() =>

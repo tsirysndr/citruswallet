@@ -1,68 +1,164 @@
-import { useSetAtom } from "jotai";
-import { useNavigate } from "@tanstack/react-router";
+import { useEffect, useRef, useState } from "react";
+import { useAtom } from "jotai";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { ArrowDownLeft, ArrowUpRight, Search, Trash2 } from "lucide-react";
 import { reviewIdAtom } from "../atoms";
 import { label } from "../format";
 import { useRefresh, useRun, useStatus } from "../hooks";
-import { usePayments, useSession } from "../queries";
-import { Button, Heading, Hint, Panel, PanelHeading } from "./ui";
+import { usePayments, useSession, type PaymentFilters } from "../queries";
+import { rpc } from "../api";
+import { useQueryClient } from "@tanstack/react-query";
+import type { Payment } from "../types";
+import { DateRangePicker } from "./DateRangePicker";
+import { Avatar } from "./Avatar";
+import { Badge, Button, Heading, Hint, Input, Label, Panel, PanelHeading, Select } from "./ui";
 
-export function HistoryPanel({ className }: { className?: string }) {
+const states = ["waiting", "ready", "prepared", "submitted", "confirming", "confirmed", "failed", "cancelled", "expired"] as const;
+
+export function HistoryPanel({ className, advanced = false }: { className?: string; advanced?: boolean }) {
   const { data: session } = useSession();
-  const { data: payments } = usePayments(session);
-  const run = useRun();
+  const [search, setSearch] = useState("");
+  const [from, setFrom] = useState("");
+  const [until, setUntil] = useState("");
+  const [filters, setFilters] = useState<PaymentFilters>({ page: 1, pageSize: advanced ? 20 : 5 });
+  const invalidDates = Boolean(from && until && from > until);
+  const { data, isPending, isFetching, error, refetch } = usePayments(session, filters);
   const status = useStatus();
+  const [reviewId, setReviewId] = useAtom(reviewIdAtom);
+  const [deleteError, setDeleteError] = useState("");
+  const [deleting, setDeleting] = useState<Payment | null>(null);
+  const deleteDialog = useRef<HTMLDialogElement>(null);
+  const run = useRun();
   const refresh = useRefresh();
-  const setReviewId = useSetAtom(reviewIdAtom);
+  const queries = useQueryClient();
   const navigate = useNavigate();
+  const update = (change: PaymentFilters) => setFilters(current => ({ ...current, ...change, page: 1 }));
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setFilters(current => current.q === search.trim() ? current : { ...current, q: search.trim() || undefined, page: 1 });
+    }, 300);
+    return () => clearTimeout(timeout);
+  }, [search]);
+
+  // A date range follows the viewer's local calendar, including DST transitions.
+  useEffect(() => {
+    if (from && until && from > until) return;
+    const end = until ? new Date(`${until}T00:00:00`) : null;
+    if (end) end.setDate(end.getDate() + 1);
+    setFilters(current => ({ ...current, page: 1,
+      after: from ? String(new Date(`${from}T00:00:00`).getTime()) : undefined,
+      before: end ? String(end.getTime() - 1) : undefined,
+    }));
+  }, [from, until]);
+
+  const page = filters.page ?? 1;
+  const size = filters.pageSize ?? 20;
+  const pages = Math.max(1, Math.ceil((data?.total ?? 0) / size));
+  useEffect(() => {
+    if (data && page > pages) setFilters(current => ({ ...current, page: pages }));
+  }, [data, page, pages]);
 
   if (!session?.did) return null;
+  const searching = search.trim() !== (filters.q ?? "");
+  const activeFilters = Boolean(search || from || until || (filters.direction && filters.direction !== "all") || (filters.status && filters.status !== "all"));
+  const clear = () => {
+    setSearch(""); setFrom(""); setUntil("");
+    setFilters({ page: 1, pageSize: size, sort: "newest" });
+  };
 
   return (
     <Panel className={className}>
       <PanelHeading>
-        <Heading>Your payment intents</Heading>
-        <Button
-          variant="subtle"
-          className="ml-auto"
-          onClick={() =>
-            run(async () => {
-              await refresh();
-              status("Payment intents refreshed.");
-            })
-          }
-        >
-          Refresh
-        </Button>
+        <Heading>{advanced ? "Payment history" : "Recent activity"}</Heading>
+        <Button variant="subtle" className="ml-auto" disabled={isFetching} onClick={() => void refetch()}>Refresh</Button>
       </PanelHeading>
-      {(payments ?? []).map((payment) => (
-        <div
-          key={payment.id}
-          className="flex flex-wrap items-start gap-3 border-t border-edge-soft py-4 first:border-t-0 md:flex-nowrap md:items-center"
-        >
-          <div className="min-w-0 flex-1 text-[13px]">
-            <p className="m-0 [overflow-wrap:anywhere]">
-              <span className="font-mono tabular-nums">{payment.amount} ETH</span> →{" "}
-              {payment.recipientLabel}
-            </p>
-            <Hint>{label(payment.state)}</Hint>
+      {advanced && (
+        <div className="mb-5">
+          <Label htmlFor="activity-search">Search payments</Label>
+          <div className="relative">
+            <Search size={17} aria-hidden="true" className="absolute left-3 top-3.5 text-ink-muted" />
+            <Input id="activity-search" type="search" value={search} maxLength={128} className="pl-10" placeholder="Name, handle, description, address, or transaction…" onChange={e => setSearch(e.target.value)} />
           </div>
-          <Button
-            variant="subtle"
-            onClick={() => {
-              setReviewId(payment.id);
-              navigate({ to: "/payments" });
-              status("Review the payment details.");
-            }}
-          >
-            Review
-          </Button>
+          <div className="mt-4 flex flex-wrap items-end gap-3">
+            <div><Label htmlFor="activity-direction">Transaction type</Label><Select id="activity-direction" className="m-0! w-full" value={filters.direction ?? "all"} onChange={e => update({ direction: e.target.value as PaymentFilters["direction"] })}>
+              <option value="all">All transactions</option><option value="sent">Sent payments</option><option value="received">Received payments</option>
+            </Select></div>
+            <div><Label htmlFor="activity-status">Status</Label><Select id="activity-status" className="m-0! w-full" value={filters.status ?? "all"} onChange={e => update({ status: e.target.value as PaymentFilters["status"] })}>
+              <option value="all">All statuses</option>{states.map(state => <option key={state} value={state}>{label(state)}</option>)}
+            </Select></div>
+            <div><Label>Date range</Label><DateRangePicker value={{ from, until }} onChange={range => { setFrom(range.from); setUntil(range.until); }} /></div>
+          </div>
+          {invalidDates && <p role="alert" className="mt-2 text-xs text-bad">The start date must be before the end date.</p>}
+          <div className="mt-4 flex flex-wrap items-end gap-3">
+            <div><Label htmlFor="activity-sort">Sort</Label><Select id="activity-sort" className="m-0!" value={filters.sort ?? "newest"} onChange={e => update({ sort: e.target.value as PaymentFilters["sort"] })}><option value="newest">Newest first</option><option value="oldest">Oldest first</option></Select></div>
+            <div><Label htmlFor="activity-size">Per page</Label><Select id="activity-size" className="m-0!" value={size} onChange={e => update({ pageSize: Number(e.target.value) })}>{[10, 20, 50].map(n => <option key={n} value={n}>{n}</option>)}</Select></div>
+            {activeFilters && <Button variant="subtle" onClick={clear}>Clear filters</Button>}
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {filters.direction && filters.direction !== "all" && <button className="filter-chip" onClick={() => update({ direction: "all" })} aria-label="Remove transaction type filter">{filters.direction === "sent" ? "Sent payments" : "Received payments"} ×</button>}
+            {filters.status && filters.status !== "all" && <button className="filter-chip" onClick={() => update({ status: "all" })} aria-label="Remove status filter">{label(filters.status)} ×</button>}
+            {from && <button className="filter-chip" onClick={() => { setFrom(""); setUntil(""); }} aria-label="Remove date range filter">{from} – {until} ×</button>}
+          </div>
         </div>
-      ))}
-      {!payments?.length && <Hint>No payment intents yet.</Hint>}
-      <Hint className="mt-2.5">
-        Invitations reserve no funds. “Confirmed” means the matching transaction
-        reached the required on-chain confirmations.
-      </Hint>
+      )}
+      <p role="status" aria-live="polite" className="mb-2 min-h-5 text-xs text-ink-muted">
+        {invalidDates ? "Choose a valid date range to update results." : isFetching || searching ? "Searching payments…" : error ? "Could not load payment history. Try refreshing." : `${data?.total ?? 0} payment${data?.total === 1 ? "" : "s"}${activeFilters ? " matching your filters" : ""}`}
+      </p>
+      <div aria-busy={isFetching || searching}>
+        {!invalidDates && !error && (data?.payments ?? []).map(payment => {
+          const outgoing = payment.senderDid === session.did;
+          const actor = (outgoing ? payment.recipient : payment.sender) ?? {
+            did: outgoing ? payment.recipientDid : payment.senderDid,
+            handle: outgoing && !payment.recipientLabel.startsWith("did:") ? payment.recipientLabel : "",
+            displayName: null, avatar: null,
+          };
+          const name = actor.displayName || (actor.handle ? `@${actor.handle}` : actor.did);
+          const DirectionIcon = outgoing ? ArrowUpRight : ArrowDownLeft;
+          return (
+            <div key={payment.id} className="activity-row flex flex-wrap items-center gap-3 border-t border-edge-soft py-4">
+              <Avatar actor={actor} size="size-11" />
+              <div className="activity-person min-w-0 flex-1 text-[13px]">
+                <p className="m-0! flex items-center gap-1 font-semibold"><DirectionIcon size={14} aria-hidden="true" /><span>{outgoing ? "To" : "From"}</span><span className={`truncate ${actor.displayName ? "" : "font-mono"}`} title={name}>{name}</span></p>
+                {actor.displayName && actor.handle && <p className="truncate font-mono text-xs text-ink-muted">@{actor.handle}</p>}
+                {payment.description && <p className="mt-1 line-clamp-2 whitespace-pre-wrap text-ink-soft [overflow-wrap:anywhere]">{payment.description}</p>}
+                <p className="mt-1 text-[12px] text-ink-muted"><time dateTime={payment.createdAt}>{new Date(payment.createdAt).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}</time></p>
+              </div>
+              <div className="flex flex-col items-end gap-2"><span className="font-mono text-[13px] tabular-nums">{payment.amount} ETH</span><Badge tone={payment.state === "confirmed" ? "good" : "plain"}>{label(payment.state)}</Badge></div>
+              {outgoing && payment.state === "cancelled" && <button type="button" className="date-icon-button text-bad" aria-label={`Delete cancelled payment to ${name}`} onClick={() => { setDeleteError(""); setDeleting(payment); deleteDialog.current?.showModal(); }}><Trash2 size={16} /></button>}
+              <Button variant="subtle" onClick={() => { setReviewId(payment.id); void navigate({ to: "/payments" }); status("Review the payment details."); }}>Details</Button>
+            </div>
+          );
+        })}
+        {!invalidDates && !isPending && !error && !data?.payments.length && <Hint>{activeFilters ? "No payments match these filters." : "No payment intents yet."}</Hint>}
+      </div>
+      {advanced && !invalidDates && !error && (
+        <nav aria-label="Payment history pagination" className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-edge-soft pt-4">
+          <Hint>{data?.total ? `${(page - 1) * size + 1}–${Math.min(page * size, data.total)} of ${data.total}` : "0 results"} · Page {page} of {pages}</Hint>
+          <div className="flex gap-2"><Button variant="subtle" disabled={page <= 1 || isFetching || searching} onClick={() => setFilters(current => ({ ...current, page: page - 1 }))}>Previous</Button><Button variant="subtle" disabled={page >= pages || isFetching || searching} onClick={() => setFilters(current => ({ ...current, page: page + 1 }))}>Next</Button></div>
+        </nav>
+      )}
+      {!advanced && <Link to="/activity" className="mt-4 inline-block text-xs font-semibold text-info underline underline-offset-2">View all activity</Link>}
+      <dialog ref={deleteDialog} className="date-dialog max-w-md" aria-labelledby="delete-intent-title">
+        <div className="date-dialog-inner">
+          <h2 id="delete-intent-title" className="text-lg font-semibold">Delete cancelled intent?</h2>
+          <p className="mt-3 text-sm leading-relaxed text-ink-soft">This permanently removes the cancelled {deleting?.amount} ETH intent from payment history for you and the recipient. It cannot be undone. No funds will move.</p>
+          {deleteError && <p role="alert" className="mt-3 text-sm text-bad">{deleteError}</p>}
+          <div className="mt-5 flex justify-end gap-2">
+            <Button variant="subtle" onClick={() => deleteDialog.current?.close()}>Keep intent</Button>
+            <Button className="bg-bad text-white" onClick={() => run(async () => {
+              if (!deleting) return;
+              try { await rpc.deletePayment({ id: deleting.id }); }
+              catch (error) { setDeleteError(error instanceof Error ? error.message : "Could not delete the intent. Please try again."); return; }
+              queries.removeQueries({ queryKey: ["payment", deleting.id] });
+              if (reviewId === deleting.id) setReviewId(null);
+              deleteDialog.current?.close(); setDeleting(null);
+              await refresh(); status("Cancelled intent deleted.");
+            })}>Delete intent</Button>
+          </div>
+        </div>
+      </dialog>
+      <Hint className="mt-4">Invitations reserve no funds. “Confirmed” means the matching transaction reached the required on-chain confirmations.</Hint>
     </Panel>
   );
 }

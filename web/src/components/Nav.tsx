@@ -44,7 +44,7 @@ export function BottomNav({ marks }: { marks: Marks }) {
           key={to}
           to={to}
           activeOptions={{ exact: to === "/" }}
-          className="flex flex-1 flex-col items-center gap-1 py-2.5 text-[10px] font-medium tracking-[0.03em] no-underline"
+          className="flex flex-1 flex-col items-center gap-1 py-2.5 text-[12px] font-medium tracking-[0.03em] no-underline"
           activeProps={{ className: "nav-active" }}
           inactiveProps={{ className: "text-ink-muted" }}
         >

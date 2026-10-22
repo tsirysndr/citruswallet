@@ -78,7 +78,7 @@ export function Typeahead({
       {named && (
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 font-mono text-[13px] text-ink-faint"
+          className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 font-mono text-[18px] text-ink-faint"
         >
           @
         </span>
@@ -92,7 +92,7 @@ export function Typeahead({
         aria-activedescendant={active >= 0 ? `${listId}-${active}` : undefined}
         aria-invalid={invalid}
         autoComplete="off"
-        className={cx("font-mono", named && "pl-[26px]", invalid && "border-bad")}
+        className={cx("font-mono", named && "pl-[36px]", invalid && "border-bad")}
         value={value}
         onChange={(event) => {
           setActive(-1);

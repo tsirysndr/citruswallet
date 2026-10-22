@@ -38,7 +38,7 @@ export const Heading = ({ children }: { children: ReactNode }) => (
 );
 
 export const Step = ({ children }: { children: ReactNode }) => (
-  <span className="rounded-[5px] bg-accent-quiet p-1.5 text-[11px] text-accent-strong">
+  <span className="rounded-[5px] bg-accent-quiet p-1.5 text-[12px] text-accent-strong">
     {children}
   </span>
 );
@@ -55,7 +55,7 @@ export function Badge({
   return (
     <span
       className={cx(
-        "rounded-full border px-2.5 py-1.5 text-[9px] tracking-[0.04em] md:text-[11px]",
+        "rounded-full border px-2.5 py-1.5 text-[12px] tracking-[0.04em] md:text-[12px]",
         tone === "good"
           ? "border-good-edge bg-good-bg text-good"
           : "border-edge text-ink-muted",
@@ -70,7 +70,7 @@ export function Badge({
 const variants = {
   solid: "bg-accent px-4 py-3 font-[650] text-accent-ink enabled:hover:brightness-[1.07]",
   subtle:
-    "bg-highlight-bg px-3 py-2 text-[11px] text-highlight enabled:hover:brightness-[1.07]",
+    "bg-highlight-bg px-3 py-2 text-[12px] text-highlight enabled:hover:brightness-[1.07]",
 };
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {

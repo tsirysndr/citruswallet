@@ -49,7 +49,7 @@ export function PaymentTools({ className }: { className?: string }) {
     z.input<typeof amountForm>,
     unknown,
     z.output<typeof amountForm>
-  >({ resolver: zodResolver(amountForm), defaultValues: { amount: "" } });
+  >({ resolver: zodResolver(amountForm), defaultValues: { amount: "", description: "" } });
 
   if (!session?.did) return null;
 
@@ -82,7 +82,7 @@ export function PaymentTools({ className }: { className?: string }) {
       status("Recipient identity verified. Check the DID before creating the intent.");
     });
 
-  const create = (value: string) =>
+  const create = (value: string, description?: string) =>
     run(async () => {
       if (!resolved) throw new Error("Resolve the recipient first.");
       const result = await rpc.createPayment(
@@ -90,6 +90,7 @@ export function PaymentTools({ className }: { className?: string }) {
           identifier: resolved.identifier,
           expectedDid: resolved.recipient.did,
           amount: value,
+          ...(description ? { description } : {}),
         },
       );
       queries.setQueryData(["payment", result.payment.id], result.payment);
@@ -147,7 +148,7 @@ export function PaymentTools({ className }: { className?: string }) {
         <form
           noValidate
           className="mt-6"
-          onSubmit={amount.handleSubmit((values) => create(values.amount))}
+          onSubmit={amount.handleSubmit((values) => create(values.amount, values.description))}
         >
           <div className="mb-4 flex items-center gap-3">
             <Avatar actor={resolved.actor} size="size-10" />
@@ -170,6 +171,21 @@ export function PaymentTools({ className }: { className?: string }) {
               ? `Receiving address: ${resolved.recipient.address}`
               : "No public receiving address. Create an intent and invite them to choose a wallet."}
           </Mono>
+          <div className="my-4">
+            <Label htmlFor="payment-description">Description <span className="text-ink-faint">(optional)</span></Label>
+            <textarea
+              id="payment-description"
+              rows={3}
+              maxLength={500}
+              placeholder="What’s this payment for?"
+              aria-describedby="description-hint"
+              aria-invalid={Boolean(amount.formState.errors.description)}
+              className="w-full resize-y rounded-[6px] border border-edge bg-sunken p-3 text-[13px] text-ink"
+              {...amount.register("description")}
+            />
+            <p id="description-hint" className="mt-1 text-xs leading-relaxed text-ink-faint">Visible to you and the recipient in Citrus Wallet. Never published on-chain or to AT Protocol. Up to 500 characters.</p>
+            <FieldError>{amount.formState.errors.description?.message}</FieldError>
+          </div>
           <Label htmlFor="amount">Amount in ETH</Label>
           <Row className="payment-form-row">
             <Controller

@@ -29,11 +29,13 @@ export function useProfile(did: string | null | undefined) {
   });
 }
 
-export function usePayments(session: Session | undefined) {
+export type PaymentFilters = NonNullable<Parameters<typeof rpc.listPayments>[0]>;
+
+export function usePayments(session: Session | undefined, filters: PaymentFilters = {}) {
   return useQuery({
-    queryKey: ["payments", session?.did],
+    queryKey: ["payments", session?.did, filters],
     enabled: Boolean(session?.did),
-    queryFn: async () => (await rpc.listPayments()).payments,
+    queryFn: ({ signal }) => rpc.listPayments(filters, { signal }),
   });
 }
 
