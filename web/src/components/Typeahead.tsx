@@ -25,6 +25,7 @@ export function Typeahead({
 }: Props) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
+  const [searchActive, setSearchActive] = useState(false);
   const [active, setActive] = useState(-1);
   const list = useRef<HTMLUListElement>(null);
 
@@ -32,18 +33,20 @@ export function Typeahead({
   const searchable = typed.length >= 2 && !typed.startsWith("did:");
 
   useEffect(() => {
-    if (!searchable) {
-      setOpen(false);
+    setOpen(false);
+    setQuery("");
+    if (!searchable || !searchActive) {
       return;
     }
     const timer = setTimeout(() => {
       setQuery(typed);
       setOpen(true);
-    }, 220);
+    }, 500);
     return () => clearTimeout(timer);
-  }, [typed, searchable]);
+  }, [typed, searchable, searchActive]);
 
-  const { data } = useActorSearch(query);
+  // Detach from outdated searches immediately so their fetches are aborted.
+  const { data } = useActorSearch(open && query === typed ? query : "");
   const actors = open && query === typed
     ? (data ?? []).filter((actor) => actor.did !== excludeDid)
     : [];
@@ -57,6 +60,7 @@ export function Typeahead({
   /* A DID is not an @-name, so the prefix steps aside as soon as one is typed. */
   const named = !value.startsWith("did:");
   const close = () => {
+    setSearchActive(false);
     setOpen(false);
     setActive(-1);
   };
@@ -90,7 +94,11 @@ export function Typeahead({
         autoComplete="off"
         className={cx("font-mono", named && "pl-[26px]", invalid && "border-bad")}
         value={value}
-        onChange={(event) => onChange(event.target.value.replace(/^@+/, ""))}
+        onChange={(event) => {
+          setActive(-1);
+          setSearchActive(true);
+          onChange(event.target.value.replace(/^@+/, ""));
+        }}
         onBlur={(event) => {
           setTimeout(close, 0);
           onBlur?.(event);
@@ -105,7 +113,7 @@ export function Typeahead({
           } else if (event.key === "Enter" && active >= 0 && active < actors.length) {
             event.preventDefault();
             pick(actors[active]!);
-          } else if (event.key === "Escape" && actors.length) {
+          } else if (event.key === "Escape" && searchActive) {
             event.stopPropagation();
             close();
           } else if (event.key === "Tab") {
