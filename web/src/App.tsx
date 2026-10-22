@@ -7,6 +7,7 @@ import { inviteTokenAtom, reviewIdAtom, statusAtom } from "./atoms";
 import { BottomNav, HeaderNav } from "./components/Nav";
 import { CitrusMark } from "./components/CitrusMark";
 import { InstallApp } from "./components/InstallApp";
+import { KeyboardShortcuts } from "./components/KeyboardShortcuts";
 import { InstallMetaMask } from "./components/InstallMetaMask";
 import { forgetBroadcast, pendingBroadcast } from "./broadcast";
 import { useRefresh, useRun, useStatus } from "./hooks";
@@ -115,6 +116,7 @@ export function App() {
       </footer>
 
       <BottomNav marks={marks} />
+      <KeyboardShortcuts />
     </div>
   );
 }

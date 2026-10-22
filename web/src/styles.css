@@ -314,3 +314,18 @@ textarea:focus-visible { outline: none; }
 .activity-summary { display: flex; align-items: center; gap: 12px; }
 .activity-summary > span:last-child { max-width: 190px; }
 @media (max-width: 600px) { .activity-summary > span:last-child { max-width: 140px; } }
+
+.keyboard-shortcuts-trigger { position: fixed; right: 24px; bottom: 24px; z-index: 30; display: grid; place-items: center; width: 46px; height: 46px; border: 1px solid var(--edge); border-radius: 50%; background: var(--panel); color: var(--ink-muted); box-shadow: 0 4px 18px var(--shadow); cursor: pointer; }
+.keyboard-shortcuts-trigger:hover { background: var(--accent-quiet); color: var(--ink); }
+.keyboard-shortcuts-trigger:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
+.keyboard-shortcuts-dialog { width: min(500px, calc(100vw - 32px)); }
+.keyboard-shortcuts-dialog header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.keyboard-shortcuts-dialog h2 { font-size: 20px; font-weight: 600; }
+.keyboard-shortcuts-hint { margin: 12px 0 20px; font-size: 12px; line-height: 1.7; color: var(--ink-muted); }
+.keyboard-shortcuts-list > div { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 11px 0; border-top: 1px solid var(--edge-soft); font-size: 13px; }
+.keyboard-shortcuts-list dd { display: flex; gap: 5px; align-items: center; }
+.keyboard-shortcuts-list dd > span { color: var(--ink-muted); font-size: 12px; }
+.keyboard-shortcuts-list kbd { display: inline-grid; place-items: center; min-width: 27px; padding: 3px 6px; border: 1px solid var(--edge); border-bottom-width: 2px; border-radius: 5px; background: var(--sunken); font-family: var(--font-mono); font-size: 12px; }
+.keyboard-shortcuts-toggle { display: flex; gap: 9px; align-items: center; margin-top: 18px; font-size: 12px; cursor: pointer; }
+.keyboard-shortcuts-toggle input { width: 16px; height: 16px; accent-color: var(--accent-strong); }
+@media (max-width: 767px), (hover: none), (pointer: coarse) { .keyboard-shortcuts-trigger { display: none; } }
