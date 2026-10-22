@@ -8,9 +8,10 @@ import { send } from "../api";
 import { invitationUrlAtom, reviewIdAtom } from "../atoms";
 import { useRefresh, useRun, useStatus } from "../hooks";
 import { useSession } from "../queries";
-import type { Payment, Recipient } from "../types";
+import type { Actor, Payment, Recipient } from "../types";
 import { amountForm, recipientForm } from "../validation";
 import { Typeahead } from "./Typeahead";
+import { Avatar } from "./Avatar";
 import {
   Badge,
   Button,
@@ -26,7 +27,7 @@ import {
   Step,
 } from "./ui";
 
-type Resolved = { identifier: string; recipient: Recipient };
+type Resolved = { identifier: string; recipient: Recipient; actor: Actor };
 
 export function PaymentTools({ className }: { className?: string }) {
   const { data: session } = useSession();
@@ -52,7 +53,7 @@ export function PaymentTools({ className }: { className?: string }) {
 
   if (!session?.did) return null;
 
-  const resolve = (identifier: string) =>
+  const resolve = (identifier: string, selected?: Actor) =>
     run(async () => {
       setResolved(null);
       recipient.clearErrors("recipient");
@@ -68,7 +69,16 @@ export function PaymentTools({ className }: { className?: string }) {
         });
         throw error;
       }
-      setResolved({ identifier, recipient: found });
+      setResolved({
+        identifier,
+        recipient: found,
+        actor: {
+          did: found.did,
+          handle: found.handle ?? "",
+          displayName: selected?.did === found.did ? selected.displayName : null,
+          avatar: selected?.did === found.did ? selected.avatar : null,
+        },
+      });
       status("Recipient identity verified. Check the DID before creating the intent.");
     });
 
@@ -122,7 +132,7 @@ export function PaymentTools({ className }: { className?: string }) {
                   setResolved(null);
                 }}
                 onBlur={field.onBlur}
-                onPick={() => recipient.handleSubmit((v) => resolve(v.recipient))()}
+                onPick={(actor) => recipient.handleSubmit((v) => resolve(v.recipient, actor))()}
                 invalid={Boolean(fieldState.error)}
                 placeholder="alice.bsky.social"
                 maxLength={2048}
@@ -140,12 +150,22 @@ export function PaymentTools({ className }: { className?: string }) {
           className="mt-6"
           onSubmit={amount.handleSubmit((values) => create(values.amount))}
         >
-          <p className="m-0 font-mono text-[13px]">
-            {resolved.recipient.handle
-              ? `@${resolved.recipient.handle}`
-              : "Recipient DID"}
-          </p>
-          <Mono>{resolved.recipient.did}</Mono>
+          <div className="mb-4 flex items-center gap-3">
+            <Avatar actor={resolved.actor} size="size-10" />
+            <div className="min-w-0">
+              {resolved.actor.displayName && (
+                <p className="m-0 text-sm font-semibold [overflow-wrap:anywhere]">
+                  {resolved.actor.displayName}
+                </p>
+              )}
+              <p className="m-0 font-mono text-[13px] [overflow-wrap:anywhere]">
+                {resolved.recipient.handle
+                  ? `@${resolved.recipient.handle}`
+                  : "Recipient DID"}
+              </p>
+              <Mono>{resolved.recipient.did}</Mono>
+            </div>
+          </div>
           <Mono>
             {resolved.recipient.address
               ? `Receiving address: ${resolved.recipient.address}`
