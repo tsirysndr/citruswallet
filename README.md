@@ -61,7 +61,7 @@ Both handle fields — sign-in and recipient — suggest accounts as you type: a
 
 Suggestions come from an AT Protocol AppView's typeahead, called by **this server** rather than the browser, so the page keeps its `connect-src 'self'` policy and your keystrokes are not sent to a third party by the page itself. The server drops any result it would refuse to address anyway — an invalid handle, or a DID method this app does not support — and only passes through an avatar URL on an allow-listed HTTPS host, which is also the only remote host added to the page's `img-src`. Avatar images are then loaded by the browser from that CDN directly, with `referrerpolicy="no-referrer"`; anything else falls back to the placeholder.
 
-A suggestion is a convenience, never a source of truth: picking one only fills the field. The identity is still resolved and verified in both directions through `/api/recipients/resolve` before a payment intent can name it.
+A suggestion is a convenience, never a source of truth: picking one only fills the field. The identity is still resolved and verified in both directions through `/xrpc/app.citruswallet.resolveRecipient` before a payment intent can name it.
 
 ### Signing in, or signing up
 
@@ -90,7 +90,7 @@ The server applies pending migrations at startup, so no separate migrate step is
 
 The same Ethereum address can be independently linked on different chains, with at most one DID owning an `(address, chain)` association. Each DID has at most one public receiving default per chain.
 
-OAuth login upserts `user_profiles` by DID, storing the handle, display name, avatar URL, and creation/update timestamps in Unix milliseconds. Only `did` and `handle` are non-nullable. Updates preserve `created_at`; `/api/profile` also refreshes the stored profile and falls back to it when the AppView is unavailable. A first login without an available profile records the DID with an empty handle until a later successful lookup. Avatar image files are not copied into the database.
+OAuth login upserts `user_profiles` by DID, storing the handle, display name, avatar URL, and creation/update timestamps in Unix milliseconds. `id` is an automatically assigned integer primary key; `did` is unique and non-nullable, and `handle` is non-nullable. Other profile fields remain nullable. Updates preserve `created_at`; `/xrpc/app.citruswallet.getProfile` also refreshes the stored profile and falls back to it when the AppView is unavailable. A first login without an available profile records the DID with an empty handle until a later successful lookup. Avatar image files are not copied into the database.
 
 ## Mainnet / configuration
 
@@ -135,34 +135,57 @@ If the page loses the response after wallet approval, check MetaMask before retr
 
 Only unprepared intents can be cancelled in the app. An expired prepared intent releases its app-level nonce reservation on subsequent preparation, while retaining its attempt metadata so an already broadcast transaction can still be reported. Expiry and cancellation are off-chain workflow states: they cannot revoke a transaction already signed/broadcast or close a wallet prompt. The wallet's final approval is authoritative; changing transaction fields in MetaMask can cause the resulting transfer to fail this app's verification.
 
-## API
+## XRPC API and lexicons
 
-Authenticated mutations require the HttpOnly cookie, exact `Origin`, and `x-csrf-token` from `/api/session`. All request bodies are JSON, limited to 8 KiB. Payment history is accessible only to its sender; invitations are accessible only to the intended authenticated recipient.
+All application API methods are under `/xrpc/app.citruswallet.*`. Old `/api/*` and `/auth/start` routes are removed. Queries use URL parameters; procedures use JSON bodies, including payment IDs and invitation tokens. Errors use `{ error, message }`.
 
-| Method | Endpoint | Purpose / body |
+Authenticated procedures retain HttpOnly cookies, exact `Origin`, and `x-csrf-token` from `app.citruswallet.getSession`. JSON bodies are limited to 8 KiB. These are browser-session APIs, not PDS-proxied bearer-token endpoints. `/auth/callback` and `/client-metadata.json` remain OAuth protocol endpoints.
+
+`pkl/defs/` is the authoritative source. With the PKL CLI installed, run `bun run lex:generate` to evaluate PKL into `lexicons/*.json`, run the official lex-cli TypeScript generator, and emit server runtime schemas and Gleam method constants. Commit generated outputs; production builds do not require PKL. The frontend calls the generated client with cookie/CSRF handling; the server validates request and response bodies against those same schemas.
+
+`src/citruswallet/xrpc/` groups handlers into `auth.gleam`, `address.gleam`, `payment.gleam`, and `actor.gleam`. `register.gleam` registers all methods, `context.gleam` contains shared security/session helpers, and `methods.gleam` is generated.
+
+| HTTP | NSID (append to `/xrpc/`) | Parameters / JSON fields |
 | --- | --- | --- |
-| GET | `/api/session` | DID, CSRF token, linked wallets, network, `paymentsEnabled` |
-| POST | `/auth/start` | `{ identifier }` → authorization URL |
-| GET | `/auth/callback` | OAuth callback, rotates browser session |
-| POST | `/api/challenge` | `{ address, public?: boolean }` → five-minute DID-bound SIWE challenge |
-| POST | `/api/verify` | `{ id, signature }` → verify and consume challenge atomically |
-| POST | `/api/links/default` | `{ address }` → choose a public receiving default for the active chain |
-| DELETE | `/api/links/:address` | Unlink the current DID's wallet on the active chain |
-| GET | `/api/resolve/:did` | Public links, chain IDs, proofs, and default flags |
-| GET | `/api/actors/search?q=` | Handle suggestions: DID, handle, display name, avatar |
-| GET | `/api/profile` | The signed-in account's display name, handle and avatar |
-| POST | `/api/recipients/resolve` | `{ identifier }` → verified DID/handle and active-chain default |
-| POST | `/api/payments` | `{ identifier, expectedDid, amount }` → intent and invitation URL; amount is a decimal ETH string |
-| GET | `/api/payments` | Sender's most recent 50 intents on the active chain |
-| GET | `/api/payments/:id` | Refresh one intent and verify any reported transaction |
-| POST | `/api/payments/:id/invitation` | Rotate/generate an unfunded invitation URL |
-| POST | `/api/payments/:id/cancel` | Cancel a waiting/ready intent |
-| POST | `/api/payments/:id/prepare` | `{ revision, address, fromAddress }` → immutable payment attempt and wallet transaction |
-| POST | `/api/payments/:id/submit` | `{ attemptId, txHash }` → record hash and check on-chain status |
-| GET | `/api/invitations/:token` | Read invitation as its intended recipient |
-| POST | `/api/invitations/:token/accept` | `{ address }` → select one of the recipient's linked wallets |
-| POST | `/api/logout` | Invalidate this browser session and pending linking challenges |
-| GET | `/client-metadata.json` | OAuth client metadata |
+| POST | `app.citruswallet.acceptInvitation` | `token`, `address` |
+| POST | `app.citruswallet.cancelPayment` | `id` |
+| POST | `app.citruswallet.createChallenge` | `address`, `public` |
+| POST | `app.citruswallet.createInvitation` | `id` |
+| POST | `app.citruswallet.createPayment` | `identifier`, `expectedDid`, `amount` |
+| GET | `app.citruswallet.getAddresses` | `did` |
+| GET | `app.citruswallet.getInvitation` | `token` |
+| GET | `app.citruswallet.getPayment` | `id` |
+| GET | `app.citruswallet.getProfile` | — |
+| GET | `app.citruswallet.getSession` | — |
+| GET | `app.citruswallet.listPayments` | — |
+| POST | `app.citruswallet.logout` | — |
+| POST | `app.citruswallet.preparePayment` | `id`, `revision`, `address`, `fromAddress` |
+| POST | `app.citruswallet.resolveRecipient` | `identifier` |
+| GET | `app.citruswallet.searchActors` | `q` |
+| POST | `app.citruswallet.setDefaultAddress` | `address` |
+| POST | `app.citruswallet.startLogin` | `identifier`, `create` |
+| POST | `app.citruswallet.submitPayment` | `id`, `attemptId`, `txHash` |
+| POST | `app.citruswallet.syncAddresses` | — |
+| POST | `app.citruswallet.unlinkAddress` | `address` |
+| POST | `app.citruswallet.verifyChallenge` | `id`, `signature` |
+
+### Repository address records
+
+OAuth requests `atproto repo:app.citruswallet.address`: create/update/delete access only for that collection. Repository records are publicly readable. Existing browser sessions are invalidated once so users sign in again and grant collection permission. Credentials remain in the private server-side OAuth session store, with single-process refresh locking; logout removes them.
+
+Only verified public links are published. The checkbox explicitly discloses publication. Records contain `chain` (CAIP-2, e.g. `eip155:1`), `address`, the signed `message`, `signature`, and `createdAt`. The deterministic key is `eip155-<chain ID>-<lowercase address>`. Private links and unlinking queue deletions; deleting a record cannot retract previously indexed copies.
+
+The link mutation and persistent outbox share one SQLite transaction. PDS writes are serialized by DID, with conditional acknowledgment so concurrent edits survive. Failed writes remain queued and are retried at login or through `app.citruswallet.syncAddresses`; the UI shows `addressSyncPending` and a retry action. Login also backfills public links not yet indexed from the repository. Records are locally validated and sent with `validate: false` because a PDS may not have installed our custom lexicon.
+
+### Jetstream indexing
+
+The API starts concurrent listeners for four production URLs across US East and US West defined by `JETSTREAM_URLS` in `src/jetstream.mjs`. The environment variable **`JETSTREAM_URLS` overrides the entire list**, using comma-separated WSS URLs. `JETSTREAM_ENABLED=false` disables listeners for local/offline development. Defaults use the four live-verified `/subscribe` endpoints; the newer JSON XRPC subscription URLs are also supported.
+
+Each connection has its own durable cursor and reconnect backoff. `address_repository_records` stores the latest repository revision per DID/rkey, including deletion tombstones. This deduplicates overlapping streams and replays across restarts and prevents old records from reviving deleted addresses. The cursor and projection commit together. Queue pressure or database/profile failures reconnect from the last saved position. Multiple endpoints improve coverage but cannot guarantee recovery beyond upstream replay retention; a full historical archive import is not included.
+
+Create/update events must pass lexicon and SIWE verification, including the record DID, wallet address, chain, app origin, and signature. Invalid updates withdraw the previous public mapping. Delete events remove the corresponding public mapping; private links and pending local changes are protected. Listener changes do not enqueue repository writes, avoiding feedback loops. Unknown DIDs are fetched through the existing AppView profile service and upserted on unique `did`, preserving `id` and `created_at`; temporary lookup failures use a DID placeholder and retry on future events.
+
+The implementation follows the official [Jetstream subscription and cursor documentation](https://bsky.network/docs/jetstream/) and [AT Protocol repository permission specification](https://atproto.com/specs/permission). Jetstream is a trusted indexing feed, not cryptographically verified repository proofs.
 
 ## Validation and Foundry workspace
 
@@ -202,8 +225,10 @@ The layout is mobile-first: one column with a bottom tab bar on a phone, and a w
 - `vite.config.ts`: the frontend build, and the dev proxy to `VITE_API_URL`.
 - `scripts/`: Anvil + app launcher.
 
-The wallet signature proves that the Ethereum account signed a message naming the DID. DID-owner consent relies on this app's OAuth verification; a copied wallet signature alone is not an independently verifiable DID-owner attestation. Public resolution and recipient selections are app-local database state, not on-chain or PDS records. Consumers trust this server's mapping and configured RPC. Handle suggestions additionally trust the configured AppView for discovery only, and loading a suggested avatar reveals the viewer's IP address to that image CDN; neither affects what the app will accept as a payment recipient.
+The wallet signature proves that the Ethereum account signed a message naming the DID. DID-owner consent relies on this app's OAuth verification; a copied wallet signature alone is not an independently verifiable DID-owner attestation. Payment resolution uses the verified database projection, which now also indexes public PDS records through Jetstream; a record must pass proof verification before it becomes a receiving address. Consumers trust this server's mapping and configured RPC. Handle suggestions additionally trust the configured AppView for discovery only, and loading a suggested avatar reveals the viewer's IP address to that image CDN; neither affects what the app will accept as a payment recipient.
 
-Only the base `atproto` OAuth scope is requested, with no repository write permissions. OAuth credentials are discarded after authentication. Browser sessions and temporary OAuth state are sensitive; keep the SQLite files private. Wallet keys, seed phrases, and transaction-signing credentials never reach the server.
+OAuth requests base AT Protocol access and write access to the `app.citruswallet.address` collection. OAuth credentials are retained server-side for record synchronization. Browser sessions and temporary OAuth state are sensitive; keep the SQLite files private. Wallet keys, seed phrases, and transaction-signing credentials never reach the server.
 
-Supported assets/wallets: native ETH and standard externally owned accounts on chain 1 or 31337. ERC-20 transfers, contract wallets/ERC-1271, WalletConnect, escrow, automatic payouts, wallet-based account recovery, and PDS record publication are outside this implementation. Real provider login and the actual MetaMask extension prompts still require manual testing with your own accounts.
+Supported assets/wallets: native ETH and standard externally owned accounts on chain 1 or 31337. ERC-20 transfers, contract wallets/ERC-1271, WalletConnect, escrow, automatic payouts, wallet-based account recovery are outside this implementation. Real provider login and the actual MetaMask extension prompts still require manual testing with your own accounts.
+
+The MetaMask installation prompt appears in the top bar and wallet panel when MetaMask is not detected, linking to the official Chrome Web Store listing. `web/public/metamask.png` is the logo from that listing, served locally. Light mode is the default even for old saved dark-mode preferences, and the theme switcher is hidden.
