@@ -131,7 +131,7 @@ export function HistoryPanel({ className, advanced = false }: { className?: stri
                 <PaymentMedia key={payment.media?.url} media={payment.media} compact />
                 <p className="mt-1 text-[12px] text-ink-muted"><time dateTime={payment.createdAt}>{new Date(payment.createdAt).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}</time></p>
               </div>
-              <div className="flex flex-col items-end gap-2"><span className="font-mono text-[15px] font-bold tabular-nums">{payment.amount} ETH</span><Badge tone={payment.state === "confirmed" ? "good" : "plain"}>{label(payment.state)}</Badge></div>
+              <div className="activity-summary"><span className="whitespace-nowrap font-mono text-[15px] font-bold tabular-nums">{payment.amount} ETH</span><Badge tone={payment.state === "confirmed" ? "good" : "plain"}>{label(payment.state)}</Badge></div>
               {outgoing && payment.state === "cancelled" && <button type="button" className="date-icon-button text-bad" aria-label={`Delete cancelled payment to ${name}`} onClick={() => { setDeleteError(""); setDeleting(payment); deleteDialog.current?.showModal(); }}><Trash2 size={16} /></button>}
               <Button variant="subtle" onClick={() => { setReviewId(payment.id); void navigate({ to: "/payments" }); status("Review the payment details."); }}>Details</Button>
             </div>

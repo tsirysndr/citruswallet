@@ -201,7 +201,7 @@ textarea:focus-visible { outline: none; }
 
 @media (max-width: 600px) {
   .activity-person { flex-basis: calc(100% - 60px); }
-  .activity-row > .flex-col { align-items: flex-start; margin-left: 56px; margin-right: auto; }
+  .activity-summary { margin-left: 56px; margin-right: auto; }
   .activity-filter { max-width: 100%; white-space: normal; text-align: left; }
 }
 
@@ -259,12 +259,12 @@ textarea:focus-visible { outline: none; }
 .activity-filter-drawer { position: fixed; inset: 0 0 0 auto; margin: 0; width: min(420px, 100vw); max-width: 100vw; height: 100dvh; max-height: 100dvh; border: 0; border-left: 1px solid var(--edge); padding: 0; background: var(--raised); color: var(--ink); box-shadow: -16px 0 70px #19191620; }
 .activity-filter-drawer[open] { display: flex; flex-direction: column; animation: activity-drawer-in .2s ease-out; }
 .activity-filter-drawer::backdrop { background: #19191660; }
-.activity-filter-drawer header { display: flex; justify-content: space-between; align-items: center; padding: 26px; border-bottom: 1px solid var(--edge-soft); }
-.activity-filter-drawer h2 { font-size: 22px; font-weight: 600; letter-spacing: -.7px; }
+.activity-filter-drawer > header { display: flex; justify-content: space-between; align-items: center; padding: 26px; border-bottom: 1px solid var(--edge-soft); }
+.activity-filter-drawer > header h2 { font-size: 22px; font-weight: 600; letter-spacing: -.7px; }
 .drawer-close { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 6px; cursor: pointer; background: var(--sunken); }
 .activity-filter-fields { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 24px; padding: 28px 26px; }
 .activity-filter-fields .activity-filter { width: 100%; }
-.activity-filter-drawer footer { padding: 20px 26px max(20px, env(safe-area-inset-bottom)); display: flex; gap: 18px; align-items: center; justify-content: space-between; border-top: 1px solid var(--edge-soft); }
+.activity-filter-drawer > footer { padding: 20px 26px max(20px, env(safe-area-inset-bottom)); display: flex; gap: 18px; align-items: center; justify-content: space-between; border-top: 1px solid var(--edge-soft); }
 .drawer-reset { font-size: 13px; text-decoration: underline; text-underline-offset: 4px; cursor: pointer; }
 .drawer-reset:disabled { opacity: .4; cursor: default; }
 @keyframes activity-drawer-in { from { transform: translateX(100%); } to { transform: translateX(0); } }
@@ -274,3 +274,43 @@ textarea:focus-visible { outline: none; }
 .activity-refresh:disabled { opacity: .5; cursor: wait; }
 .activity-history { width: 100%; }
 @media (max-width: 767px) { .activity-history.ui-panel { padding: 24px 20px; } }
+
+/* Keep the calendar, range summary, and actions visible together. */
+.date-range-dialog { width: min(680px, calc(100vw - 20px)); max-height: calc(100dvh - 20px); }
+.date-range-dialog .date-dialog-inner { padding: 16px; }
+.date-range-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.date-range-header h2 { margin: 0; font-size: 18px; font-weight: 600; }
+.date-range-dialog .date-icon-button { width: 30px; height: 30px; }
+.date-range-dialog .date-presets { margin: 12px 0; gap: 6px; }
+.date-range-dialog .date-presets button { padding: 6px 9px; }
+.date-preset-select { display: none; }
+.date-month-navigation { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--edge-soft); padding-top: 8px; }
+.date-range-dialog .date-calendars { margin-top: 8px; gap: 20px; }
+.date-month-title { margin: 0 0 8px; font-size: 13px; text-align: center; font-weight: 600; }
+.date-range-dialog .date-grid { row-gap: 2px; }
+.date-range-dialog .date-weekday { padding-bottom: 4px; }
+.date-range-dialog .date-day { aspect-ratio: auto; height: clamp(24px, calc((100dvh - 310px) / 7), 36px); }
+.date-range-footer { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--edge-soft); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.date-range-footer button { padding: 9px 12px; font-size: 12px; }
+@media (max-height: 600px) {
+  .date-range-dialog { width: min(440px, calc(100vw - 20px)); }
+  .date-range-dialog .date-presets { display: none; }
+  .date-preset-select { display: block; width: 100%; margin: 8px 0; padding-top: 7px; padding-bottom: 7px; }
+  .date-range-dialog .date-calendars { grid-template-columns: minmax(0, 1fr); }
+  .date-range-dialog .date-second-month { display: none; }
+}
+@media (max-height: 450px) {
+  .date-range-dialog .date-dialog-inner { padding: 10px 14px; }
+  .date-range-header h2 { font-size: 16px; }
+  .date-range-dialog .date-icon-button { height: 26px; }
+  .date-range-dialog .date-day { height: 22px; }
+  .date-range-dialog .date-calendars { margin-top: 4px; }
+  .date-month-title { margin-bottom: 3px; }
+  .date-range-footer { margin-top: 6px; padding-top: 6px; }
+  .date-range-footer button { padding: 7px 10px; }
+  .date-range-footer > p { max-width: 200px; }
+}
+
+.activity-summary { display: flex; align-items: center; gap: 12px; }
+.activity-summary > span:last-child { max-width: 190px; }
+@media (max-width: 600px) { .activity-summary > span:last-child { max-width: 140px; } }

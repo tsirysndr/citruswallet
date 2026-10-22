@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { CalendarDays, ChevronLeft, ChevronRight, X } from "lucide-react";
-import { Button } from "./ui";
+import { Button, Select } from "./ui";
 
 type Range = { from: string; until: string };
 const dateKey = (date: Date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
@@ -53,17 +53,18 @@ export function DateRangePicker({ value, onChange }: { value: Range; onChange: (
 
   return <>
     <button type="button" className={`activity-filter ${value.from ? "is-active" : ""}`} onClick={open} aria-haspopup="dialog"><CalendarDays size={16} />{summary}</button>
-    <dialog ref={dialog} className="date-dialog" aria-labelledby="date-range-title" onClick={event => { if (event.target === dialog.current) dialog.current.close(); }}>
+    <dialog ref={dialog} className="date-dialog date-range-dialog" aria-labelledby="date-range-title" onClick={event => { if (event.target === dialog.current) dialog.current.close(); }}>
       <div className="date-dialog-inner">
-        <header className="flex items-center justify-between gap-4"><div><p className="eyebrow">YOUR ACTIVITY</p><h2 id="date-range-title" className="mt-1 text-xl font-semibold">Choose a date range</h2></div><button type="button" className="date-icon-button" onClick={() => dialog.current?.close()} aria-label="Close date picker"><X size={20} /></button></header>
+        <header className="date-range-header"><h2 id="date-range-title">Date range</h2><button type="button" className="date-icon-button" onClick={() => dialog.current?.close()} aria-label="Close date picker"><X size={20} /></button></header>
+        <Select className="date-preset-select" aria-label="Date range preset" value={choices.find(item => item.range.from === draft.from && item.range.until === draft.until)?.label ?? "custom"} onChange={event => { const item = choices.find(item => item.label === event.target.value); if (item) { setDraft(item.range); setHover(""); if (item.range.from) setMonth(monthStart(fromKey(item.range.from))); } }}><option value="custom" disabled>Custom dates</option>{choices.map(item => <option key={item.label} value={item.label}>{item.label}</option>)}</Select>
         <div className="date-presets">{choices.map(item => <button type="button" key={item.label} aria-pressed={draft.from === item.range.from && draft.until === item.range.until} onClick={() => { setDraft(item.range); setHover(""); if (item.range.from) setMonth(monthStart(fromKey(item.range.from))); }}>{item.label}</button>)}</div>
-        <div className="flex items-center justify-between border-t border-edge-soft pt-4"><button type="button" className="date-icon-button" onClick={() => setMonth(shiftMonth(month, -1))} aria-label="Previous month"><ChevronLeft size={19} /></button><p className="text-xs text-ink-muted">Select a start and end date</p><button type="button" className="date-icon-button" onClick={() => setMonth(shiftMonth(month, 1))} aria-label="Next month"><ChevronRight size={19} /></button></div>
+        <div className="date-month-navigation"><button type="button" className="date-icon-button" onClick={() => setMonth(shiftMonth(month, -1))} aria-label="Previous month"><ChevronLeft size={19} /></button><p className="text-xs text-ink-muted">Select a start and end date</p><button type="button" className="date-icon-button" onClick={() => setMonth(shiftMonth(month, 1))} aria-label="Next month"><ChevronRight size={19} /></button></div>
         <div className="date-calendars">{[0, 1].map(index => {
           const current = shiftMonth(month, index);
           const days = new Date(current.getFullYear(), current.getMonth() + 1, 0).getDate();
           const start = (current.getDay() + 6) % 7;
           return <section key={index} className={index ? "date-second-month" : ""} aria-label={current.toLocaleDateString(undefined, { month: "long", year: "numeric" })}>
-            <h3 className="mb-4 text-center text-sm font-semibold">{current.toLocaleDateString(undefined, { month: "long", year: "numeric" })}</h3>
+            <h3 className="date-month-title">{current.toLocaleDateString(undefined, { month: "long", year: "numeric" })}</h3>
             <div className="date-grid">{["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"].map(day => <span key={day} className="date-weekday">{day}</span>)}{Array.from({ length: start }, (_, i) => <span key={`empty-${i}`} />)}{Array.from({ length: days }, (_, i) => {
               const day = dateKey(new Date(current.getFullYear(), current.getMonth(), i + 1));
               const edge = day === draft.from || day === draft.until;
@@ -78,7 +79,7 @@ export function DateRangePicker({ value, onChange }: { value: Range; onChange: (
             })}</div>
           </section>;
         })}</div>
-        <footer className="mt-5 flex flex-wrap items-center justify-between gap-4 border-t border-edge-soft pt-4"><p role="status" className="text-xs text-ink-muted">{draft.from ? `${pretty(draft.from)} → ${draft.until ? pretty(draft.until) : "Choose end date"}` : "All dates"}</p><div className="flex gap-2"><Button variant="subtle" onClick={() => dialog.current?.close()}>Cancel</Button><Button disabled={Boolean(draft.from && !draft.until)} onClick={() => { onChange(draft); dialog.current?.close(); }}>Apply dates</Button></div></footer>
+        <footer className="date-range-footer"><p role="status" className="text-xs text-ink-muted">{draft.from ? `${pretty(draft.from)} → ${draft.until ? pretty(draft.until) : "Choose end date"}` : "All dates"}</p><div className="flex gap-2"><Button variant="subtle" onClick={() => dialog.current?.close()}>Cancel</Button><Button disabled={Boolean(draft.from && !draft.until)} onClick={() => { onChange(draft); dialog.current?.close(); }}>Apply dates</Button></div></footer>
       </div>
     </dialog>
   </>;
