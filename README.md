@@ -2,6 +2,8 @@
 
 Pay someone by their AT Protocol handle instead of their Ethereum address.
 
+![Citrus Wallet signed in: an account card showing an avatar, display name, handle, linked balance and DID, beside the panel for linking a MetaMask wallet](preview.png)
+
 An Ethereum address is 42 characters of hex that nobody can check by eye, so sending ETH to a person means trusting an address copied from somewhere. An AT Protocol handle — `alice.bsky.social` — is something you already recognise. Citrus Wallet connects the two: you prove you control an address by signing a message naming your AT Protocol account in MetaMask, and from then on people can pay you by handle.
 
 Sending works in the open. You type a handle, the server resolves it to the account's stable DID and the address that account chose to receive on, and shows you the full address, the pinned DID, the network and the amount. Nothing moves until you approve the actual transaction in MetaMask, which is the only thing that signs or broadcasts it.
