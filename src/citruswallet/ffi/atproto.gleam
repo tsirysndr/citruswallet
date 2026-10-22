@@ -132,12 +132,20 @@ pub fn authorize(
   identifier identifier: String,
   scope scope: String,
   state state: String,
+  prompt prompt: Option(String),
 ) -> Promise(Result(String, Exception)) {
+  let options = [
+    #("scope", js.string(scope)),
+    #("state", js.string(state)),
+  ]
   let settled =
     js.attempt_promise(
       js.call(client, "authorize", [
         js.string(identifier),
-        js.object([#("scope", js.string(scope)), #("state", js.string(state))]),
+        js.object(case prompt {
+          option.Some(prompt) -> [#("prompt", js.string(prompt)), ..options]
+          option.None -> options
+        }),
       ]),
     )
   promise.map(settled, fn(outcome) {

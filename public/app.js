@@ -322,6 +322,7 @@ async function checkWallet(wallet,address) {
 typeahead($('identifier'), () => $('login-button').focus());
 typeahead($('recipient'), () => $('recipient-form').requestSubmit());
 $('login-form').onsubmit=event=>{event.preventDefault();run(async()=>{status('Finding your account provider…');const{url}=await api('/auth/start',{method:'POST',body:JSON.stringify({identifier:$('identifier').value})});window.location.assign(url);});};
+$('create-account').onclick=()=>run(async()=>{status('Opening account creation\u2026');const{url}=await api('/auth/start',{method:'POST',body:JSON.stringify({create:true})});window.location.assign(url);});
 $('logout').onclick=()=>run(async()=>{await api('/api/logout',{method:'POST',body:'{}'});await refresh();status('Signed out.');});
 $('connect').onclick=()=>run(async()=>{
   const wallet=provider(),address=await walletAccount(wallet);

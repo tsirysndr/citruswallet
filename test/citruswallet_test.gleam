@@ -5,6 +5,7 @@ import citruswallet/error
 import citruswallet/identity.{Identity}
 import citruswallet/linking
 import citruswallet/network
+import citruswallet/oauth
 import citruswallet/payments
 import citruswallet/rate_limit
 import citruswallet/store
@@ -515,6 +516,17 @@ pub fn appview_must_be_trusted_test() {
   assert result.is_ok(directory.appview("http://127.0.0.1:2583"))
   assert result.is_error(directory.appview("http://appview.example"))
   assert result.is_error(directory.appview("not a url"))
+}
+
+pub fn signup_provider_must_be_trusted_test() {
+  assert oauth.provider("https://selfhosted.social")
+    == Ok("https://selfhosted.social")
+  // An origin is kept, anything after it is dropped.
+  assert oauth.provider("https://selfhosted.social/signup")
+    == Ok("https://selfhosted.social")
+  assert oauth.provider("http://127.0.0.1:2583") == Ok("http://127.0.0.1:2583")
+  assert result.is_error(oauth.provider("http://pds.example"))
+  assert result.is_error(oauth.provider("selfhosted.social"))
 }
 
 pub fn appview_offers_search_and_profile_test() {

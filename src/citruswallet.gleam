@@ -44,6 +44,12 @@ fn start() -> Result(Nil, String) {
       "https://public.api.bsky.app",
     )),
   )
+  use signup_provider <- result.try(
+    oauth.provider(option.unwrap(
+      node.environment("SIGNUP_PDS"),
+      "https://selfhosted.social",
+    )),
+  )
   use store <- result.try(database(network))
   let app =
     app.build(app.Settings(
@@ -56,6 +62,7 @@ fn start() -> Result(Nil, String) {
       network: network,
       identities: identity.resolver(),
       directory: directory,
+      signup_provider: signup_provider,
       chain: chain,
       public_directory: option.unwrap(
         node.environment("PUBLIC_DIR"),

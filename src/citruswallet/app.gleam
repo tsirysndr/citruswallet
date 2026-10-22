@@ -33,6 +33,7 @@ pub type Settings {
     network: Network,
     identities: Lookup,
     directory: directory.Directory,
+    signup_provider: String,
     chain: Option(Chain),
     public_directory: String,
   )
@@ -401,9 +402,11 @@ fn start_login(
 ) -> Promise(Result(Reply, HttpError)) {
   use body <- promise.try_await(read_body(ctx))
   use #(key, _) <- attempt(browser(server, ctx, create: False))
-  use identifier <- attempt(
-    identity.normalize(js.string_field(body, "identifier")),
-  )
+  let creating = js.as_bool(js.get(body, "create")) == Some(True)
+  use identifier <- attempt(case creating {
+    True -> Ok(server.settings.signup_provider)
+    False -> identity.normalize(js.string_field(body, "identifier"))
+  })
   let state = node.random_hex(32)
   store.put(
     server.settings.store,
@@ -412,11 +415,10 @@ fn start_login(
     value: json.to_string(json.object([#("session", json.string(key))])),
     expires: node.now() + binding_lifetime,
   )
-  use outcome <- promise.await(oauth.authorize(
-    server.settings.oauth,
-    identifier,
-    state,
-  ))
+  use outcome <- promise.await(case creating {
+    True -> oauth.create_account(server.settings.oauth, identifier, state)
+    False -> oauth.authorize(server.settings.oauth, identifier, state)
+  })
   done(case outcome {
     Ok(authorization) ->
       Ok(Payload(200, json.object([#("url", json.string(authorization))])))
@@ -426,10 +428,13 @@ fn start_login(
         namespace: "oauth-binding",
         key: state,
       )
-      Error(HttpError(
-        502,
-        "Could not start AT Protocol login. Check your handle and try again.",
-      ))
+      Error(
+        HttpError(502, case creating {
+          True -> "Could not reach " <> identifier <> " to create an account."
+          False ->
+            "Could not start AT Protocol login. Check your handle and try again."
+        }),
+      )
     }
   })
 }

@@ -54,6 +54,10 @@ Suggestions come from an AT Protocol AppView's typeahead, called by **this serve
 
 A suggestion is a convenience, never a source of truth: picking one only fills the field. The identity is still resolved and verified in both directions through `/api/recipients/resolve` before a payment intent can name it.
 
+### Signing in, or signing up
+
+The sign-in form takes a handle or DID and hands off to that account's own provider. It also links to an explainer for people who have never heard of an atmosphere account, and offers **Create one**, which starts the same OAuth flow against the provider in `SIGNUP_PDS` with `prompt=create` so that provider shows its sign-up screen. The account is created there, not here: this app never sees a password.
+
 ### Your account
 
 Once you are signed in, the identity panel shows who you are: a rounded avatar (or a generated placeholder), your display name, your `@handle`, your DID, and what you hold across the wallets you have linked on the active chain.
@@ -97,6 +101,7 @@ See `.env.example`. Variables are read from the process; to explicitly load an `
 | `MIGRATIONS_DIR` | `./drizzle`; applied at startup |
 | `PUBLIC_DIR` | `./public`; static frontend, resolved against the working directory |
 | `APPVIEW_URL` | `https://public.api.bsky.app`; HTTPS or loopback, serves handle suggestions |
+| `SIGNUP_PDS` | `https://selfhosted.social`; HTTPS or loopback, where **Create one** sends new users |
 | `TRUST_PROXY_HOPS` | `0`; set only for your trusted reverse-proxy topology |
 
 For HTTPS hosting, make `/client-metadata.json` publicly reachable by the user's OAuth server and use a persistent, access-controlled database volume. HTTPS enables Secure cookies and HSTS. Use a single Node process; multiple workers require shared OAuth locking, shared rate limiting, and coordinated database access.
