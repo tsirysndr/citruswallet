@@ -1,3 +1,4 @@
+import { PaymentMedia } from "./PaymentMedia";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAtom, useAtomValue } from "jotai";
@@ -144,6 +145,7 @@ export function ReviewPanel({ className }: { className?: string }) {
           </div>
         ))}
       </dl>
+      <PaymentMedia key={payment.media?.url} media={payment.media} />
       {payment.description && (
         <div className="mt-5 rounded-[6px] bg-sunken p-4">
           <p className="mb-2 text-xs text-ink-muted">Description · only in Citrus Wallet</p>

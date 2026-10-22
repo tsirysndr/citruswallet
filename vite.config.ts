@@ -8,13 +8,14 @@ import { defineConfig, loadEnv } from "vite";
 const projectRoot = fileURLToPath(new URL(".", import.meta.url));
 
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, projectRoot, "VITE_");
+  const env = { ...(mode === "production" ? loadEnv("prod", projectRoot, "VITE_") : {}), ...loadEnv(mode, projectRoot, "VITE_") };
   const api = env.VITE_API_URL || "http://localhost:4747";
   const proxied = ["/xrpc", "/auth", "/client-metadata.json"];
 
   return {
     root: "web",
     envDir: projectRoot,
+    define: { "import.meta.env.VITE_KLIPY_API_KEY": JSON.stringify(env.VITE_KLIPY_API_KEY || "") },
     plugins: [react(), tailwind()],
     build: { outDir: "dist", emptyOutDir: true },
     server: {

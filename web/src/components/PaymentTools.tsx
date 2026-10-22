@@ -11,6 +11,9 @@ import { useSession } from "../queries";
 import type { Actor, Recipient } from "../types";
 import { amountForm, recipientForm } from "../validation";
 import { Typeahead } from "./Typeahead";
+import { KlipyPicker } from "./KlipyPicker";
+import { recordShare } from "../klipy";
+import type { PaymentMedia } from "../lexicon/types/app/citruswallet/defs";
 import { Avatar } from "./Avatar";
 import {
   Badge,
@@ -37,6 +40,8 @@ export function PaymentTools({ className }: { className?: string }) {
   const refresh = useRefresh();
   const setReviewId = useSetAtom(reviewIdAtom);
   const setInvitationUrl = useSetAtom(invitationUrlAtom);
+  const [media, setMedia] = useState<PaymentMedia | null>(null);
+  const [mediaQuery, setMediaQuery] = useState("");
   const [resolved, setResolved] = useState<Resolved | null>(null);
 
   const recipient = useForm<
@@ -91,8 +96,10 @@ export function PaymentTools({ className }: { className?: string }) {
           expectedDid: resolved.recipient.did,
           amount: value,
           ...(description ? { description } : {}),
+          ...(media ? { media } : {}),
         },
       );
+      if (media) void recordShare(media, mediaQuery);
       queries.setQueryData(["payment", result.payment.id], result.payment);
       setReviewId(result.payment.id);
       await refresh();
@@ -185,6 +192,7 @@ export function PaymentTools({ className }: { className?: string }) {
             />
             <p id="description-hint" className="mt-1 text-xs leading-relaxed text-ink-faint">Visible to you and the recipient in Citrus Wallet. Never published on-chain or to AT Protocol. Up to 500 characters.</p>
             <FieldError>{amount.formState.errors.description?.message}</FieldError>
+            <KlipyPicker value={media} onChange={(value, query = "") => { setMedia(value); setMediaQuery(query); }} />
           </div>
           <Label htmlFor="amount">Amount in ETH</Label>
           <Row className="payment-form-row">

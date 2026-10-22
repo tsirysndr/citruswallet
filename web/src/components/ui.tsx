@@ -147,7 +147,7 @@ export const Input = ({ className, ...rest }: InputHTMLAttributes<HTMLInputEleme
 export const Select = ({ className, ...rest }: SelectHTMLAttributes<HTMLSelectElement>) => (
   <select
     className={cx(
-      "mr-2.5 mb-3 max-w-full rounded-[6px] border border-edge bg-sunken p-3 text-xs text-ink",
+      "ui-select mr-2.5 mb-3 max-w-full rounded-[6px] border border-edge bg-sunken p-3 text-xs text-ink",
       className,
     )}
     {...rest}

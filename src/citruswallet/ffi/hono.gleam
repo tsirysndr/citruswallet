@@ -236,10 +236,29 @@ fn content_security_policy(secure: Bool, image_sources: List(String)) -> Js {
       "imgSrc",
       js.list(
         list.flatten([
-          [js.string("'self'"), js.string("data:")],
+          [
+            js.string("'self'"),
+            js.string("data:"),
+            js.string("https://static.klipy.com"),
+            js.string("https://static1.klipy.com"),
+            js.string("https://static2.klipy.com"),
+          ],
           list.map(image_sources, fn(host) { js.string("https://" <> host) }),
         ]),
       ),
+    ),
+    #(
+      "connectSrc",
+      js.list([js.string("'self'"), js.string("https://api.klipy.com")]),
+    ),
+    #(
+      "mediaSrc",
+      js.list([
+        js.string("'self'"),
+        js.string("https://static.klipy.com"),
+        js.string("https://static1.klipy.com"),
+        js.string("https://static2.klipy.com"),
+      ]),
     ),
     #("objectSrc", js.list([js.string("'none'")])),
     #("scriptSrc", js.list([js.string("'self'")])),
