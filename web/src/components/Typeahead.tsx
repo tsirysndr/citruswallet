@@ -8,6 +8,7 @@ type Props = Omit<InputHTMLAttributes<HTMLInputElement>, "onChange" | "value"> &
   id: string;
   value: string;
   invalid?: boolean;
+  excludeDid?: string | null;
   onChange: (value: string) => void;
   onPick: (actor: Actor) => void;
 };
@@ -16,6 +17,7 @@ export function Typeahead({
   id,
   value,
   invalid,
+  excludeDid,
   onChange,
   onPick,
   onBlur,
@@ -42,9 +44,11 @@ export function Typeahead({
   }, [typed, searchable]);
 
   const { data } = useActorSearch(query);
-  const actors = open && query === typed ? (data ?? []) : [];
+  const actors = open && query === typed
+    ? (data ?? []).filter((actor) => actor.did !== excludeDid)
+    : [];
 
-  useEffect(() => setActive(-1), [query]);
+  useEffect(() => setActive(-1), [query, excludeDid]);
   useEffect(() => {
     list.current?.children[active]?.scrollIntoView({ block: "nearest" });
   }, [active]);
@@ -98,7 +102,7 @@ export function Typeahead({
           } else if (event.key === "ArrowUp") {
             event.preventDefault();
             move(-1);
-          } else if (event.key === "Enter" && active >= 0) {
+          } else if (event.key === "Enter" && active >= 0 && active < actors.length) {
             event.preventDefault();
             pick(actors[active]!);
           } else if (event.key === "Escape" && actors.length) {

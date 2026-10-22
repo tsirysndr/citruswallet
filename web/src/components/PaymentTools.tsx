@@ -54,7 +54,20 @@ export function PaymentTools({ className }: { className?: string }) {
 
   const resolve = (identifier: string) =>
     run(async () => {
-      const found = await send<Recipient>("/api/recipients/resolve", { identifier });
+      setResolved(null);
+      recipient.clearErrors("recipient");
+      let found: Recipient;
+      try {
+        found = await send<Recipient>("/api/recipients/resolve", { identifier });
+        if (found.did === session.did)
+          throw new Error("You cannot send ETH to yourself. Choose another account.");
+      } catch (error) {
+        recipient.setError("recipient", {
+          type: "validate",
+          message: error instanceof Error ? error.message : "Could not resolve recipient.",
+        });
+        throw error;
+      }
       setResolved({ identifier, recipient: found });
       status("Recipient identity verified. Check the DID before creating the intent.");
     });
@@ -101,9 +114,11 @@ export function PaymentTools({ className }: { className?: string }) {
             render={({ field, fieldState }) => (
               <Typeahead
                 id="recipient"
+                excludeDid={session.did}
                 value={field.value}
                 onChange={(value) => {
                   field.onChange(value);
+                  recipient.clearErrors("recipient");
                   setResolved(null);
                 }}
                 onBlur={field.onBlur}

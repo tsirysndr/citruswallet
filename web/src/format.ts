@@ -25,8 +25,12 @@ export function formatUnits(wei: string, decimals: number, places = 6) {
   return fraction ? `${value / unit}.${fraction}` : `${value / unit}`;
 }
 
-export const formatAmount = (wei: string, currency: Currency) =>
-  `${formatUnits(wei, currency.decimals)} ${currency.symbol}`;
+export function formatAmount(wei: string, currency: Currency) {
+  // Group the integer as text to preserve precision for large balances.
+  const [whole, fraction] = formatUnits(wei, currency.decimals).split(".");
+  const grouped = whole!.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return `${grouped}${fraction ? `.${fraction}` : ""} ${currency.symbol}`;
+}
 
 export const shortAddress = (address: string) =>
   `${address.slice(0, 6)}…${address.slice(-4)}`;

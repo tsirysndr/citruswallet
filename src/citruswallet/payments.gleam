@@ -103,9 +103,16 @@ pub fn new(
 
 pub fn resolve(
   payments: Payments,
+  sender_did: String,
   identifier: Option(String),
 ) -> Promise(Result(#(Identity, Option(String)), HttpError)) {
   use identity <- promise.try_await(payments.identities(identifier))
+  use <- guard(
+    identity.did != sender_did,
+    error.bad_request(
+      "You cannot send ETH to yourself. Choose another account.",
+    ),
+  )
   let link =
     linking.default_address(payments.links, identity.did, payments.chain_id)
   promise.resolve(Ok(#(identity, option.map(link, fn(link) { link.address }))))
@@ -121,16 +128,16 @@ pub fn create(
   case wei_of(amount) {
     Error(reason) -> promise.resolve(Error(reason))
     Ok(amount_wei) -> {
-      use #(recipient, _) <- promise.try_await(resolve(payments, identifier))
+      use #(recipient, _) <- promise.try_await(resolve(
+        payments,
+        sender_did,
+        identifier,
+      ))
       use <- guard(
         expected_did == Some(recipient.did),
         error.conflict(
           "Recipient identity changed. Resolve and review it again.",
         ),
-      )
-      use <- guard(
-        recipient.did != sender_did,
-        error.bad_request("Choose another AT Protocol account as recipient."),
       )
       let link =
         linking.default_address(

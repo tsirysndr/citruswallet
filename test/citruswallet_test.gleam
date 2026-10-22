@@ -312,8 +312,29 @@ pub fn create_payment_rejects_self_payment_test() {
   ))
   assert outcome
     == Error(error.bad_request(
-      "Choose another AT Protocol account as recipient.",
+      "You cannot send ETH to yourself. Choose another account.",
     ))
+}
+
+pub fn resolve_rejects_self_by_handle_or_did_test() {
+  let #(_, payments) = open_payments("bob.bsky.social")
+  use handle <- promise.await(payments.resolve(
+    payments,
+    "did:plc:bob",
+    Some("bob.bsky.social"),
+  ))
+  use did <- promise.map(payments.resolve(
+    payments,
+    "did:plc:bob",
+    Some("did:plc:bob"),
+  ))
+  let expected =
+    Error(error.bad_request(
+      "You cannot send ETH to yourself. Choose another account.",
+    ))
+  assert handle == expected
+  assert did == expected
+  assert payments.list(payments, "did:plc:bob") == []
 }
 
 pub fn create_payment_rejects_bad_amounts_test() {

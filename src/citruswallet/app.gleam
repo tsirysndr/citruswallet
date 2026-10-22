@@ -584,9 +584,10 @@ fn resolve_recipient(
   ctx: Context,
 ) -> Promise(Result(Reply, HttpError)) {
   use body <- promise.try_await(read_body(ctx))
-  use _ <- attempt(authenticated(server, ctx))
+  use #(_, did) <- attempt(authenticated(server, ctx))
   use #(recipient, address) <- promise.try_await(payments.resolve(
     server.payments,
+    did,
     js.string_field(body, "identifier"),
   ))
   done(

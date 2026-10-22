@@ -58,7 +58,7 @@ export function LinkedAddresses({ className }: { className?: string }) {
                 {link.public ? "Public" : "Private"}
                 {link.is_default ? " · Receiving default" : ""}
               </Hint>
-              {balance && <p className="mt-1 text-[13px] text-info tabular-nums">{balance}</p>}
+              {balance && <p className="mt-1 font-mono text-[13px] text-info tabular-nums">{balance}</p>}
               {here && !balance && !balances?.onNetwork && (
                 <Hint>Balance hidden · MetaMask is on another network.</Hint>
               )}
