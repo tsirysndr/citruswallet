@@ -167,7 +167,7 @@ textarea:focus-visible { outline: none; }
 .activity-filter.is-active { background: var(--accent-quiet); border-color: var(--accent-strong); }
 .filter-chip { padding: 6px 10px; border-radius: 6px; background: var(--highlight-bg); color: var(--highlight); font-size: 12px; cursor: pointer; }
 .date-dialog { position: fixed; inset: 0; margin: auto; width: min(760px, calc(100vw - 24px)); max-height: calc(100dvh - 32px); padding: 0; border: 1px solid var(--edge-soft); border-radius: 22px; background: var(--raised); color: var(--ink); overflow-y: auto; box-shadow: 0 24px 100px #19191630; }
-.date-dialog::backdrop { background: #19191665; backdrop-filter: blur(4px); }
+.date-dialog::backdrop { background: #19191665; }
 .date-dialog-inner { padding: clamp(18px, 4vw, 28px); }
 .date-presets { display: flex; flex-wrap: wrap; gap: 8px; margin: 22px 0; }
 .date-presets button { padding: 8px 12px; border-radius: 6px; background: var(--sunken); border: 1px solid var(--edge-soft); font-size: 12px; cursor: pointer; }
