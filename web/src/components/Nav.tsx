@@ -12,14 +12,14 @@ const Mark = () => (
 
 export function HeaderNav({ marks }: { marks: Marks }) {
   return (
-    <nav aria-label="Sections" className="hidden items-center gap-1 md:flex">
+    <nav aria-label="Sections" className="desktop-nav hidden items-center gap-1 md:flex">
       {screens.map(({ to, icon: Icon, label }) => (
         <Link
           key={to}
           to={to}
           activeOptions={{ exact: to === "/" }}
           className="flex items-center gap-2 rounded-full px-3 py-2 text-xs font-semibold tracking-[0.02em] no-underline"
-          activeProps={{ className: "bg-accent-quiet text-accent-strong" }}
+          activeProps={{ className: "nav-active" }}
           inactiveProps={{ className: "text-ink-muted hover:text-ink" }}
         >
           <span className="relative flex">
@@ -37,7 +37,7 @@ export function BottomNav({ marks }: { marks: Marks }) {
   return (
     <nav
       aria-label="Sections"
-      className="fixed inset-x-0 bottom-0 z-40 flex border-t border-rule bg-canvas pb-[env(safe-area-inset-bottom)] md:hidden"
+      className="mobile-nav fixed inset-x-0 bottom-0 z-40 flex md:hidden"
     >
       {screens.map(({ to, icon: Icon, label }) => (
         <Link
@@ -45,7 +45,7 @@ export function BottomNav({ marks }: { marks: Marks }) {
           to={to}
           activeOptions={{ exact: to === "/" }}
           className="flex flex-1 flex-col items-center gap-1 py-2.5 text-[10px] font-medium tracking-[0.03em] no-underline"
-          activeProps={{ className: "text-accent-strong" }}
+          activeProps={{ className: "nav-active" }}
           inactiveProps={{ className: "text-ink-muted" }}
         >
           <span className="relative flex">

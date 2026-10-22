@@ -5,6 +5,7 @@ import { Link, Outlet, useNavigate } from "@tanstack/react-router";
 import { send } from "./api";
 import { inviteTokenAtom, reviewIdAtom, statusAtom } from "./atoms";
 import { BottomNav, HeaderNav } from "./components/Nav";
+import { CitrusMark } from "./components/CitrusMark";
 import { ThemeToggle } from "./components/ThemeToggle";
 import { forgetBroadcast, pendingBroadcast } from "./broadcast";
 import { useRefresh, useRun, useStatus } from "./hooks";
@@ -62,13 +63,13 @@ export function App() {
   const marks = { "/payments": Boolean(review), "/wallet": Boolean(invite) };
 
   return (
-    <div className="mx-auto max-w-[1080px] px-5 pb-[72px] md:px-10 md:pb-0">
-      <header className="flex items-center justify-between gap-3.5 border-b border-rule py-[22px] md:py-[30px]">
+    <div className="app-shell">
+      <header className="app-header">
         <Link
           to="/"
-          className="flex items-center gap-2.5 text-[25px] text-accent no-underline"
+          className="brand-logo"
         >
-          ◍ <span className="text-[17px] font-[650] text-ink">Citrus Wallet</span>
+          <span className="logo-mark"><CitrusMark /></span><span>Citrus<span className="logo-wallet"> Wallet</span></span>
         </Link>
         <HeaderNav marks={marks} />
         <div className="flex items-center gap-2.5">
@@ -79,7 +80,7 @@ export function App() {
         </div>
       </header>
 
-      <main className="pt-10 pb-12 md:pt-16">
+      <main className="app-main">
         <Outlet />
         {error && (
           <p className="mt-5 text-[13px] text-bad">
@@ -102,9 +103,9 @@ export function App() {
         </p>
       </main>
 
-      <footer className="flex flex-wrap justify-between gap-5 border-t border-rule pt-[22px] pb-[30px] text-[10px] leading-[1.6] text-ink-faint md:gap-0">
+      <footer className="app-footer">
         <span>Identity on AT Protocol. Assets on Ethereum.</span>
-        <span>Local-first starter · EOA wallets</span>
+        <span>Made for your corner of the atmosphere.</span>
       </footer>
 
       <BottomNav marks={marks} />

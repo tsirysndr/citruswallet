@@ -115,7 +115,7 @@ export function Typeahead({
         id={listId}
         role="listbox"
         hidden={actors.length === 0}
-        className="popover-shadow absolute top-[calc(100%+4px)] right-0 left-0 z-30 m-0 max-h-[19rem] list-none overflow-y-auto rounded-[14px] border border-edge bg-raised p-1.5"
+        className="popover-shadow absolute top-[calc(100%+4px)] right-0 left-0 z-30 m-0 max-h-[19rem] list-none overflow-y-auto rounded-[6px] border border-edge bg-raised p-1.5"
       >
         {actors.map((actor, index) => (
           <li
@@ -129,7 +129,7 @@ export function Typeahead({
               pick(actor);
             }}
             onMouseEnter={() => setActive(index)}
-            className="flex cursor-pointer items-center gap-[11px] rounded-[10px] px-[9px] py-[7px] aria-selected:bg-accent-quiet"
+            className="flex cursor-pointer items-center gap-[11px] rounded-[6px] px-[9px] py-[7px] aria-selected:bg-accent-quiet"
           >
             <Avatar actor={actor} />
             <div className="flex min-w-0 flex-col gap-px">

@@ -20,7 +20,7 @@ export function Panel({
   return (
     <section
       className={cx(
-        "surface rounded-[14px] border border-edge p-5 md:p-[25px]",
+        "surface ui-panel rounded-[28px] p-6 md:p-8",
         className,
       )}
     >
@@ -34,7 +34,7 @@ export function PanelHeading({ children }: { children: ReactNode }) {
 }
 
 export const Heading = ({ children }: { children: ReactNode }) => (
-  <h2 className="m-0 text-base font-[550]">{children}</h2>
+  <h2 className="m-0 text-lg font-[600]">{children}</h2>
 );
 
 export const Step = ({ children }: { children: ReactNode }) => (
@@ -94,7 +94,7 @@ export function Button({
       type={type}
       disabled={disabled || (!keepEnabled && busy)}
       className={cx(
-        "cursor-pointer rounded-[7px] border-0 whitespace-nowrap disabled:cursor-not-allowed disabled:opacity-45",
+        "cursor-pointer rounded-[6px] border-0 whitespace-nowrap disabled:cursor-not-allowed disabled:opacity-45",
         variants[variant],
         className,
       )}
@@ -131,13 +131,13 @@ export const Label = ({
 );
 
 export const Row = ({ children, className }: { children: ReactNode; className?: string }) => (
-  <div className={cx("flex gap-2", className)}>{children}</div>
+  <div className={cx("form-row flex gap-2", className)}>{children}</div>
 );
 
 export const Input = ({ className, ...rest }: InputHTMLAttributes<HTMLInputElement>) => (
   <input
     className={cx(
-      "w-full min-w-0 rounded-[7px] border border-edge bg-sunken p-3 text-[13px] text-ink",
+      "w-full min-w-0 rounded-[6px] border border-edge bg-sunken p-3 text-[13px] text-ink",
       className,
     )}
     {...rest}
@@ -147,7 +147,7 @@ export const Input = ({ className, ...rest }: InputHTMLAttributes<HTMLInputEleme
 export const Select = ({ className, ...rest }: SelectHTMLAttributes<HTMLSelectElement>) => (
   <select
     className={cx(
-      "mr-2.5 mb-3 max-w-full rounded-[7px] border border-edge bg-sunken p-3 text-xs text-ink",
+      "mr-2.5 mb-3 max-w-full rounded-[6px] border border-edge bg-sunken p-3 text-xs text-ink",
       className,
     )}
     {...rest}

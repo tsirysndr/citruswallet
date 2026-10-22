@@ -1,19 +1,7 @@
 import { Link } from "@tanstack/react-router";
-import { Heading, Hint, Panel, PanelHeading } from "./ui";
+import { ArrowUpRight, Fingerprint } from "lucide-react";
+import { Hint } from "./ui";
 
 export function SignedOut({ children }: { children: string }) {
-  return (
-    <Panel className="max-w-[560px]">
-      <PanelHeading>
-        <Heading>Sign in first</Heading>
-      </PanelHeading>
-      <Hint>{children}</Hint>
-      <Link
-        to="/"
-        className="mt-4 inline-block text-xs font-semibold text-info underline underline-offset-2 hover:decoration-2"
-      >
-        Go to your account ↗
-      </Link>
-    </Panel>
-  );
+  return <section className="signed-out-card"><div className="signed-out-icon"><Fingerprint size={44} strokeWidth={1.3} /></div><p className="eyebrow">IT STARTS WITH YOU</p><h1>Your handle.<br />Your way in.</h1><Hint>{children}</Hint><Link to="/" className="brand-cta">Sign in to get started <ArrowUpRight size={22} /></Link></section>;
 }
