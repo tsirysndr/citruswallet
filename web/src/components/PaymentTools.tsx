@@ -117,7 +117,7 @@ export function PaymentTools({ className }: { className?: string }) {
         onSubmit={recipient.handleSubmit((values) => resolve(values.recipient))}
       >
         <Label htmlFor="recipient">Recipient handle or DID</Label>
-        <Row>
+        <Row className="payment-form-row">
           <Controller
             control={recipient.control}
             name="recipient"
@@ -172,15 +172,26 @@ export function PaymentTools({ className }: { className?: string }) {
               : "No public receiving address. Create an intent and invite them to choose a wallet."}
           </Mono>
           <Label htmlFor="amount">Amount in ETH</Label>
-          <Row>
-            <Input
-              id="amount"
-              placeholder="0.01"
-              inputMode="decimal"
-              autoComplete="off"
-              aria-invalid={Boolean(amount.formState.errors.amount)}
-              className="font-mono tabular-nums"
-              {...amount.register("amount")}
+          <Row className="payment-form-row">
+            <Controller
+              control={amount.control}
+              name="amount"
+              render={({ field, fieldState }) => (
+                <Input
+                  {...field}
+                  id="amount"
+                  type="text"
+                  placeholder="0.01"
+                  inputMode="decimal"
+                  autoComplete="off"
+                  aria-invalid={Boolean(fieldState.error)}
+                  className="font-mono tabular-nums"
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    if (/^[0-9]*([.,][0-9]*)?$/.test(value)) field.onChange(value);
+                  }}
+                />
+              )}
             />
             <Button type="submit">Create payment intent</Button>
           </Row>

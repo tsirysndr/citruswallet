@@ -10,6 +10,7 @@ import { ThemeToggle } from "./components/ThemeToggle";
 import { forgetBroadcast, pendingBroadcast } from "./broadcast";
 import { useRefresh, useRun, useStatus } from "./hooks";
 import { useSession } from "./queries";
+import { useSessionGuard } from "./session";
 import type { Payment } from "./types";
 
 /* A reload must never turn one approved transfer into two: a remembered
@@ -59,6 +60,7 @@ export function App() {
   const invite = useAtomValue(inviteTokenAtom);
   const refresh = useRefresh();
   useRecovery();
+  useSessionGuard();
 
   const marks = { "/payments": Boolean(review), "/wallet": Boolean(invite) };
 

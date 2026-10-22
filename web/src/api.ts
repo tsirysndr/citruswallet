@@ -1,5 +1,11 @@
 /* Wallet keys and OAuth/session credentials never enter browser storage. */
 let csrf = "";
+const unauthorizedListeners = new Set<() => void>();
+
+export function onUnauthorized(listener: () => void) {
+  unauthorizedListeners.add(listener);
+  return () => { unauthorizedListeners.delete(listener); };
+}
 
 export function rememberCsrf(token: string) {
   csrf = token;
@@ -22,8 +28,11 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
       ...options.headers,
     },
   });
+  if (response.status === 401) {
+    for (const listener of unauthorizedListeners) listener();
+  }
   const data = await response.json();
-  if (!response.ok) throw new RequestError(data.error ?? "Request failed.");
+  if (!response.ok) throw new RequestError(data.error ?? "Request failed.", response.status);
   return data as T;
 }
 

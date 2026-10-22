@@ -20,7 +20,10 @@ export const identifier = z
 
 export const etherAmount = z
   .string()
-  .transform((value) => value.trim())
+  .transform((value) => {
+    const decimal = value.trim().replace(",", ".");
+    return decimal.startsWith(".") ? `0${decimal}` : decimal;
+  })
   .refine(
     (value) => /^(0|[1-9][0-9]{0,17})(\.[0-9]{1,18})?$/.test(value),
     "Enter a positive ETH amount with at most 18 decimal places.",

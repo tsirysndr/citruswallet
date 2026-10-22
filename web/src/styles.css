@@ -142,3 +142,10 @@ textarea:focus-visible { outline: none; }
   .app-footer { flex-direction: column; gap: 5px; text-align: center; font-size: 10px; padding-bottom: 0; }.page-content { padding: 26px 18px; border-radius: 30px; }.page-content .ui-panel { padding: 22px 18px; }.page-heading { margin-bottom: 12px; }.signed-out-card { padding: 40px 24px; border-radius: 30px; }.signed-out-card h1 { font-size: 40px; }.form-row { flex-wrap: wrap; }.form-row > button { flex-grow: 1; min-height: 46px; }.form-row > div { flex-basis: 180px; }.form-row > input { flex-basis: 180px; flex-grow: 1; }.identity-card .form-row { flex-wrap: nowrap; }.identity-card .form-row > button { flex-grow: 0; }.identity-card .form-row > div { flex-basis: auto; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
+
+/* Align recipient and amount fields with their submit actions. */
+.form-row.payment-form-row { display: grid; grid-template-columns: minmax(0, 1fr) 200px; }
+.payment-form-row > button { width: 100%; }
+@media (max-width: 767px) {
+  .form-row.payment-form-row { grid-template-columns: minmax(0, 1fr); }
+}
