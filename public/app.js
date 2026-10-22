@@ -2,6 +2,7 @@
 const $ = id => document.getElementById(id);
 let session, resolved, review, invitation;
 let balances = new Map(), walletAddress = null, walletOnNetwork = false;
+let profile = null, profileDid = null, renderedAccount = null;
 let inviteError='';
 let busy = false, history = [];
 const inviteFragment = new URLSearchParams(window.location.hash.slice(1)).get('invite');
@@ -41,6 +42,32 @@ async function loadBalances() {
     }));
   } catch { /* A wallet that refuses the read simply leaves balances unknown. */ }
 }
+/* The name and avatar are decoration: a failed lookup leaves the DID showing. */
+async function loadProfile() {
+  if (!session?.did) { profile = null; profileDid = null; return; }
+  if (profileDid === session.did) return;
+  profileDid = session.did;
+  profile = null;
+  try {
+    const response = await fetch('/api/profile');
+    if (response.ok) profile = (await response.json()).actor ?? null;
+  } catch { /* Leave the account card showing the DID alone. */ }
+}
+function account() {
+  return profile ?? {did: session.did, handle: null, displayName: null, avatar: null};
+}
+/* What this DID holds across the wallets it has linked on the active chain. */
+function accountBalance() {
+  const linked = (session?.links ?? []).filter(link => link.chain_id === session.network.chainId);
+  const known = linked.filter(link => balances.has(link.address.toLowerCase()));
+  if (!known.length) return null;
+  const total = known.reduce((sum, link) => sum + BigInt(balances.get(link.address.toLowerCase())), 0n);
+  const currency = session.network.nativeCurrency;
+  const where = known.length === linked.length
+    ? `${known.length} linked address${known.length === 1 ? '' : 'es'}`
+    : `${known.length} of ${linked.length} linked addresses`;
+  return `${formatUnits(total, currency.decimals)} ${currency.symbol} across ${where}`;
+}
 function balanceOf(address) {
   const wei = balances.get(address.toLowerCase());
   if (wei === undefined) return null;
@@ -54,7 +81,7 @@ function action(label, handler) { const button = text('button',label,'subtle'); 
    the identity in both directions before anything is addressed to it. */
 const suggestionCache = new Map();
 function initials(actor) {
-  const source = actor.displayName ?? actor.handle;
+  const source = actor.displayName || actor.handle || actor.did.replace(/^did:[a-z]+:/, '');
   return ([...source][0] ?? '?').toUpperCase();
 }
 /* Kept inside the palette's own arc, from orange through yellow to teal. */
@@ -164,6 +191,16 @@ function render() {
   const loggedIn = Boolean(session?.did);
   $('login-form').hidden=loggedIn; $('identity').hidden=!loggedIn; $('did').textContent=session?.did??'';
   $('identity-state').textContent=loggedIn?'Connected':'Not connected'; $('identity-state').classList.toggle('success',loggedIn);
+  if (loggedIn) {
+    const actor=account();
+    $('account-name').textContent=actor.displayName ?? actor.handle ?? 'Signed in';
+    $('account-handle').textContent=actor.handle?`@${actor.handle}`:'Handle unavailable';
+    /* Rebuild the avatar only when it changes, so it never re-fetches or flickers. */
+    const key=`${actor.did}|${actor.avatar ?? ''}`;
+    if (renderedAccount!==key) { $('account-avatar').replaceChildren(avatar(actor)); renderedAccount=key; }
+    const total=accountBalance();
+    $('account-balance').hidden=!total; $('account-balance').textContent=total??'';
+  } else { renderedAccount=null; }
   $('wallet-hint').textContent=loggedIn?`${session.network.name} · chain ${session.network.chainId} · standard MetaMask accounts`:'Sign in with AT Protocol to continue.';
   $('wallet-state').textContent=session?.links?.length?'Linked':'Not linked'; $('links-panel').hidden=!session?.links?.length;
   const connectedBalance=walletAddress?balanceOf(walletAddress):null;
@@ -250,6 +287,7 @@ async function refresh() {
     review=updated;
   }
   if(!session.did){review=null;resolved=null;invitation=null;}
+  await loadProfile();
   await loadBalances();
   if(inviteToken&&session.did){try{invitation=(await api(`/api/invitations/${inviteToken}`)).payment;inviteError='';}catch(error){invitation=null;inviteError=error.message;status(error.message,true);}}
   render();

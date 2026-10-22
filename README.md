@@ -52,9 +52,15 @@ Suggestions come from an AT Protocol AppView's typeahead, called by **this serve
 
 A suggestion is a convenience, never a source of truth: picking one only fills the field. The identity is still resolved and verified in both directions through `/api/recipients/resolve` before a payment intent can name it.
 
+### Your account
+
+Once you are signed in, the identity panel shows who you are: a rounded avatar (or a generated placeholder), your display name, your `@handle`, your DID, and what you hold across the wallets you have linked on the active chain.
+
+Only the DID is authoritative — it comes from the OAuth login. The name and avatar are fetched once per session from an AppView and vetted exactly like handle suggestions are, so an account the AppView does not know simply shows its DID, and a name or picture never affects what the app will accept as a payment recipient.
+
 ### Account balances
 
-The linked-addresses panel shows each address's balance on the active chain, read through MetaMask's own provider with `eth_getBalance`. No server RPC is involved, and no connection prompt is triggered: balances simply stay hidden until MetaMask is connected and on the configured network. **Refresh balances** re-reads them.
+The linked-addresses panel shows each address's balance on the active chain, and the identity panel totals them, read through MetaMask's own provider with `eth_getBalance`. No server RPC is involved, and no connection prompt is triggered: balances simply stay hidden until MetaMask is connected and on the configured network. **Refresh balances** re-reads them.
 
 ## Database and migrations
 
@@ -124,6 +130,7 @@ Authenticated mutations require the HttpOnly cookie, exact `Origin`, and `x-csrf
 | DELETE | `/api/links/:address` | Unlink the current DID's wallet on the active chain |
 | GET | `/api/resolve/:did` | Public links, chain IDs, proofs, and default flags |
 | GET | `/api/actors/search?q=` | Handle suggestions: DID, handle, display name, avatar |
+| GET | `/api/profile` | The signed-in account's display name, handle and avatar |
 | POST | `/api/recipients/resolve` | `{ identifier }` → verified DID/handle and active-chain default |
 | POST | `/api/payments` | `{ identifier, expectedDid, amount }` → intent and invitation URL; amount is a decimal ETH string |
 | GET | `/api/payments` | Sender's most recent 50 intents on the active chain |

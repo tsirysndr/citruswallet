@@ -1,12 +1,3 @@
-import gleam/bool
-import gleam/dynamic/decode
-import gleam/int
-import gleam/javascript/promise.{type Promise}
-import gleam/json.{type Json}
-import gleam/list
-import gleam/option.{type Option, None, Some}
-import gleam/result
-import gleam/string
 import citruswallet/chain.{type Chain}
 import citruswallet/directory
 import citruswallet/error.{type HttpError, HttpError}
@@ -23,6 +14,15 @@ import citruswallet/payments.{type Payments}
 import citruswallet/rate_limit.{type Limiter}
 import citruswallet/store.{type Store}
 import citruswallet/validate
+import gleam/bool
+import gleam/dynamic/decode
+import gleam/int
+import gleam/javascript/promise.{type Promise}
+import gleam/json.{type Json}
+import gleam/list
+import gleam/option.{type Option, None, Some}
+import gleam/result
+import gleam/string
 
 pub type Settings {
   Settings(
@@ -32,7 +32,7 @@ pub type Settings {
     proxy_hops: Int,
     network: Network,
     identities: Lookup,
-    directory: directory.Search,
+    directory: directory.Directory,
     chain: Option(Chain),
     public_directory: String,
   )
@@ -120,6 +120,7 @@ pub fn build(settings: Settings) -> hono.App {
   hono.post(app, "/api/logout", serve(server, logout))
   hono.get(app, "/api/resolve/:did", serve(server, public_links))
   hono.get(app, "/api/actors/search", serve(server, suggest_actors))
+  hono.get(app, "/api/profile", serve(server, account_profile))
 
   hono.use_(app, hono.files(settings.public_directory))
   hono.not_found(app, fn(ctx) {
@@ -807,10 +808,29 @@ fn suggest_actors(
   {
     True -> done(Ok(suggested([])))
     False -> {
-      use actors <- promise.try_await(server.settings.directory(query))
+      use actors <- promise.try_await(server.settings.directory.search(query))
       done(Ok(suggested(actors)))
     }
   }
+}
+
+fn account_profile(
+  server: Server,
+  ctx: Context,
+) -> Promise(Result(Reply, HttpError)) {
+  use #(_, did) <- attempt(authenticated(server, ctx))
+  use actor <- promise.try_await(server.settings.directory.profile(did))
+  done(
+    Ok(Payload(
+      200,
+      json.object([
+        #("actor", case actor {
+          Some(actor) -> directory.to_json(actor)
+          None -> json.null()
+        }),
+      ]),
+    )),
+  )
 }
 
 fn suggested(actors: List(directory.Actor)) -> Reply {

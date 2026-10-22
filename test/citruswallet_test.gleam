@@ -1,10 +1,3 @@
-import gleam/dynamic/decode
-import gleam/javascript/promise
-import gleam/list
-import gleam/option.{type Option, None, Some}
-import gleam/result
-import gleam/string
-import gleeunit
 import citruswallet/directory.{type Actor, Actor}
 import citruswallet/drizzle/orm
 import citruswallet/drizzle/schema/links as links_schema
@@ -16,6 +9,13 @@ import citruswallet/payments
 import citruswallet/rate_limit
 import citruswallet/store
 import citruswallet/validate
+import gleam/dynamic/decode
+import gleam/javascript/promise
+import gleam/list
+import gleam/option.{type Option, None, Some}
+import gleam/result
+import gleam/string
+import gleeunit
 
 pub fn main() -> Nil {
   gleeunit.main()
@@ -515,6 +515,11 @@ pub fn appview_must_be_trusted_test() {
   assert result.is_ok(directory.appview("http://127.0.0.1:2583"))
   assert result.is_error(directory.appview("http://appview.example"))
   assert result.is_error(directory.appview("not a url"))
+}
+
+pub fn appview_offers_search_and_profile_test() {
+  let assert Ok(directory.Directory(search: _, profile: _)) =
+    directory.appview("https://public.api.bsky.app")
 }
 
 // Rate limiting.
