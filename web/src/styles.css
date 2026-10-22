@@ -149,3 +149,17 @@ textarea:focus-visible { outline: none; }
 @media (max-width: 767px) {
   .form-row.payment-form-row { grid-template-columns: minmax(0, 1fr); }
 }
+
+.legal-footer-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; }
+.legal-footer-links a:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+.legal-page { max-width: 840px; margin: 0 auto; padding: clamp(22px, 5vw, 56px); border-radius: 24px; background: var(--panel); }
+.legal-page .legal-date { margin-top: 16px; font-size: 12px; }
+.legal-nav { display: flex; flex-wrap: wrap; gap: 12px 24px; padding-bottom: 24px; border-bottom: 1px solid var(--edge-soft); font-size: 13px; }
+.legal-nav a[aria-current="page"] { font-weight: 650; color: var(--accent-strong); }
+.legal-content { font-size: 14px; line-height: 1.85; color: var(--ink-soft); overflow-wrap: anywhere; }
+.legal-content section { margin-top: 30px; }
+.legal-content h2 { margin-bottom: 12px; font-size: 19px; line-height: 1.4; font-weight: 600; color: var(--ink); }
+.legal-content p + p { margin-top: 12px; }
+.legal-content ul { padding-left: 20px; list-style: disc; }
+.legal-content li + li { margin-top: 10px; }
+.legal-content a, .legal-nav a { text-decoration: underline; text-underline-offset: 3px; }

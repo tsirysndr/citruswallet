@@ -10,7 +10,7 @@ import gleam/javascript/promise
 pub type Settings =
   context.Settings
 
-const screens = ["/wallet", "/payments", "/activity"]
+const screens = ["/wallet", "/payments", "/activity", "/privacy", "/terms"]
 
 const guarded = ["/xrpc/*", "/auth/*"]
 

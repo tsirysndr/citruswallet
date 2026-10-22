@@ -105,7 +105,11 @@ export function App() {
 
       <footer className="app-footer">
         <span>Identity on AT Protocol. Assets on Ethereum.</span>
-        <span>Made for your corner of the atmosphere.</span>
+        <nav className="legal-footer-links" aria-label="Legal and contact">
+          <Link to="/privacy">Privacy Policy</Link>
+          <Link to="/terms">Terms and Conditions</Link>
+          <a href="mailto:contact@citruswallet.app">Contact</a>
+        </nav>
       </footer>
 
       <BottomNav marks={marks} />

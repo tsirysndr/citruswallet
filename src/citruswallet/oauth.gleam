@@ -45,6 +45,8 @@ fn metadata(origin: String) -> Js {
         #("client_id", js.string(origin <> "/client-metadata.json")),
         #("client_name", js.string("Citrus Wallet")),
         #("client_uri", js.string(origin)),
+        #("policy_uri", js.string(origin <> "/privacy")),
+        #("tos_uri", js.string(origin <> "/terms")),
         #("redirect_uris", js.list([js.string(redirect_uri)])),
         #("scope", js.string(scope)),
         #(

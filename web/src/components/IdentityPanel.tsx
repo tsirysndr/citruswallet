@@ -95,6 +95,10 @@ export function IdentityPanel({ className }: { className?: string }) {
           </Row>
           <FieldError>{form.formState.errors.identifier?.message}</FieldError>
           <Hint className="mt-2.5">
+            By continuing, you agree to our <Link to="/terms" className="underline underline-offset-2">Terms and Conditions</Link>.
+            {" "}Read our <Link to="/privacy" className="underline underline-offset-2">Privacy Policy</Link>.
+          </Hint>
+          <Hint className="mt-2.5">
             You’ll sign in with your account provider.{" "}
             <a
               href="https://atmosphereaccount.com/"
