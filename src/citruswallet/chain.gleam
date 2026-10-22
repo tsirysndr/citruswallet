@@ -1,11 +1,11 @@
-import gleam/int
-import gleam/javascript/promise.{type Promise}
-import gleam/list
-import gleam/option.{type Option, None, Some}
 import citruswallet/error.{type HttpError}
 import citruswallet/ffi/js.{type Js}
 import citruswallet/ffi/url
 import citruswallet/ffi/viem
+import gleam/int
+import gleam/javascript/promise.{type Promise}
+import gleam/list
+import gleam/option.{type Option, None, Some}
 
 pub type Chain {
   Chain(client: viem.Client)

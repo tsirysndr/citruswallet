@@ -1,8 +1,8 @@
+import citruswallet/ffi/js.{type Exception, type Js}
 import gleam/int
 import gleam/javascript/promise.{type Promise}
 import gleam/list
 import gleam/option.{type Option, None, Some}
-import citruswallet/ffi/js.{type Exception, type Js}
 
 @external(javascript, "viem", "isAddress")
 pub fn is_address(value: String) -> Bool

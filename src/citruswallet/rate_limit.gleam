@@ -1,8 +1,8 @@
+import citruswallet/store.{type Store}
 import gleam/int
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/string
-import citruswallet/store.{type Store}
 
 pub type Limiter {
   Limiter(

@@ -1,10 +1,10 @@
-import gleam/dynamic/decode
 import citruswallet/drizzle/orm
 import citruswallet/drizzle/schema/challenges
 import citruswallet/drizzle/schema/kv
 import citruswallet/drizzle/schema/links
 import citruswallet/drizzle/schema/payments
 import citruswallet/ffi/js.{type Js}
+import gleam/dynamic/decode
 
 pub fn kv() -> Js {
   orm.underlying(kv.define(decode.success(Nil)).table)

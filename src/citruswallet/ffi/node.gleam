@@ -1,5 +1,5 @@
-import gleam/option.{type Option}
 import citruswallet/ffi/js.{type Js}
+import gleam/option.{type Option}
 
 fn process() -> Js {
   js.global("process")

@@ -1,5 +1,5 @@
-import gleam/option
 import citruswallet/ffi/js.{type Js}
+import gleam/option
 
 pub type Url =
   Js

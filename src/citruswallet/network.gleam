@@ -1,6 +1,6 @@
+import citruswallet/ffi/url
 import gleam/json.{type Json}
 import gleam/list
-import citruswallet/ffi/url
 
 pub type Currency {
   Currency(name: String, symbol: String, decimals: Int)

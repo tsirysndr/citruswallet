@@ -1,3 +1,6 @@
+import citruswallet/error.{type HttpError}
+import citruswallet/ffi/atproto
+import citruswallet/ffi/js
 import gleam/bool
 import gleam/javascript/promise.{type Promise}
 import gleam/json.{type Json}
@@ -5,9 +8,6 @@ import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/result
 import gleam/string
-import citruswallet/error.{type HttpError}
-import citruswallet/ffi/atproto
-import citruswallet/ffi/js
 
 pub type Identity {
   Identity(did: String, handle: Option(String))

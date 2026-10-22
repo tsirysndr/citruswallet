@@ -1,10 +1,3 @@
-import gleam/bool
-import gleam/dynamic/decode.{type Decoder}
-import gleam/javascript/promise.{type Promise}
-import gleam/json.{type Json}
-import gleam/option.{type Option, None, Some}
-import gleam/result
-import gleam/string
 import citruswallet/drizzle/orm
 import citruswallet/drizzle/schema/challenges as challenges_schema
 import citruswallet/drizzle/schema/links as links_schema
@@ -14,6 +7,13 @@ import citruswallet/ffi/url
 import citruswallet/ffi/viem
 import citruswallet/store.{type Store}
 import citruswallet/validate
+import gleam/bool
+import gleam/dynamic/decode.{type Decoder}
+import gleam/javascript/promise.{type Promise}
+import gleam/json.{type Json}
+import gleam/option.{type Option, None, Some}
+import gleam/result
+import gleam/string
 
 pub type Links {
   Links(store: Store, origin: String, chain_id: Int, now: fn() -> Int)

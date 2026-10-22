@@ -1,10 +1,10 @@
-import gleam/javascript/promise.{type Promise}
-import gleam/option.{None, Some}
-import gleam/string
 import citruswallet/ffi/atproto
 import citruswallet/ffi/js.{type Js}
 import citruswallet/ffi/node
 import citruswallet/store.{type Store}
+import gleam/javascript/promise.{type Promise}
+import gleam/option.{None, Some}
+import gleam/string
 
 const scope = "atproto"
 

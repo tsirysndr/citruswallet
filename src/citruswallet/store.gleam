@@ -1,12 +1,12 @@
-import gleam/dynamic/decode
-import gleam/int
-import gleam/option.{type Option, None, Some}
-import gleam/result
 import citruswallet/drizzle/orm.{type Database}
 import citruswallet/drizzle/schema/challenges
 import citruswallet/drizzle/schema/kv
 import citruswallet/ffi/better_sqlite.{type Client}
 import citruswallet/ffi/js.{type Exception}
+import gleam/dynamic/decode
+import gleam/int
+import gleam/option.{type Option, None, Some}
+import gleam/result
 
 pub type Store {
   Store(client: Client, database: Database)

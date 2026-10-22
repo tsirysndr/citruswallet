@@ -1,6 +1,3 @@
-import gleam/int
-import gleam/option.{type Option, None, Some}
-import gleam/result
 import citruswallet/app
 import citruswallet/chain.{type Chain}
 import citruswallet/directory
@@ -11,6 +8,9 @@ import citruswallet/identity
 import citruswallet/network.{type Network}
 import citruswallet/oauth
 import citruswallet/store.{type Store}
+import gleam/int
+import gleam/option.{type Option, None, Some}
+import gleam/result
 
 pub fn main() -> Nil {
   case start() {

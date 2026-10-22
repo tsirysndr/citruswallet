@@ -1,12 +1,3 @@
-import gleam/bool
-import gleam/dynamic/decode.{type Decoder}
-import gleam/int
-import gleam/javascript/promise.{type Promise}
-import gleam/json.{type Json}
-import gleam/list
-import gleam/option.{type Option, None, Some}
-import gleam/result
-import gleam/string
 import citruswallet/chain.{type Chain}
 import citruswallet/drizzle/orm
 import citruswallet/drizzle/schema/payments as payments_schema
@@ -17,6 +8,15 @@ import citruswallet/identity.{type Identity, type Lookup}
 import citruswallet/linking.{type Link, type Links}
 import citruswallet/store.{type Store}
 import citruswallet/validate
+import gleam/bool
+import gleam/dynamic/decode.{type Decoder}
+import gleam/int
+import gleam/javascript/promise.{type Promise}
+import gleam/json.{type Json}
+import gleam/list
+import gleam/option.{type Option, None, Some}
+import gleam/result
+import gleam/string
 
 pub type State {
   Waiting

@@ -1,6 +1,6 @@
+import citruswallet/ffi/js.{type Exception, type Js}
 import gleam/javascript/promise.{type Promise}
 import gleam/option.{Some}
-import citruswallet/ffi/js.{type Exception, type Js}
 
 pub fn get_json(
   url: String,
