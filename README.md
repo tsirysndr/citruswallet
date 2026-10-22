@@ -249,3 +249,11 @@ Recipients can read their incoming payment details, but only senders can prepare
 The production frontend registers `/sw.js` and exposes `/manifest.webmanifest`, PNG icons derived from the Citrus logo, an Apple touch icon, and an install control in the footer. Supported browsers show a native install prompt; other browsers get installation instructions. MetaMask must still be available in the chosen browser—installing Citrus does not install or embed MetaMask.
 
 The service worker only caches the static offline page and its public assets. It does **not** cache authenticated responses, wallet data, avatars, OAuth requests, or payment requests, and never queues transfers. Offline navigation shows a reconnect screen. Updates wait for existing windows to close instead of reloading an in-progress payment. The sign-in form includes a local, animated Atmosphere app-logo strip adapted from Rocksky, with pause and reduced-motion support.
+
+### KLIPY payment attachments
+
+Set `VITE_KLIPY_API_KEY` in `.env.prod` before `bun run build` (or in `.env` for local development). Vite exposes this public client key in the browser bundle; `.env.prod` stays ignored. The usual `.env.production` and shell settings take precedence. Production must have the same setting at build time.
+
+The description editor offers GIF, sticker, meme, and clip search through KLIPY, with trending results, debounced search, pagination, previews, and removal. One optional `media` object accompanies the separate 500-character description. Migration `0005` adds its nullable database column. Only sender and recipient can read it; no description or attachment is published on-chain or to AT Protocol. Media loads directly from KLIPY and is excluded from the offline service-worker cache. Clips play only on user request. A random browser-local identifier is used for KLIPY discovery/share events; no DID, handle, amount, recipient, or description is sent to KLIPY.
+
+Activity keeps search and a filter icon above the list. Transaction type, status, date range, sorting, and page size live in a responsive side drawer. Reset preserves the current search; the icon indicates active filter settings.

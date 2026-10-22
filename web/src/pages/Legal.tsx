@@ -39,7 +39,7 @@ export function Privacy() {
         <ul>
           <li><strong>Account profiles:</strong> your AT Protocol DID, handle, display name, avatar URL, and profile creation and update timestamps. We obtain these from your account provider and public AT Protocol services. We also index public profiles associated with address records received through Jetstream, including accounts that have not signed in here.</li>
           <li><strong>Wallet links:</strong> chain, Ethereum address, signed ownership message and signature, receiving preferences, and whether a link is public.</li>
-          <li><strong>Payment records:</strong> sender and recipient identifiers, addresses, amounts, optional descriptions, payment status, timestamps, invitation information, and transaction hashes. Invitations are stored with hashed tokens. Payment descriptions are visible to the participants in Citrus Wallet and are not published on-chain or to AT Protocol.</li>
+          <li><strong>Payment records:</strong> sender and recipient identifiers, addresses, amounts, optional descriptions and KLIPY attachment references, payment status, timestamps, invitation information, and transaction hashes. Invitations are stored with hashed tokens. Payment descriptions are visible to the participants in Citrus Wallet and are not published on-chain or to AT Protocol.</li>
           <li><strong>Authentication and operation:</strong> server-side OAuth credentials, sessions, temporary login state, and technical information needed to handle requests, prevent abuse, and diagnose failures, such as IP addresses and error logs.</li>
         </ul>
         <p>Citrus Wallet does not receive your AT Protocol password, wallet private keys, or recovery phrase. Your wallet handles transaction signing.</p>
@@ -60,6 +60,7 @@ export function Privacy() {
         <p>Your AT Protocol provider handles login and repository writes. AppView services receive profile and handle-search requests from our server. Avatar images load directly from their image host, which can see your IP address. Jetstream supplies public repository events.</p>
         <p>Ethereum RPC providers receive requests needed to check transactions; MetaMask and its providers handle wallet connections, balance queries, and broadcasting. Our hosting infrastructure processes requests and stored data to run Citrus Wallet. These providers may operate in different countries and have their own privacy policies.</p>
         <p>Payment participants receive the details needed for their payment. Information may also be disclosed where required by law or necessary to address abuse or protect the service. We do not use the app to sell personal information or serve targeted advertisements.</p>
+        <p>When you use the optional KLIPY media picker, searches, selected-media share events, an anonymous browser identifier, and network information are sent directly to KLIPY. Displaying an attachment loads media from KLIPY. We store only the selected media reference with the payment, visible to its participants, and do not publish it to Ethereum or AT Protocol. KLIPY media is not cached by our offline service worker.</p>
       </section>
       <section>
         <h2>6. Cookies and browser storage</h2>
