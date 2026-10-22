@@ -1,18 +1,24 @@
 # Citrus Wallet
 
-A Gleam starter for linking a MetaMask wallet to an AT Protocol DID, resolving recipient handles, and sending native ETH. If a recipient has no public receiving address, the sender creates an unfunded invitation. The recipient authenticates with the pinned DID and chooses a linked wallet; the sender then reviews and approves the transaction in MetaMask.
+Pay someone by their AT Protocol handle instead of their Ethereum address.
 
-Gleam compiled to JavaScript on Node.js, with Hono, the official AT Protocol OAuth/identity SDKs, viem, Drizzle ORM over SQLite, and Foundry Anvil. No escrow or contract deployment. The server never holds wallet keys or signs transactions.
+An Ethereum address is 42 characters of hex that nobody can check by eye, so sending ETH to a person means trusting an address copied from somewhere. An AT Protocol handle — `alice.bsky.social` — is something you already recognise. Citrus Wallet connects the two: you prove you control an address by signing a message naming your AT Protocol account in MetaMask, and from then on people can pay you by handle.
 
-Every dependency binding is written in Gleam. `src/ffi.mjs` is the only JavaScript: a generic bridge for the few constructs Gleam cannot express (property access, method calls, `new`, object literals, thrown exceptions, BigInt, mutable cells). It contains no application logic and knows about no package.
+Sending works in the open. You type a handle, the server resolves it to the account's stable DID and the address that account chose to receive on, and shows you the full address, the pinned DID, the network and the amount. Nothing moves until you approve the actual transaction in MetaMask, which is the only thing that signs or broadcasts it.
+
+If the person you want to pay has not set up a receiving address yet, you create an invitation instead — a link that reserves no funds and promises nothing. They open it, sign in as the account the invitation names, link a wallet, and choose an address to share with you alone, which can stay private from everyone else. You then come back and approve the transfer as usual.
+
+Identity is pinned when the payment is created, so a handle that later changes hands cannot redirect it, and a receiving address that changes forces you to review the payment again before it can be sent.
+
+The server holds no keys, signs nothing, and never takes custody: there is no escrow, no deployed contract, and no automatic payout. It records the signed proofs linking accounts to addresses, keeps track of payment intents, and checks a broadcast transaction against what you reviewed. Native ETH to ordinary wallet accounts, on Ethereum mainnet or a local Anvil chain.
 
 ## Local development
 
-Requires Node.js 24+, Gleam 1.19+, and a desktop browser with MetaMask.
+Requires Bun, Node.js 24+, Gleam 1.19+, and a desktop browser with MetaMask.
 
 ```sh
-npm ci
-npm run dev:local
+bun install
+bun run dev:local
 ```
 
 Open **http://127.0.0.1:3000**, using that exact origin. This starts the app and Anvil (RPC `http://127.0.0.1:8545`, chain **31337** / `0x7a69`), and uses `data/local.sqlite`. Ctrl+C stops both processes. The launcher refuses to reuse an existing node on port 8545. Anvil starts fresh each run; the app's database persists.
@@ -60,21 +66,21 @@ The linked-addresses panel shows each address's balance on the active chain, rea
 
 ## Database and migrations
 
-The schema is defined in Gleam, one module per table, under `src/wallet/drizzle/schema/`. Those modules build real Drizzle tables, so they are the single source of truth for both queries and migrations: `drizzle/schema.mjs` re-exports the compiled tables for `drizzle-kit`, which generates the SQL in `drizzle/`.
+The schema is defined in Gleam, one module per table, under `src/citruswallet/drizzle/schema/`. Those modules build real Drizzle tables, so they are the single source of truth for both queries and migrations: `drizzle/schema.mjs` re-exports the compiled tables for `drizzle-kit`, which generates the SQL in `drizzle/`.
 
 ```sh
-npm run db:generate   # gleam build, then drizzle-kit generate
-npm run db:check
+bun run db:generate   # gleam build, then drizzle-kit generate
+bun run db:check
 ```
 
-The server applies pending migrations at startup, so no separate migrate step is needed. There is no raw SQL in the Gleam code: every query goes through the typed Drizzle bindings in `src/wallet/drizzle/orm.gleam`. The only SQL text anywhere is the two partial-index predicates in the schema modules, which Drizzle expresses as SQL in any language, and the three connection `PRAGMA`s in `src/wallet/ffi/better_sqlite.gleam`.
+The server applies pending migrations at startup, so no separate migrate step is needed. There is no raw SQL in the Gleam code: every query goes through the typed Drizzle bindings in `src/citruswallet/drizzle/orm.gleam`. The only SQL text anywhere is the two partial-index predicates in the schema modules, which Drizzle expresses as SQL in any language, and the three connection `PRAGMA`s in `src/citruswallet/ffi/better_sqlite.gleam`.
 
 The same Ethereum address can be independently linked on different chains, with at most one DID owning an `(address, chain)` association. Each DID has at most one public receiving default per chain.
 
 ## Mainnet / configuration
 
 ```sh
-npm run dev
+bun run dev
 ```
 
 This defaults to Ethereum mainnet (chain 1), with `data/wallet.sqlite`. Linking, recipient resolution, and invitations work without an Ethereum RPC. Sending requires a trusted **server-side** `ETH_RPC_URL` for that chain. The URL is never included in API responses. Anvil RPC is configured automatically in `dev:local`.
@@ -142,27 +148,33 @@ Authenticated mutations require the HttpOnly cookie, exact `Origin`, and `x-csrf
 ## Validation and Foundry workspace
 
 ```sh
-npm run check
-npm test
-npm run build
-npm start
+bun run check
+bun run test
+bun run build
+bun run start
 ```
 
-`npm test` covers identifier and amount validation, network configuration, the expiring key/value table, challenge issuance, link listing and receiving defaults, payment creation and pinning, invitation scoping and rotation, cancellation, preparation without an RPC, suggestion vetting and avatar allow-listing, and rate limiting, using an in-memory database migrated by drizzle-kit and an injected identity resolver.
+`bun run test` covers identifier and amount validation, network configuration, the expiring key/value table, challenge issuance, link listing and receiving defaults, payment creation and pinning, invitation scoping and rotation, cancellation, preparation without an RPC, suggestion vetting and avatar allow-listing, and rate limiting, using an in-memory database migrated by drizzle-kit and an injected identity resolver.
 
 `foundry.toml` reserves the `contracts/` workspace and an `anvil` RPC alias. Anvil is included as a dev dependency. For future Solidity work, install the full [Foundry toolchain](https://getfoundry.sh/introduction/installation/) and add contracts/tests before running `forge build` / `forge test`. Wallet linking and these payments need no deployed contract.
 
+## Implementation
+
+Written in Gleam, compiled to JavaScript and run on Node.js, with Hono, the official AT Protocol OAuth and identity SDKs, viem, Drizzle ORM over SQLite, and Foundry Anvil for local development.
+
+Every dependency binding is written in Gleam. `src/ffi.mjs` is the only JavaScript on the server: a generic bridge for the few constructs Gleam cannot express (property access, method calls, `new`, object literals, thrown exceptions, BigInt, mutable cells). It contains no application logic and knows about no package.
+
 ## Source and trust model
 
-- `src/atproto_wallet.gleam`: startup, configuration, and shutdown.
-- `src/wallet/app.gleam`: HTTP routes, sessions, CSRF, host and rate-limit middleware.
-- `src/wallet/oauth.gleam`, `src/wallet/identity.gleam`: official OAuth client and bidirectional identity resolution.
-- `src/wallet/directory.gleam`: AppView handle suggestions, vetted before they reach the page.
-- `src/wallet/linking.gleam`: SIWE challenges, verification, wallet ownership, and receiving defaults.
-- `src/wallet/payments.gleam`, `src/wallet/chain.gleam`: unfunded intents, recipient invitations, preparation, and RPC verification.
-- `src/wallet/store.gleam`, `src/wallet/drizzle/`: schema, migrations, typed queries, and session state.
-- `src/wallet/network.gleam`, `src/wallet/validate.gleam`, `src/wallet/rate_limit.gleam`, `src/wallet/error.gleam`: chain configuration, input shapes, request limits, and failures.
-- `src/wallet/ffi/`: Gleam bindings for Hono, Drizzle, better-sqlite3, viem, the AT Protocol SDKs, Node, `fetch`, and `URL`.
+- `src/citruswallet.gleam`: startup, configuration, and shutdown.
+- `src/citruswallet/app.gleam`: HTTP routes, sessions, CSRF, host and rate-limit middleware.
+- `src/citruswallet/oauth.gleam`, `src/citruswallet/identity.gleam`: official OAuth client and bidirectional identity resolution.
+- `src/citruswallet/directory.gleam`: AppView handle suggestions, vetted before they reach the page.
+- `src/citruswallet/linking.gleam`: SIWE challenges, verification, wallet ownership, and receiving defaults.
+- `src/citruswallet/payments.gleam`, `src/citruswallet/chain.gleam`: unfunded intents, recipient invitations, preparation, and RPC verification.
+- `src/citruswallet/store.gleam`, `src/citruswallet/drizzle/`: schema, migrations, typed queries, and session state.
+- `src/citruswallet/network.gleam`, `src/citruswallet/validate.gleam`, `src/citruswallet/rate_limit.gleam`, `src/citruswallet/error.gleam`: chain configuration, input shapes, request limits, and failures.
+- `src/citruswallet/ffi/`: Gleam bindings for Hono, Drizzle, better-sqlite3, viem, the AT Protocol SDKs, Node, `fetch`, and `URL`.
 - `public/`: responsive frontend, Citrus Zest theme with a light/dark switcher, MetaMask integration, handle suggestions, and balance display.
 - `scripts/`: Anvil + app launcher.
 
