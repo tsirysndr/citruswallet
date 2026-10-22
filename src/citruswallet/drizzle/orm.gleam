@@ -615,3 +615,15 @@ pub fn in_query(
 ) -> Condition {
   in_array_raw(column.raw, compile(query, database))
 }
+
+/// Compare columns without binding the second column as a literal value.
+pub fn columns_equal(left: Column(a), right: Column(a)) -> Condition {
+  eq_raw(left.raw, right.raw)
+}
+
+@external(javascript, "drizzle-orm", "exists")
+fn exists_raw(query: Js) -> Condition
+
+pub fn exists(query: Query(a), database: Database) -> Condition {
+  exists_raw(compile(query, database))
+}

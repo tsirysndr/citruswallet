@@ -1,5 +1,6 @@
 import citruswallet/drizzle/orm.{
-  type Table, asc, composite_primary_key, index, integer, not_null, table, text,
+  type Table, asc, composite_primary_key, desc, index, integer, not_null,
+  only_where, table, text,
 }
 import gleam/dynamic/decode.{type Decoder}
 
@@ -18,11 +19,13 @@ pub fn define(decoder: Decoder(row)) -> Table(row) {
     ],
     [
       composite_primary_key(["did", "rkey"]),
-      index("address_repository_lookup", [
+      index("address_repository_latest", [
         asc("did"),
         asc("chain_id"),
         asc("address"),
-      ]),
+        desc("rev"),
+      ])
+        |> only_where("\"record\" IS NOT NULL"),
     ],
     decoder,
   )

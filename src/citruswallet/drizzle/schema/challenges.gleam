@@ -1,6 +1,6 @@
 import citruswallet/drizzle/orm.{
-  type Column, type Table, bool_column, int_column, integer, not_null,
-  primary_key, string_column, table as db_table, text,
+  type Column, type Table, asc, bool_column, index, int_column, integer,
+  not_null, primary_key, string_column, table as db_table, text,
 }
 import gleam/dynamic/decode.{type Decoder}
 
@@ -30,7 +30,10 @@ pub fn define(decoder: Decoder(row)) -> Challenges(row) {
         integer("expires") |> not_null,
         integer("public") |> not_null,
       ],
-      [],
+      [
+        index("challenges_by_expiry", [asc("expires")]),
+        index("challenges_by_session", [asc("session")]),
+      ],
       decoder,
     )
   Challenges(

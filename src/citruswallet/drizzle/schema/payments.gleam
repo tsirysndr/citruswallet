@@ -68,14 +68,34 @@ pub fn define(decoder: Decoder(row)) -> Payments(row) {
       ],
       [
         composite_unique("payments_chain_tx", ["chain_id", "tx_hash"]),
-        index("payments_by_sender", [
+        index("payments_by_sender_chain_time", [
           asc("sender_did"),
+          asc("chain_id"),
           desc("created_at"),
+          desc("id"),
         ]),
-        index("payments_by_recipient", [
+        index("payments_by_sender_chain_state_time", [
+          asc("sender_did"),
+          asc("chain_id"),
+          asc("state"),
+          desc("created_at"),
+          desc("id"),
+        ]),
+        index("payments_by_recipient_chain_time", [
           asc("recipient_did"),
+          asc("chain_id"),
           desc("created_at"),
+          desc("id"),
         ]),
+        index("payments_by_recipient_chain_state_time", [
+          asc("recipient_did"),
+          asc("chain_id"),
+          asc("state"),
+          desc("created_at"),
+          desc("id"),
+        ]),
+        index("payments_prepared_expiry", [asc("expires_at")])
+          |> only_where("\"state\" = 'prepared'"),
         unique_index("reserved_payment_nonce", [
           asc("chain_id"),
           asc("from_address"),

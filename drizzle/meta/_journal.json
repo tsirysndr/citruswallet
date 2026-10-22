@@ -43,6 +43,13 @@
       "when": 1792681766687,
       "tag": "0005_tearful_hannibal_king",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1792683967500,
+      "tag": "0006_good_living_mummy",
+      "breakpoints": true
     }
   ]
 }

@@ -1,6 +1,6 @@
 import citruswallet/drizzle/orm.{
-  type Column, type Table, composite_primary_key, int_column, integer, not_null,
-  string_column, table as db_table, text,
+  type Column, type Table, asc, composite_primary_key, index, int_column,
+  integer, not_null, string_column, table as db_table, text,
 }
 import gleam/dynamic/decode.{type Decoder}
 
@@ -24,7 +24,10 @@ pub fn define(decoder: Decoder(row)) -> Kv(row) {
         text("value") |> not_null,
         integer("expires") |> not_null,
       ],
-      [composite_primary_key(["namespace", "key"])],
+      [
+        composite_primary_key(["namespace", "key"]),
+        index("kv_by_expiry", [asc("expires")]),
+      ],
       decoder,
     )
   Kv(

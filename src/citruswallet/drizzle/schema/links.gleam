@@ -1,7 +1,7 @@
 import citruswallet/drizzle/orm.{
   type Column, type Table, asc, bool_column, composite_primary_key,
-  composite_unique, default_int, int_column, integer, not_null, only_where,
-  string_column, table as db_table, text, unique_index,
+  composite_unique, default_int, desc, index, int_column, integer, not_null,
+  only_where, string_column, table as db_table, text, unique_index,
 }
 import gleam/dynamic/decode.{type Decoder}
 
@@ -36,6 +36,7 @@ pub fn define(decoder: Decoder(row)) -> Links(row) {
       [
         composite_primary_key(["did", "address", "chain_id"]),
         composite_unique("links_address_chain", ["address", "chain_id"]),
+        index("links_by_owner_time", [asc("did"), desc("linked_at")]),
         unique_index("one_default_per_chain", [
           asc("did"),
           asc("chain_id"),

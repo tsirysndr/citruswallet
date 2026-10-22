@@ -1,9 +1,9 @@
 import citruswallet/chain.{type Chain}
 import citruswallet/directory
 import citruswallet/drizzle/orm.{
-  all, all_of, any_of, ascending, contains, count_rows, delete, descending, eq,
-  from as db_from, gt, in_list, in_query, insert, is_null, limit, lte, offset,
-  one, order_by, pick, run, select, set, update, where,
+  all, all_of, any_of, ascending, columns_equal, contains, count_rows, delete,
+  descending, eq, exists, from as db_from, gt, in_list, insert, is_null, limit,
+  lte, offset, one, order_by, pick, run, select, set, update, where,
 }
 import citruswallet/drizzle/schema/payments as payments_schema
 import citruswallet/drizzle/schema/user_profiles
@@ -295,14 +295,16 @@ pub fn history(payments: Payments, did: String, filters: Filters) -> Page {
     "" -> conditions
     query -> {
       let profiles = user_profiles.define(decode.success(Nil))
-      let matching_profiles =
+      let matching_profiles = fn(participant) {
         select(profiles.table, pick("did", profiles.did))
         |> where([
+          columns_equal(profiles.did, participant),
           any_of([
             contains(profiles.handle, query),
             contains(profiles.display_name, query),
           ]),
         ])
+      }
       [
         any_of([
           contains(table.description, query),
@@ -312,10 +314,9 @@ pub fn history(payments: Payments, did: String, filters: Filters) -> Page {
           contains(table.address, query),
           contains(table.from_address, query),
           contains(table.tx_hash, query),
-          in_query(table.sender_did, matching_profiles, payments.store.database),
-          in_query(
-            table.recipient_did,
-            matching_profiles,
+          exists(matching_profiles(table.sender_did), payments.store.database),
+          exists(
+            matching_profiles(table.recipient_did),
             payments.store.database,
           ),
         ]),
