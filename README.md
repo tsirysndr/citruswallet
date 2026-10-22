@@ -44,14 +44,6 @@ AT Protocol login still uses your actual account provider over the internet. The
 
 The invitation is **not a funded claim link** and does not promise that the sender will pay. Intents expire after seven days. Only the pinned recipient DID can accept, even if the original handle changes hands. Invitation tokens are hashed at rest; generating a new invitation invalidates the old link. URL fragments keep the initial token out of ordinary page request URLs, and the frontend preserves it in session storage across OAuth redirects.
 
-### Theme
-
-The interface is built from the five colors of the [Citrus Zest palette](https://www.color-hex.com/color-palette/1010711) — `#ff9234`, `#ffcd3c`, `#fefed5`, `#e8fcd1`, `#35d0ba` — plus neutrals derived from the teal hue. Both themes live in `public/style.css` as one token block each, and every color in the stylesheet is a token: re-skinning the app means editing those two blocks and nothing else.
-
-The header carries a light/dark switcher. `public/theme.js` resolves the preference into a `data-theme` attribute before the page paints — it loads without `defer`, ahead of `app.js`, because the page's content policy forbids inline scripts — so nothing flashes the wrong palette. Until you pick a side it follows the operating system, including when that changes while the page is open; your choice is then remembered per browser, and a browser that refuses storage still switches for the session.
-
-Text pairings meet WCAG AA at their own sizes in both themes. Generated avatar placeholders are kept inside the palette's own arc, from orange through yellow to teal.
-
 ### Handle suggestions
 
 Both handle fields — sign-in and recipient — suggest accounts as you type: a rounded avatar (or a generated placeholder with the initial), the display name, and the `@handle`. Arrow keys and Enter pick one; Escape closes the list.
@@ -175,7 +167,7 @@ Every dependency binding is written in Gleam. `src/ffi.mjs` is the only JavaScri
 - `src/citruswallet/store.gleam`, `src/citruswallet/drizzle/`: schema, migrations, typed queries, and session state.
 - `src/citruswallet/network.gleam`, `src/citruswallet/validate.gleam`, `src/citruswallet/rate_limit.gleam`, `src/citruswallet/error.gleam`: chain configuration, input shapes, request limits, and failures.
 - `src/citruswallet/ffi/`: Gleam bindings for Hono, Drizzle, better-sqlite3, viem, the AT Protocol SDKs, Node, `fetch`, and `URL`.
-- `public/`: responsive frontend, Citrus Zest theme with a light/dark switcher, MetaMask integration, handle suggestions, and balance display.
+- `public/`: responsive frontend, MetaMask integration, handle suggestions, and balance display.
 - `scripts/`: Anvil + app launcher.
 
 The wallet signature proves that the Ethereum account signed a message naming the DID. DID-owner consent relies on this app's OAuth verification; a copied wallet signature alone is not an independently verifiable DID-owner attestation. Public resolution and recipient selections are app-local database state, not on-chain or PDS records. Consumers trust this server's mapping and configured RPC. Handle suggestions additionally trust the configured AppView for discovery only, and loading a suggested avatar reveals the viewer's IP address to that image CDN; neither affects what the app will accept as a payment recipient.
