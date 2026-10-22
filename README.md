@@ -257,3 +257,15 @@ Set `VITE_KLIPY_API_KEY` in `.env.prod` before `bun run build` (or in `.env` for
 The description editor offers GIF, sticker, meme, and clip search through KLIPY, with trending results, debounced search, pagination, previews, and removal. One optional `media` object accompanies the separate 500-character description. Migration `0005` adds its nullable database column. Only sender and recipient can read it; no description or attachment is published on-chain or to AT Protocol. Media loads directly from KLIPY and is excluded from the offline service-worker cache. Clips play only on user request. A random browser-local identifier is used for KLIPY discovery/share events; no DID, handle, amount, recipient, or description is sent to KLIPY.
 
 Activity keeps search and a filter icon above the list. Transaction type, status, date range, sorting, and page size live in a responsive side drawer. Reset preserves the current search; the icon indicates active filter settings.
+
+### Database query indexes
+
+Migration `0006` replaces the older activity indexes with participant/chain/date/id indexes and participant/chain/status/date/id indexes. This covers both sent and received history, date filtering, status filtering, and stable ascending or descending pagination. It also indexes session/expiry cleanup, ordered wallet lists, the latest non-deleted address record revision, and expiry of prepared payment reservations. Existing primary keys and uniqueness indexes continue to cover payment IDs, invitation tokens, transaction hashes, nonce reservations, profile DIDs, wallet ownership, and Jetstream deduplication.
+
+Profile-name activity searches use correlated, indexed DID lookups instead of scanning the global profile table. Literal substring searches still inspect candidate payment text; normal B-tree indexes cannot accelerate arbitrary `contains` matching. Combined sent-and-received history can still require sorting the two indexed result sets, and exact counts/deep offset pagination scale with the user's matching history. Adding an index to every text column would not remove these costs.
+
+`test/indexes.test.mjs` checks the actual generated count/page SQL with `EXPLAIN QUERY PLAN` over 12,000 payments, verifies maintenance lookup plans, and checks that the index migration preserves records and uniqueness constraints.
+
+### Desktop keyboard shortcuts
+
+The floating keyboard button opens the shortcut guide. Press `G`, then `A`, `W`, `P`, or `H` to open Account, Wallet, Payments, or Activity. `/` opens Activity and focuses search; `?` opens the guide. Native Escape closes dialogs and calendar arrow keys continue to work. Navigation shortcuts ignore text fields, editable content, active dialogs, modifier combinations, and IME composition. They are disabled on mobile/touch layouts; desktop users can also turn them off in the guide.
