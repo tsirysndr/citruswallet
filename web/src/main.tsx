@@ -16,3 +16,11 @@ createRoot(document.getElementById("root")!).render(
     </QueryClientProvider>
   </StrictMode>,
 );
+
+// Register only production builds. A worker update never forces a page reload.
+if (import.meta.env.PROD && "serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    void navigator.serviceWorker.register("/sw.js", { scope: "/", updateViaCache: "none" })
+      .catch(() => { /* The online app remains usable when installation fails. */ });
+  });
+}

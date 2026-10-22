@@ -6,6 +6,7 @@ import { rpc } from "./api";
 import { inviteTokenAtom, reviewIdAtom, statusAtom } from "./atoms";
 import { BottomNav, HeaderNav } from "./components/Nav";
 import { CitrusMark } from "./components/CitrusMark";
+import { InstallApp } from "./components/InstallApp";
 import { InstallMetaMask } from "./components/InstallMetaMask";
 import { forgetBroadcast, pendingBroadcast } from "./broadcast";
 import { useRefresh, useRun, useStatus } from "./hooks";
@@ -73,7 +74,7 @@ export function App() {
         </Link>
         <HeaderNav marks={marks} />
         <div className="flex items-center gap-2.5">
-          <span className="hidden rounded-full border border-edge px-2.5 py-1.5 text-[11px] tracking-[0.04em] text-ink-muted xl:inline">
+          <span className="hidden rounded-full border border-edge px-2.5 py-1.5 text-[12px] tracking-[0.04em] text-ink-muted xl:inline">
             {session?.network.name ?? "AT Protocol × Ethereum"}
           </span>
           <InstallMetaMask />
@@ -106,6 +107,7 @@ export function App() {
       <footer className="app-footer">
         <span>Identity on AT Protocol. Assets on Ethereum.</span>
         <nav className="legal-footer-links" aria-label="Legal and contact">
+          <InstallApp />
           <Link to="/privacy">Privacy Policy</Link>
           <Link to="/terms">Terms and Conditions</Link>
           <a href="mailto:contact@citruswallet.app">Contact</a>

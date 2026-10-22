@@ -1,0 +1,20 @@
+{
+  "id": "/",
+  "name": "Citrus Wallet",
+  "short_name": "Citrus",
+  "description": "Connect your AT Protocol identity and send ETH by handle.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f2f1ed",
+  "theme_color": "#c5f277",
+  "lang": "en",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ],
+  "shortcuts": [
+    { "name": "Send ETH", "url": "/payments" },
+    { "name": "Activity", "url": "/activity" }
+  ]
+}
