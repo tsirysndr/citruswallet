@@ -1,0 +1,45 @@
+// Authoritative Lexicon source. Generate with bun run lex:generate.
+lexicon = 1
+id = "app.citruswallet.createPayment"
+defs = new Dynamic {
+  `main` = new Dynamic {
+    `type` = "procedure"
+    `input` = new Dynamic {
+      `encoding` = "application/json"
+      `schema` = new Dynamic {
+        `type` = "object"
+        `required` = List("identifier", "expectedDid", "amount")
+        `properties` = new Dynamic {
+          `identifier` = new Dynamic {
+            `type` = "string"
+            `maxLength` = 2048
+          }
+          `expectedDid` = new Dynamic {
+            `type` = "string"
+            `maxLength` = 2048
+          }
+          `amount` = new Dynamic {
+            `type` = "string"
+            `maxLength` = 80
+          }
+        }
+      }
+    }
+    `output` = new Dynamic {
+      `encoding` = "application/json"
+      `schema` = new Dynamic {
+        `type` = "object"
+        `required` = List("payment", "invitationUrl")
+        `properties` = new Dynamic {
+          `payment` = new Dynamic {
+            `type` = "ref"
+            `ref` = "app.citruswallet.defs#payment"
+          }
+          `invitationUrl` = new Dynamic {
+            `type` = "string"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "lexicon": 1,
+  "id": "app.citruswallet.createPayment",
+  "defs": {
+    "main": {
+      "type": "procedure",
+      "input": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": [
+            "identifier",
+            "expectedDid",
+            "amount"
+          ],
+          "properties": {
+            "identifier": {
+              "type": "string",
+              "maxLength": 2048
+            },
+            "expectedDid": {
+              "type": "string",
+              "maxLength": 2048
+            },
+            "amount": {
+              "type": "string",
+              "maxLength": 80
+            }
+          }
+        }
+      },
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": [
+            "payment",
+            "invitationUrl"
+          ],
+          "properties": {
+            "payment": {
+              "type": "ref",
+              "ref": "app.citruswallet.defs#payment"
+            },
+            "invitationUrl": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

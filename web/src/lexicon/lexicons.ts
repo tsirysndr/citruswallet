@@ -1,0 +1,1092 @@
+/**
+ * GENERATED CODE - DO NOT MODIFY
+ */
+import { type LexiconDoc, Lexicons } from '@atproto/lexicon'
+
+export const schemaDict = {
+  AppCitruswalletAcceptInvitation: {
+    lexicon: 1,
+    id: 'app.citruswallet.acceptInvitation',
+    defs: {
+      main: {
+        type: 'procedure',
+        input: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['token', 'address'],
+            properties: {
+              token: {
+                type: 'string',
+                maxLength: 128,
+              },
+              address: {
+                type: 'string',
+                maxLength: 42,
+              },
+            },
+          },
+        },
+        output: {
+          encoding: 'application/json',
+          schema: {
+            type: 'ref',
+            ref: 'lex:app.citruswallet.defs#paymentResult',
+          },
+        },
+      },
+    },
+  },
+  AppCitruswalletAddress: {
+    lexicon: 1,
+    id: 'app.citruswallet.address',
+    defs: {
+      main: {
+        type: 'record',
+        key: 'any',
+        description:
+          'Public, signature-verified receiving address. chain is a CAIP-2 identifier (for example eip155:1). The record is public; verification still requires checking the signed proof and DID. Removing a record cannot erase previously indexed copies.',
+        record: {
+          type: 'object',
+          required: ['chain', 'address', 'message', 'signature', 'createdAt'],
+          properties: {
+            chain: {
+              type: 'string',
+              maxLength: 64,
+            },
+            address: {
+              type: 'string',
+              minLength: 42,
+              maxLength: 42,
+            },
+            message: {
+              type: 'string',
+              maxLength: 8192,
+            },
+            signature: {
+              type: 'string',
+              minLength: 132,
+              maxLength: 132,
+            },
+            createdAt: {
+              type: 'string',
+              format: 'datetime',
+            },
+          },
+        },
+      },
+    },
+  },
+  AppCitruswalletCancelPayment: {
+    lexicon: 1,
+    id: 'app.citruswallet.cancelPayment',
+    defs: {
+      main: {
+        type: 'procedure',
+        input: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['id'],
+            properties: {
+              id: {
+                type: 'string',
+                maxLength: 64,
+              },
+            },
+          },
+        },
+        output: {
+          encoding: 'application/json',
+          schema: {
+            type: 'ref',
+            ref: 'lex:app.citruswallet.defs#paymentResult',
+          },
+        },
+      },
+    },
+  },
+  AppCitruswalletCreateChallenge: {
+    lexicon: 1,
+    id: 'app.citruswallet.createChallenge',
+    defs: {
+      main: {
+        type: 'procedure',
+        input: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['address'],
+            properties: {
+              address: {
+                type: 'string',
+                maxLength: 42,
+                minLength: 42,
+              },
+              public: {
+                type: 'boolean',
+              },
+            },
+          },
+        },
+        output: {
+          encoding: 'application/json',
+          schema: {
+            type: 'ref',
+            ref: 'lex:app.citruswallet.defs#challenge',
+          },
+        },
+      },
+    },
+  },
+  AppCitruswalletCreateInvitation: {
+    lexicon: 1,
+    id: 'app.citruswallet.createInvitation',
+    defs: {
+      main: {
+        type: 'procedure',
+        input: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['id'],
+            properties: {
+              id: {
+                type: 'string',
+                maxLength: 64,
+              },
+            },
+          },
+        },
+        output: {
+          encoding: 'application/json',
+          schema: {
+            type: 'ref',
+            ref: 'lex:app.citruswallet.defs#invitationResult',
+          },
+        },
+      },
+    },
+  },
+  AppCitruswalletCreatePayment: {
+    lexicon: 1,
+    id: 'app.citruswallet.createPayment',
+    defs: {
+      main: {
+        type: 'procedure',
+        input: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['identifier', 'expectedDid', 'amount'],
+            properties: {
+              identifier: {
+                type: 'string',
+                maxLength: 2048,
+              },
+              expectedDid: {
+                type: 'string',
+                maxLength: 2048,
+              },
+              amount: {
+                type: 'string',
+                maxLength: 80,
+              },
+            },
+          },
+        },
+        output: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['payment', 'invitationUrl'],
+            properties: {
+              payment: {
+                type: 'ref',
+                ref: 'lex:app.citruswallet.defs#payment',
+              },
+              invitationUrl: {
+                type: 'string',
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  AppCitruswalletDefs: {
+    lexicon: 1,
+    id: 'app.citruswallet.defs',
+    defs: {
+      actor: {
+        type: 'object',
+        required: ['did', 'handle', 'displayName', 'avatar'],
+        properties: {
+          did: {
+            type: 'string',
+          },
+          handle: {
+            type: 'string',
+          },
+          displayName: {
+            type: 'string',
+          },
+          avatar: {
+            type: 'string',
+          },
+        },
+        nullable: ['displayName', 'avatar'],
+      },
+      currency: {
+        type: 'object',
+        required: ['name', 'symbol', 'decimals'],
+        properties: {
+          name: {
+            type: 'string',
+          },
+          symbol: {
+            type: 'string',
+          },
+          decimals: {
+            type: 'integer',
+          },
+        },
+      },
+      network: {
+        type: 'object',
+        required: ['chainId', 'chainIdHex', 'name', 'nativeCurrency'],
+        properties: {
+          chainId: {
+            type: 'integer',
+          },
+          chainIdHex: {
+            type: 'string',
+          },
+          name: {
+            type: 'string',
+          },
+          nativeCurrency: {
+            type: 'ref',
+            ref: 'lex:app.citruswallet.defs#currency',
+          },
+          rpcUrls: {
+            type: 'array',
+            items: {
+              type: 'string',
+            },
+          },
+        },
+      },
+      link: {
+        type: 'object',
+        required: [
+          'did',
+          'address',
+          'chain_id',
+          'message',
+          'signature',
+          'linked_at',
+          'public',
+          'is_default',
+        ],
+        properties: {
+          did: {
+            type: 'string',
+          },
+          address: {
+            type: 'string',
+          },
+          chain_id: {
+            type: 'integer',
+          },
+          message: {
+            type: 'string',
+          },
+          signature: {
+            type: 'string',
+          },
+          linked_at: {
+            type: 'string',
+          },
+          public: {
+            type: 'boolean',
+          },
+          is_default: {
+            type: 'boolean',
+          },
+        },
+      },
+      session: {
+        type: 'object',
+        required: [
+          'network',
+          'paymentsEnabled',
+          'did',
+          'csrf',
+          'links',
+          'addressSyncPending',
+        ],
+        properties: {
+          network: {
+            type: 'ref',
+            ref: 'lex:app.citruswallet.defs#network',
+          },
+          paymentsEnabled: {
+            type: 'boolean',
+          },
+          did: {
+            type: 'string',
+          },
+          csrf: {
+            type: 'string',
+          },
+          links: {
+            type: 'array',
+            items: {
+              type: 'ref',
+              ref: 'lex:app.citruswallet.defs#link',
+            },
+          },
+          addressSyncPending: {
+            type: 'boolean',
+          },
+        },
+        nullable: ['did'],
+      },
+      paymentState: {
+        type: 'string',
+        knownValues: [
+          'waiting',
+          'ready',
+          'prepared',
+          'submitted',
+          'confirming',
+          'confirmed',
+          'failed',
+          'cancelled',
+          'expired',
+        ],
+      },
+      payment: {
+        type: 'object',
+        required: [
+          'id',
+          'senderDid',
+          'recipientDid',
+          'recipientLabel',
+          'chainId',
+          'asset',
+          'amount',
+          'amountWei',
+          'state',
+          'address',
+          'revision',
+          'source',
+          'createdAt',
+          'expiresAt',
+          'txHash',
+          'error',
+          'confirmationsRequired',
+        ],
+        properties: {
+          id: {
+            type: 'string',
+          },
+          senderDid: {
+            type: 'string',
+          },
+          recipientDid: {
+            type: 'string',
+          },
+          recipientLabel: {
+            type: 'string',
+          },
+          chainId: {
+            type: 'integer',
+          },
+          asset: {
+            type: 'string',
+          },
+          amount: {
+            type: 'string',
+          },
+          amountWei: {
+            type: 'string',
+          },
+          state: {
+            type: 'ref',
+            ref: 'lex:app.citruswallet.defs#paymentState',
+          },
+          address: {
+            type: 'string',
+          },
+          revision: {
+            type: 'integer',
+          },
+          source: {
+            type: 'string',
+          },
+          createdAt: {
+            type: 'string',
+          },
+          expiresAt: {
+            type: 'string',
+          },
+          txHash: {
+            type: 'string',
+          },
+          error: {
+            type: 'string',
+          },
+          confirmationsRequired: {
+            type: 'integer',
+          },
+          attemptId: {
+            type: 'string',
+          },
+          fromAddress: {
+            type: 'string',
+          },
+          nonce: {
+            type: 'integer',
+          },
+        },
+        nullable: [
+          'address',
+          'txHash',
+          'error',
+          'attemptId',
+          'fromAddress',
+          'nonce',
+        ],
+      },
+      transaction: {
+        type: 'object',
+        required: ['from', 'to', 'value', 'chainId', 'nonce', 'data'],
+        properties: {
+          from: {
+            type: 'string',
+          },
+          to: {
+            type: 'string',
+          },
+          value: {
+            type: 'string',
+          },
+          chainId: {
+            type: 'string',
+          },
+          nonce: {
+            type: 'string',
+          },
+          data: {
+            type: 'string',
+          },
+        },
+      },
+      attempt: {
+        type: 'object',
+        required: ['payment', 'attemptId', 'transaction'],
+        properties: {
+          payment: {
+            type: 'ref',
+            ref: 'lex:app.citruswallet.defs#payment',
+          },
+          attemptId: {
+            type: 'string',
+          },
+          transaction: {
+            type: 'ref',
+            ref: 'lex:app.citruswallet.defs#transaction',
+          },
+        },
+      },
+      recipient: {
+        type: 'object',
+        required: ['did', 'handle', 'chainId', 'address'],
+        properties: {
+          did: {
+            type: 'string',
+          },
+          handle: {
+            type: 'string',
+          },
+          chainId: {
+            type: 'integer',
+          },
+          address: {
+            type: 'string',
+          },
+        },
+        nullable: ['handle', 'address'],
+      },
+      challenge: {
+        type: 'object',
+        required: ['id', 'address', 'chainId', 'message', 'expiresAt'],
+        properties: {
+          id: {
+            type: 'string',
+          },
+          address: {
+            type: 'string',
+          },
+          chainId: {
+            type: 'integer',
+          },
+          message: {
+            type: 'string',
+          },
+          expiresAt: {
+            type: 'string',
+          },
+        },
+      },
+      linksResult: {
+        type: 'object',
+        required: ['links'],
+        properties: {
+          links: {
+            type: 'array',
+            items: {
+              type: 'ref',
+              ref: 'lex:app.citruswallet.defs#link',
+            },
+          },
+          addressSyncPending: {
+            type: 'boolean',
+          },
+        },
+      },
+      paymentResult: {
+        type: 'object',
+        required: ['payment'],
+        properties: {
+          payment: {
+            type: 'ref',
+            ref: 'lex:app.citruswallet.defs#payment',
+          },
+        },
+      },
+      invitationResult: {
+        type: 'object',
+        required: ['invitationUrl'],
+        properties: {
+          invitationUrl: {
+            type: 'string',
+          },
+        },
+      },
+    },
+  },
+  AppCitruswalletGetAddresses: {
+    lexicon: 1,
+    id: 'app.citruswallet.getAddresses',
+    defs: {
+      main: {
+        type: 'query',
+        parameters: {
+          type: 'params',
+          required: ['did'],
+          properties: {
+            did: {
+              type: 'string',
+              maxLength: 2048,
+            },
+          },
+        },
+        output: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['did', 'links'],
+            properties: {
+              did: {
+                type: 'string',
+              },
+              links: {
+                type: 'array',
+                items: {
+                  type: 'ref',
+                  ref: 'lex:app.citruswallet.defs#link',
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  AppCitruswalletGetInvitation: {
+    lexicon: 1,
+    id: 'app.citruswallet.getInvitation',
+    defs: {
+      main: {
+        type: 'query',
+        parameters: {
+          type: 'params',
+          required: ['token'],
+          properties: {
+            token: {
+              type: 'string',
+              maxLength: 128,
+            },
+          },
+        },
+        output: {
+          encoding: 'application/json',
+          schema: {
+            type: 'ref',
+            ref: 'lex:app.citruswallet.defs#paymentResult',
+          },
+        },
+      },
+    },
+  },
+  AppCitruswalletGetPayment: {
+    lexicon: 1,
+    id: 'app.citruswallet.getPayment',
+    defs: {
+      main: {
+        type: 'query',
+        parameters: {
+          type: 'params',
+          required: ['id'],
+          properties: {
+            id: {
+              type: 'string',
+              maxLength: 64,
+            },
+          },
+        },
+        output: {
+          encoding: 'application/json',
+          schema: {
+            type: 'ref',
+            ref: 'lex:app.citruswallet.defs#paymentResult',
+          },
+        },
+      },
+    },
+  },
+  AppCitruswalletGetProfile: {
+    lexicon: 1,
+    id: 'app.citruswallet.getProfile',
+    defs: {
+      main: {
+        type: 'query',
+        output: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['actor'],
+            properties: {
+              actor: {
+                type: 'ref',
+                ref: 'lex:app.citruswallet.defs#actor',
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  AppCitruswalletGetSession: {
+    lexicon: 1,
+    id: 'app.citruswallet.getSession',
+    defs: {
+      main: {
+        type: 'query',
+        output: {
+          encoding: 'application/json',
+          schema: {
+            type: 'ref',
+            ref: 'lex:app.citruswallet.defs#session',
+          },
+        },
+      },
+    },
+  },
+  AppCitruswalletListPayments: {
+    lexicon: 1,
+    id: 'app.citruswallet.listPayments',
+    defs: {
+      main: {
+        type: 'query',
+        output: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['payments'],
+            properties: {
+              payments: {
+                type: 'array',
+                items: {
+                  type: 'ref',
+                  ref: 'lex:app.citruswallet.defs#payment',
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  AppCitruswalletLogout: {
+    lexicon: 1,
+    id: 'app.citruswallet.logout',
+    defs: {
+      main: {
+        type: 'procedure',
+        input: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: [],
+            properties: {},
+          },
+        },
+        output: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['ok'],
+            properties: {
+              ok: {
+                type: 'boolean',
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  AppCitruswalletPreparePayment: {
+    lexicon: 1,
+    id: 'app.citruswallet.preparePayment',
+    defs: {
+      main: {
+        type: 'procedure',
+        input: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['id', 'revision', 'address', 'fromAddress'],
+            properties: {
+              id: {
+                type: 'string',
+                maxLength: 64,
+              },
+              revision: {
+                type: 'integer',
+                minimum: 0,
+              },
+              address: {
+                type: 'string',
+                maxLength: 42,
+              },
+              fromAddress: {
+                type: 'string',
+                maxLength: 42,
+              },
+            },
+          },
+        },
+        output: {
+          encoding: 'application/json',
+          schema: {
+            type: 'ref',
+            ref: 'lex:app.citruswallet.defs#attempt',
+          },
+        },
+      },
+    },
+  },
+  AppCitruswalletResolveRecipient: {
+    lexicon: 1,
+    id: 'app.citruswallet.resolveRecipient',
+    defs: {
+      main: {
+        type: 'procedure',
+        input: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['identifier'],
+            properties: {
+              identifier: {
+                type: 'string',
+                maxLength: 2048,
+              },
+            },
+          },
+        },
+        output: {
+          encoding: 'application/json',
+          schema: {
+            type: 'ref',
+            ref: 'lex:app.citruswallet.defs#recipient',
+          },
+        },
+      },
+    },
+  },
+  AppCitruswalletSearchActors: {
+    lexicon: 1,
+    id: 'app.citruswallet.searchActors',
+    defs: {
+      main: {
+        type: 'query',
+        parameters: {
+          type: 'params',
+          required: ['q'],
+          properties: {
+            q: {
+              type: 'string',
+              maxLength: 64,
+            },
+          },
+        },
+        output: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['actors'],
+            properties: {
+              actors: {
+                type: 'array',
+                items: {
+                  type: 'ref',
+                  ref: 'lex:app.citruswallet.defs#actor',
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  AppCitruswalletSetDefaultAddress: {
+    lexicon: 1,
+    id: 'app.citruswallet.setDefaultAddress',
+    defs: {
+      main: {
+        type: 'procedure',
+        input: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['address'],
+            properties: {
+              address: {
+                type: 'string',
+                maxLength: 42,
+                minLength: 42,
+              },
+            },
+          },
+        },
+        output: {
+          encoding: 'application/json',
+          schema: {
+            type: 'ref',
+            ref: 'lex:app.citruswallet.defs#linksResult',
+          },
+        },
+      },
+    },
+  },
+  AppCitruswalletStartLogin: {
+    lexicon: 1,
+    id: 'app.citruswallet.startLogin',
+    defs: {
+      main: {
+        type: 'procedure',
+        input: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: [],
+            properties: {
+              identifier: {
+                type: 'string',
+                maxLength: 2048,
+              },
+              create: {
+                type: 'boolean',
+              },
+            },
+          },
+        },
+        output: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['url'],
+            properties: {
+              url: {
+                type: 'string',
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  AppCitruswalletSubmitPayment: {
+    lexicon: 1,
+    id: 'app.citruswallet.submitPayment',
+    defs: {
+      main: {
+        type: 'procedure',
+        input: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['id', 'attemptId', 'txHash'],
+            properties: {
+              id: {
+                type: 'string',
+                maxLength: 64,
+              },
+              attemptId: {
+                type: 'string',
+                maxLength: 64,
+              },
+              txHash: {
+                type: 'string',
+                maxLength: 66,
+              },
+            },
+          },
+        },
+        output: {
+          encoding: 'application/json',
+          schema: {
+            type: 'ref',
+            ref: 'lex:app.citruswallet.defs#paymentResult',
+          },
+        },
+      },
+    },
+  },
+  AppCitruswalletSyncAddresses: {
+    lexicon: 1,
+    id: 'app.citruswallet.syncAddresses',
+    defs: {
+      main: {
+        type: 'procedure',
+        input: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: [],
+            properties: {},
+          },
+        },
+        output: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['addressSyncPending'],
+            properties: {
+              addressSyncPending: {
+                type: 'boolean',
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  AppCitruswalletUnlinkAddress: {
+    lexicon: 1,
+    id: 'app.citruswallet.unlinkAddress',
+    defs: {
+      main: {
+        type: 'procedure',
+        input: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['address'],
+            properties: {
+              address: {
+                type: 'string',
+                maxLength: 42,
+                minLength: 42,
+              },
+            },
+          },
+        },
+        output: {
+          encoding: 'application/json',
+          schema: {
+            type: 'ref',
+            ref: 'lex:app.citruswallet.defs#linksResult',
+          },
+        },
+      },
+    },
+  },
+  AppCitruswalletVerifyChallenge: {
+    lexicon: 1,
+    id: 'app.citruswallet.verifyChallenge',
+    defs: {
+      main: {
+        type: 'procedure',
+        input: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['id', 'signature'],
+            properties: {
+              id: {
+                type: 'string',
+                maxLength: 48,
+              },
+              signature: {
+                type: 'string',
+                maxLength: 132,
+              },
+            },
+          },
+        },
+        output: {
+          encoding: 'application/json',
+          schema: {
+            type: 'ref',
+            ref: 'lex:app.citruswallet.defs#linksResult',
+          },
+        },
+      },
+    },
+  },
+} as const satisfies Record<string, LexiconDoc>
+
+export const schemas = Object.values(schemaDict)
+export const lexicons: Lexicons = new Lexicons(schemas)
+export const ids = {
+  AppCitruswalletAcceptInvitation: 'app.citruswallet.acceptInvitation',
+  AppCitruswalletAddress: 'app.citruswallet.address',
+  AppCitruswalletCancelPayment: 'app.citruswallet.cancelPayment',
+  AppCitruswalletCreateChallenge: 'app.citruswallet.createChallenge',
+  AppCitruswalletCreateInvitation: 'app.citruswallet.createInvitation',
+  AppCitruswalletCreatePayment: 'app.citruswallet.createPayment',
+  AppCitruswalletDefs: 'app.citruswallet.defs',
+  AppCitruswalletGetAddresses: 'app.citruswallet.getAddresses',
+  AppCitruswalletGetInvitation: 'app.citruswallet.getInvitation',
+  AppCitruswalletGetPayment: 'app.citruswallet.getPayment',
+  AppCitruswalletGetProfile: 'app.citruswallet.getProfile',
+  AppCitruswalletGetSession: 'app.citruswallet.getSession',
+  AppCitruswalletListPayments: 'app.citruswallet.listPayments',
+  AppCitruswalletLogout: 'app.citruswallet.logout',
+  AppCitruswalletPreparePayment: 'app.citruswallet.preparePayment',
+  AppCitruswalletResolveRecipient: 'app.citruswallet.resolveRecipient',
+  AppCitruswalletSearchActors: 'app.citruswallet.searchActors',
+  AppCitruswalletSetDefaultAddress: 'app.citruswallet.setDefaultAddress',
+  AppCitruswalletStartLogin: 'app.citruswallet.startLogin',
+  AppCitruswalletSubmitPayment: 'app.citruswallet.submitPayment',
+  AppCitruswalletSyncAddresses: 'app.citruswallet.syncAddresses',
+  AppCitruswalletUnlinkAddress: 'app.citruswallet.unlinkAddress',
+  AppCitruswalletVerifyChallenge: 'app.citruswallet.verifyChallenge',
+}

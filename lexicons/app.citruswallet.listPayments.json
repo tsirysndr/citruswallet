@@ -1,0 +1,27 @@
+{
+  "lexicon": 1,
+  "id": "app.citruswallet.listPayments",
+  "defs": {
+    "main": {
+      "type": "query",
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": [
+            "payments"
+          ],
+          "properties": {
+            "payments": {
+              "type": "array",
+              "items": {
+                "type": "ref",
+                "ref": "app.citruswallet.defs#payment"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

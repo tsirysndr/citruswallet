@@ -1,0 +1,34 @@
+// Authoritative Lexicon source. Generate with bun run lex:generate.
+lexicon = 1
+id = "app.citruswallet.searchActors"
+defs = new Dynamic {
+  `main` = new Dynamic {
+    `type` = "query"
+    `parameters` = new Dynamic {
+      `type` = "params"
+      `required` = List("q")
+      `properties` = new Dynamic {
+        `q` = new Dynamic {
+          `type` = "string"
+          `maxLength` = 64
+        }
+      }
+    }
+    `output` = new Dynamic {
+      `encoding` = "application/json"
+      `schema` = new Dynamic {
+        `type` = "object"
+        `required` = List("actors")
+        `properties` = new Dynamic {
+          `actors` = new Dynamic {
+            `type` = "array"
+            `items` = new Dynamic {
+              `type` = "ref"
+              `ref` = "app.citruswallet.defs#actor"
+            }
+          }
+        }
+      }
+    }
+  }
+}

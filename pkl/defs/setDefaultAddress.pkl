@@ -1,0 +1,29 @@
+// Authoritative Lexicon source. Generate with bun run lex:generate.
+lexicon = 1
+id = "app.citruswallet.setDefaultAddress"
+defs = new Dynamic {
+  `main` = new Dynamic {
+    `type` = "procedure"
+    `input` = new Dynamic {
+      `encoding` = "application/json"
+      `schema` = new Dynamic {
+        `type` = "object"
+        `required` = List("address")
+        `properties` = new Dynamic {
+          `address` = new Dynamic {
+            `type` = "string"
+            `maxLength` = 42
+            `minLength` = 42
+          }
+        }
+      }
+    }
+    `output` = new Dynamic {
+      `encoding` = "application/json"
+      `schema` = new Dynamic {
+        `type` = "ref"
+        `ref` = "app.citruswallet.defs#linksResult"
+      }
+    }
+  }
+}

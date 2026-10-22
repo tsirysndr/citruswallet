@@ -1,0 +1,36 @@
+{
+  "lexicon": 1,
+  "id": "app.citruswallet.acceptInvitation",
+  "defs": {
+    "main": {
+      "type": "procedure",
+      "input": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": [
+            "token",
+            "address"
+          ],
+          "properties": {
+            "token": {
+              "type": "string",
+              "maxLength": 128
+            },
+            "address": {
+              "type": "string",
+              "maxLength": 42
+            }
+          }
+        }
+      },
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "ref",
+          "ref": "app.citruswallet.defs#paymentResult"
+        }
+      }
+    }
+  }
+}

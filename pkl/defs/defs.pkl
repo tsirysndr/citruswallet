@@ -1,0 +1,312 @@
+// Authoritative Lexicon source. Generate with bun run lex:generate.
+lexicon = 1
+id = "app.citruswallet.defs"
+defs = new Dynamic {
+  `actor` = new Dynamic {
+    `type` = "object"
+    `required` = List("did", "handle", "displayName", "avatar")
+    `properties` = new Dynamic {
+      `did` = new Dynamic {
+        `type` = "string"
+      }
+      `handle` = new Dynamic {
+        `type` = "string"
+      }
+      `displayName` = new Dynamic {
+        `type` = "string"
+      }
+      `avatar` = new Dynamic {
+        `type` = "string"
+      }
+    }
+    `nullable` = List("displayName", "avatar")
+  }
+  `currency` = new Dynamic {
+    `type` = "object"
+    `required` = List("name", "symbol", "decimals")
+    `properties` = new Dynamic {
+      `name` = new Dynamic {
+        `type` = "string"
+      }
+      `symbol` = new Dynamic {
+        `type` = "string"
+      }
+      `decimals` = new Dynamic {
+        `type` = "integer"
+      }
+    }
+  }
+  `network` = new Dynamic {
+    `type` = "object"
+    `required` = List("chainId", "chainIdHex", "name", "nativeCurrency")
+    `properties` = new Dynamic {
+      `chainId` = new Dynamic {
+        `type` = "integer"
+      }
+      `chainIdHex` = new Dynamic {
+        `type` = "string"
+      }
+      `name` = new Dynamic {
+        `type` = "string"
+      }
+      `nativeCurrency` = new Dynamic {
+        `type` = "ref"
+        `ref` = "app.citruswallet.defs#currency"
+      }
+      `rpcUrls` = new Dynamic {
+        `type` = "array"
+        `items` = new Dynamic {
+          `type` = "string"
+        }
+      }
+    }
+  }
+  `link` = new Dynamic {
+    `type` = "object"
+    `required` = List("did", "address", "chain_id", "message", "signature", "linked_at", "public", "is_default")
+    `properties` = new Dynamic {
+      `did` = new Dynamic {
+        `type` = "string"
+      }
+      `address` = new Dynamic {
+        `type` = "string"
+      }
+      `chain_id` = new Dynamic {
+        `type` = "integer"
+      }
+      `message` = new Dynamic {
+        `type` = "string"
+      }
+      `signature` = new Dynamic {
+        `type` = "string"
+      }
+      `linked_at` = new Dynamic {
+        `type` = "string"
+      }
+      `public` = new Dynamic {
+        `type` = "boolean"
+      }
+      `is_default` = new Dynamic {
+        `type` = "boolean"
+      }
+    }
+  }
+  `session` = new Dynamic {
+    `type` = "object"
+    `required` = List("network", "paymentsEnabled", "did", "csrf", "links", "addressSyncPending")
+    `properties` = new Dynamic {
+      `network` = new Dynamic {
+        `type` = "ref"
+        `ref` = "app.citruswallet.defs#network"
+      }
+      `paymentsEnabled` = new Dynamic {
+        `type` = "boolean"
+      }
+      `did` = new Dynamic {
+        `type` = "string"
+      }
+      `csrf` = new Dynamic {
+        `type` = "string"
+      }
+      `links` = new Dynamic {
+        `type` = "array"
+        `items` = new Dynamic {
+          `type` = "ref"
+          `ref` = "app.citruswallet.defs#link"
+        }
+      }
+      `addressSyncPending` = new Dynamic {
+        `type` = "boolean"
+      }
+    }
+    `nullable` = List("did")
+  }
+  `paymentState` = new Dynamic {
+    `type` = "string"
+    `knownValues` = List("waiting", "ready", "prepared", "submitted", "confirming", "confirmed", "failed", "cancelled", "expired")
+  }
+  `payment` = new Dynamic {
+    `type` = "object"
+    `required` = List("id", "senderDid", "recipientDid", "recipientLabel", "chainId", "asset", "amount", "amountWei", "state", "address", "revision", "source", "createdAt", "expiresAt", "txHash", "error", "confirmationsRequired")
+    `properties` = new Dynamic {
+      `id` = new Dynamic {
+        `type` = "string"
+      }
+      `senderDid` = new Dynamic {
+        `type` = "string"
+      }
+      `recipientDid` = new Dynamic {
+        `type` = "string"
+      }
+      `recipientLabel` = new Dynamic {
+        `type` = "string"
+      }
+      `chainId` = new Dynamic {
+        `type` = "integer"
+      }
+      `asset` = new Dynamic {
+        `type` = "string"
+      }
+      `amount` = new Dynamic {
+        `type` = "string"
+      }
+      `amountWei` = new Dynamic {
+        `type` = "string"
+      }
+      `state` = new Dynamic {
+        `type` = "ref"
+        `ref` = "app.citruswallet.defs#paymentState"
+      }
+      `address` = new Dynamic {
+        `type` = "string"
+      }
+      `revision` = new Dynamic {
+        `type` = "integer"
+      }
+      `source` = new Dynamic {
+        `type` = "string"
+      }
+      `createdAt` = new Dynamic {
+        `type` = "string"
+      }
+      `expiresAt` = new Dynamic {
+        `type` = "string"
+      }
+      `txHash` = new Dynamic {
+        `type` = "string"
+      }
+      `error` = new Dynamic {
+        `type` = "string"
+      }
+      `confirmationsRequired` = new Dynamic {
+        `type` = "integer"
+      }
+      `attemptId` = new Dynamic {
+        `type` = "string"
+      }
+      `fromAddress` = new Dynamic {
+        `type` = "string"
+      }
+      `nonce` = new Dynamic {
+        `type` = "integer"
+      }
+    }
+    `nullable` = List("address", "txHash", "error", "attemptId", "fromAddress", "nonce")
+  }
+  `transaction` = new Dynamic {
+    `type` = "object"
+    `required` = List("from", "to", "value", "chainId", "nonce", "data")
+    `properties` = new Dynamic {
+      `from` = new Dynamic {
+        `type` = "string"
+      }
+      `to` = new Dynamic {
+        `type` = "string"
+      }
+      `value` = new Dynamic {
+        `type` = "string"
+      }
+      `chainId` = new Dynamic {
+        `type` = "string"
+      }
+      `nonce` = new Dynamic {
+        `type` = "string"
+      }
+      `data` = new Dynamic {
+        `type` = "string"
+      }
+    }
+  }
+  `attempt` = new Dynamic {
+    `type` = "object"
+    `required` = List("payment", "attemptId", "transaction")
+    `properties` = new Dynamic {
+      `payment` = new Dynamic {
+        `type` = "ref"
+        `ref` = "app.citruswallet.defs#payment"
+      }
+      `attemptId` = new Dynamic {
+        `type` = "string"
+      }
+      `transaction` = new Dynamic {
+        `type` = "ref"
+        `ref` = "app.citruswallet.defs#transaction"
+      }
+    }
+  }
+  `recipient` = new Dynamic {
+    `type` = "object"
+    `required` = List("did", "handle", "chainId", "address")
+    `properties` = new Dynamic {
+      `did` = new Dynamic {
+        `type` = "string"
+      }
+      `handle` = new Dynamic {
+        `type` = "string"
+      }
+      `chainId` = new Dynamic {
+        `type` = "integer"
+      }
+      `address` = new Dynamic {
+        `type` = "string"
+      }
+    }
+    `nullable` = List("handle", "address")
+  }
+  `challenge` = new Dynamic {
+    `type` = "object"
+    `required` = List("id", "address", "chainId", "message", "expiresAt")
+    `properties` = new Dynamic {
+      `id` = new Dynamic {
+        `type` = "string"
+      }
+      `address` = new Dynamic {
+        `type` = "string"
+      }
+      `chainId` = new Dynamic {
+        `type` = "integer"
+      }
+      `message` = new Dynamic {
+        `type` = "string"
+      }
+      `expiresAt` = new Dynamic {
+        `type` = "string"
+      }
+    }
+  }
+  `linksResult` = new Dynamic {
+    `type` = "object"
+    `required` = List("links")
+    `properties` = new Dynamic {
+      `links` = new Dynamic {
+        `type` = "array"
+        `items` = new Dynamic {
+          `type` = "ref"
+          `ref` = "app.citruswallet.defs#link"
+        }
+      }
+      `addressSyncPending` = new Dynamic {
+        `type` = "boolean"
+      }
+    }
+  }
+  `paymentResult` = new Dynamic {
+    `type` = "object"
+    `required` = List("payment")
+    `properties` = new Dynamic {
+      `payment` = new Dynamic {
+        `type` = "ref"
+        `ref` = "app.citruswallet.defs#payment"
+      }
+    }
+  }
+  `invitationResult` = new Dynamic {
+    `type` = "object"
+    `required` = List("invitationUrl")
+    `properties` = new Dynamic {
+      `invitationUrl` = new Dynamic {
+        `type` = "string"
+      }
+    }
+  }
+}

@@ -1,0 +1,38 @@
+// Authoritative Lexicon source. Generate with bun run lex:generate.
+lexicon = 1
+id = "app.citruswallet.address"
+defs = new Dynamic {
+  `main` = new Dynamic {
+    `type` = "record"
+    `key` = "any"
+    `description` = "Public, signature-verified receiving address. chain is a CAIP-2 identifier (for example eip155:1). The record is public; verification still requires checking the signed proof and DID. Removing a record cannot erase previously indexed copies."
+    `record` = new Dynamic {
+      `type` = "object"
+      `required` = List("chain", "address", "message", "signature", "createdAt")
+      `properties` = new Dynamic {
+        `chain` = new Dynamic {
+          `type` = "string"
+          `maxLength` = 64
+        }
+        `address` = new Dynamic {
+          `type` = "string"
+          `minLength` = 42
+          `maxLength` = 42
+        }
+        `message` = new Dynamic {
+          `type` = "string"
+          `maxLength` = 8192
+        }
+        `signature` = new Dynamic {
+          `type` = "string"
+          `minLength` = 132
+          `maxLength` = 132
+        }
+        `createdAt` = new Dynamic {
+          `type` = "string"
+          `format` = "datetime"
+        }
+      }
+    }
+  }
+}

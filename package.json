@@ -14,15 +14,19 @@
     "build": "vite build && gleam build",
     "start": "gleam run",
     "check": "gleam check && tsc -p web",
-    "test": "gleam test",
+    "test": "gleam test && node --test test/*.test.mjs",
     "db:generate": "gleam build && drizzle-kit generate",
     "db:check": "gleam build && drizzle-kit check",
-    "anvil": "anvil --host 127.0.0.1 --port 8545 --chain-id 31337"
+    "anvil": "anvil --host 127.0.0.1 --port 8545 --chain-id 31337",
+    "lex:generate": "node scripts/lexicons.mjs"
   },
   "dependencies": {
     "@atproto/identity": "^0.5.20",
+    "@atproto/lexicon": "0.4.14",
+    "@atproto/oauth-client": "0.8.10",
     "@atproto/oauth-client-node": "^0.5.12",
     "@atproto/syntax": "^0.7.7",
+    "@atproto/xrpc": "0.7.7",
     "@fontsource-variable/inter": "^5.3.0",
     "@fontsource-variable/jetbrains-mono": "^5.3.0",
     "@hono/node-server": "^2.1.5",
@@ -41,6 +45,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@atproto/lex-cli": "0.5.7",
     "@foundry-rs/anvil": "^1.7.1",
     "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^24.0.0",

@@ -1,0 +1,45 @@
+{
+  "lexicon": 1,
+  "id": "app.citruswallet.address",
+  "defs": {
+    "main": {
+      "type": "record",
+      "key": "any",
+      "description": "Public, signature-verified receiving address. chain is a CAIP-2 identifier (for example eip155:1). The record is public; verification still requires checking the signed proof and DID. Removing a record cannot erase previously indexed copies.",
+      "record": {
+        "type": "object",
+        "required": [
+          "chain",
+          "address",
+          "message",
+          "signature",
+          "createdAt"
+        ],
+        "properties": {
+          "chain": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "address": {
+            "type": "string",
+            "minLength": 42,
+            "maxLength": 42
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 8192
+          },
+          "signature": {
+            "type": "string",
+            "minLength": 132,
+            "maxLength": 132
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "datetime"
+          }
+        }
+      }
+    }
+  }
+}

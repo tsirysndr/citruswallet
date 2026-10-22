@@ -1,0 +1,41 @@
+{
+  "lexicon": 1,
+  "id": "app.citruswallet.submitPayment",
+  "defs": {
+    "main": {
+      "type": "procedure",
+      "input": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": [
+            "id",
+            "attemptId",
+            "txHash"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "attemptId": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "txHash": {
+              "type": "string",
+              "maxLength": 66
+            }
+          }
+        }
+      },
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "ref",
+          "ref": "app.citruswallet.defs#paymentResult"
+        }
+      }
+    }
+  }
+}
