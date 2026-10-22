@@ -26,7 +26,7 @@ fn start() -> Result(Nil, String) {
   let port =
     node.environment("PORT")
     |> option.then(fn(value) { option.from_result(int.parse(value)) })
-    |> option.unwrap(3000)
+    |> option.unwrap(4747)
   let origin =
     option.unwrap(
       node.environment("APP_URL"),
@@ -66,7 +66,7 @@ fn start() -> Result(Nil, String) {
       chain: chain,
       public_directory: option.unwrap(
         node.environment("PUBLIC_DIR"),
-        "./public",
+        "./web/dist",
       ),
     ))
   let host = option.unwrap(node.environment("HOST"), "127.0.0.1")

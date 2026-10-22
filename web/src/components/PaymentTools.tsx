@@ -1,0 +1,167 @@
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useQueryClient } from "@tanstack/react-query";
+import { useSetAtom } from "jotai";
+import { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import type { z } from "zod";
+import { send } from "../api";
+import { invitationUrlAtom, reviewIdAtom } from "../atoms";
+import { useRefresh, useRun, useStatus } from "../hooks";
+import { useSession } from "../queries";
+import type { Payment, Recipient } from "../types";
+import { amountForm, recipientForm } from "../validation";
+import { Typeahead } from "./Typeahead";
+import {
+  Badge,
+  Button,
+  FieldError,
+  Heading,
+  Hint,
+  Input,
+  Label,
+  Mono,
+  Panel,
+  PanelHeading,
+  Row,
+  Step,
+} from "./ui";
+
+type Resolved = { identifier: string; recipient: Recipient };
+
+export function PaymentTools({ className }: { className?: string }) {
+  const { data: session } = useSession();
+  const queries = useQueryClient();
+  const run = useRun();
+  const status = useStatus();
+  const refresh = useRefresh();
+  const setReviewId = useSetAtom(reviewIdAtom);
+  const setInvitationUrl = useSetAtom(invitationUrlAtom);
+  const [resolved, setResolved] = useState<Resolved | null>(null);
+
+  const recipient = useForm<
+    z.input<typeof recipientForm>,
+    unknown,
+    z.output<typeof recipientForm>
+  >({ resolver: zodResolver(recipientForm), defaultValues: { recipient: "" } });
+
+  const amount = useForm<
+    z.input<typeof amountForm>,
+    unknown,
+    z.output<typeof amountForm>
+  >({ resolver: zodResolver(amountForm), defaultValues: { amount: "" } });
+
+  if (!session?.did) return null;
+
+  const resolve = (identifier: string) =>
+    run(async () => {
+      const found = await send<Recipient>("/api/recipients/resolve", { identifier });
+      setResolved({ identifier, recipient: found });
+      status("Recipient identity verified. Check the DID before creating the intent.");
+    });
+
+  const create = (value: string) =>
+    run(async () => {
+      if (!resolved) throw new Error("Resolve the recipient first.");
+      const result = await send<{ payment: Payment; invitationUrl?: string }>(
+        "/api/payments",
+        {
+          identifier: resolved.identifier,
+          expectedDid: resolved.recipient.did,
+          amount: value,
+        },
+      );
+      queries.setQueryData(["payment", result.payment.id], result.payment);
+      setReviewId(result.payment.id);
+      await refresh();
+      const waiting = result.payment.state === "waiting";
+      setInvitationUrl(waiting ? (result.invitationUrl ?? null) : null);
+      status(
+        waiting
+          ? "Share the invitation with your recipient. Funds stay in your wallet."
+          : "Payment intent created. Review it before opening MetaMask.",
+      );
+    });
+
+  return (
+    <Panel className={className}>
+      <PanelHeading>
+        <Step>03</Step>
+        <Heading>Send ETH by handle</Heading>
+        <Badge className="ml-auto">{session.network.name}</Badge>
+      </PanelHeading>
+      <form
+        noValidate
+        onSubmit={recipient.handleSubmit((values) => resolve(values.recipient))}
+      >
+        <Label htmlFor="recipient">Recipient handle or DID</Label>
+        <Row>
+          <Controller
+            control={recipient.control}
+            name="recipient"
+            render={({ field, fieldState }) => (
+              <Typeahead
+                id="recipient"
+                value={field.value}
+                onChange={(value) => {
+                  field.onChange(value);
+                  setResolved(null);
+                }}
+                onBlur={field.onBlur}
+                onPick={() => recipient.handleSubmit((v) => resolve(v.recipient))()}
+                invalid={Boolean(fieldState.error)}
+                placeholder="alice.bsky.social"
+                maxLength={2048}
+              />
+            )}
+          />
+          <Button type="submit">Resolve &amp; review</Button>
+        </Row>
+        <FieldError>{recipient.formState.errors.recipient?.message}</FieldError>
+      </form>
+
+      {resolved && (
+        <form
+          noValidate
+          className="mt-6"
+          onSubmit={amount.handleSubmit((values) => create(values.amount))}
+        >
+          <p className="m-0 font-mono text-[13px]">
+            {resolved.recipient.handle
+              ? `@${resolved.recipient.handle}`
+              : "Recipient DID"}
+          </p>
+          <Mono>{resolved.recipient.did}</Mono>
+          <Mono>
+            {resolved.recipient.address
+              ? `Receiving address: ${resolved.recipient.address}`
+              : "No public receiving address. Create an intent and invite them to choose a wallet."}
+          </Mono>
+          <Label htmlFor="amount">Amount in ETH</Label>
+          <Row>
+            <Input
+              id="amount"
+              placeholder="0.01"
+              inputMode="decimal"
+              autoComplete="off"
+              aria-invalid={Boolean(amount.formState.errors.amount)}
+              className="font-mono tabular-nums"
+              {...amount.register("amount")}
+            />
+            <Button type="submit">Create payment intent</Button>
+          </Row>
+          <FieldError>{amount.formState.errors.amount?.message}</FieldError>
+          <Hint className="mt-2.5">
+            The recipient’s DID is pinned when you create the intent. No funds move at
+            this step.
+          </Hint>
+        </form>
+      )}
+
+      <Hint className="mt-2.5">
+        {session.paymentsEnabled
+          ? "Direct ETH transfers · funds leave only after MetaMask approval."
+          : "Recipient setup and invitations are available. Set ETH_RPC_URL on the server to enable sending and receipt verification."}
+      </Hint>
+    </Panel>
+  );
+}

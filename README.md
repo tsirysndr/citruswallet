@@ -23,7 +23,16 @@ bun install
 bun run dev:local
 ```
 
-Open **http://127.0.0.1:3000**, using that exact origin. This starts the app and Anvil (RPC `http://127.0.0.1:8545`, chain **31337** / `0x7a69`), and uses `data/local.sqlite`. Ctrl+C stops both processes. The launcher refuses to reuse an existing node on port 8545. Anvil starts fresh each run; the app's database persists.
+Open **http://127.0.0.1:5173**, using that exact origin. This starts three processes: the Vite dev server for the frontend on **5173**, the Gleam server for the API on **4747**, and Anvil (RPC `http://127.0.0.1:8545`, chain **31337** / `0x7a69`), using `data/local.sqlite`. Vite proxies `/api`, `/auth` and `/client-metadata.json` to the Gleam server, so everything stays one origin and the frontend hot-reloads. Ctrl+C stops all three. The launcher refuses to reuse an existing node on port 8545. Anvil starts fresh each run; the app's database persists.
+
+Use the loopback IP literal, not `localhost`: AT Protocol OAuth refuses a `localhost` redirect URI ([RFC 8252](https://www.rfc-editor.org/rfc/rfc8252#section-8.3)).
+
+To run the two halves separately, or to serve the built frontend from the Gleam server the way production does:
+
+```sh
+bun run dev:web   # frontend only, on 5173, proxying to VITE_API_URL
+bun run dev       # API and the built frontend from web/dist, on 4747
+```
 
 MetaMask offers to add/switch to Anvil. For funded test accounts, import Anvil's printed development private keys into separate MetaMask test accounts. **These public development keys must never hold real funds.** Linking a wallet requires no ETH; sending requires ETH for the amount and network fees.
 
@@ -93,16 +102,18 @@ See `.env.example`. Variables are read from the process; to explicitly load an `
 
 | Variable | Default / meaning |
 | --- | --- |
-| `APP_URL` | `http://127.0.0.1:3000`; exact origin, no trailing slash |
-| `PORT`, `HOST` | `3000`, `127.0.0.1` |
+| `APP_URL` | `http://127.0.0.1:4747`; exact origin, no trailing slash |
+| `PORT`, `HOST` | `4747`, `127.0.0.1` |
 | `EVM_CHAIN_ID` | `1`; `31337` allowed only with a loopback app origin |
 | `ETH_RPC_URL` | Required for mainnet payments; loopback HTTP or HTTPS |
 | `DATABASE_PATH` | `data/wallet.sqlite`, or `data/local.sqlite` on Anvil |
 | `MIGRATIONS_DIR` | `./drizzle`; applied at startup |
-| `PUBLIC_DIR` | `./public`; static frontend, resolved against the working directory |
+| `PUBLIC_DIR` | `./web/dist`; the built frontend, resolved against the working directory |
 | `APPVIEW_URL` | `https://public.api.bsky.app`; HTTPS or loopback, serves handle suggestions |
 | `SIGNUP_PDS` | `https://selfhosted.social`; HTTPS or loopback, where **Create one** sends new users |
 | `TRUST_PROXY_HOPS` | `0`; set only for your trusted reverse-proxy topology |
+| `VITE_API_URL` | `http://localhost:4747`; where the dev server proxies the API. Build-time only |
+| `VITE_PORT` | `5173`; the dev server's own port. Build-time only |
 
 For HTTPS hosting, make `/client-metadata.json` publicly reachable by the user's OAuth server and use a persistent, access-controlled database volume. HTTPS enables Secure cookies and HSTS. Use a single Node process; multiple workers require shared OAuth locking, shared rate limiting, and coordinated database access.
 
@@ -154,9 +165,9 @@ Authenticated mutations require the HttpOnly cookie, exact `Origin`, and `x-csrf
 ## Validation and Foundry workspace
 
 ```sh
-bun run check
+bun run check     # gleam check, then tsc on the frontend
 bun run test
-bun run build
+bun run build     # vite build, then gleam build
 bun run start
 ```
 
@@ -166,9 +177,13 @@ bun run start
 
 ## Implementation
 
-Written in Gleam, compiled to JavaScript and run on Node.js, with Hono, the official AT Protocol OAuth and identity SDKs, viem, Drizzle ORM over SQLite, and Foundry Anvil for local development.
+The server is written in Gleam, compiled to JavaScript and run on Node.js, with Hono, the official AT Protocol OAuth and identity SDKs, viem, Drizzle ORM over SQLite, and Foundry Anvil for local development.
 
 Every dependency binding is written in Gleam. `src/ffi.mjs` is the only JavaScript on the server: a generic bridge for the few constructs Gleam cannot express (property access, method calls, `new`, object literals, thrown exceptions, BigInt, mutable cells). It contains no application logic and knows about no package.
+
+The frontend is a React single-page app in TypeScript, built by Vite: Tailwind CSS for styling, TanStack Router for its four screens, TanStack Query for everything read from the server, Jotai for the state that is only the page's own, and React Hook Form with Zod for every input. Zod mirrors the server's own rules so a typo is caught before a request is made, never instead of one — the server validates everything it receives. Inter and JetBrains Mono are bundled and served from this origin, so the page loads no third-party fonts; addresses, handles, balances and amounts are set in the monospace face.
+
+The layout is mobile-first: one column with a bottom tab bar on a phone, and a wider layout with the same sections in the header on a desktop. `web/public/theme.js` is the one classic script on the page, resolving the light or dark preference into a `data-theme` attribute before the first paint; the content policy forbids inline scripts, so it cannot live in the document. Client routes are served the built document by name, so a reload or a shared link to a screen works, while a mistyped API path stays a JSON 404.
 
 ## Source and trust model
 
@@ -181,7 +196,8 @@ Every dependency binding is written in Gleam. `src/ffi.mjs` is the only JavaScri
 - `src/citruswallet/store.gleam`, `src/citruswallet/drizzle/`: schema, migrations, typed queries, and session state.
 - `src/citruswallet/network.gleam`, `src/citruswallet/validate.gleam`, `src/citruswallet/rate_limit.gleam`, `src/citruswallet/error.gleam`: chain configuration, input shapes, request limits, and failures.
 - `src/citruswallet/ffi/`: Gleam bindings for Hono, Drizzle, better-sqlite3, viem, the AT Protocol SDKs, Node, `fetch`, and `URL`.
-- `public/`: responsive frontend, MetaMask integration, handle suggestions, and balance display.
+- `web/src/`: the React frontend — `pages/` for the four screens, `components/` for the panels and primitives, `queries.ts` for server state, `atoms.ts` for page state, `validation.ts` for the input schemas, `wallet.ts` for MetaMask.
+- `vite.config.ts`: the frontend build, and the dev proxy to `VITE_API_URL`.
 - `scripts/`: Anvil + app launcher.
 
 The wallet signature proves that the Ethereum account signed a message naming the DID. DID-owner consent relies on this app's OAuth verification; a copied wallet signature alone is not an independently verifiable DID-owner attestation. Public resolution and recipient selections are app-local database state, not on-chain or PDS records. Consumers trust this server's mapping and configured RPC. Handle suggestions additionally trust the configured AppView for discovery only, and loading a suggested avatar reveals the viewer's IP address to that image CDN; neither affects what the app will accept as a payment recipient.

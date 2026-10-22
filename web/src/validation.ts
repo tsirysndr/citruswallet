@@ -1,0 +1,44 @@
+import { z } from "zod";
+
+/* These mirror the server's own rules so a typo is caught before a request is
+   made — never instead of one. The server validates everything it receives. */
+const didMethods = ["did:plc:", "did:web:"];
+
+const handle = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/;
+
+export const identifier = z
+  .string()
+  .transform((value) => value.trim().replace(/^@+/, ""))
+  .refine((value) => value.length > 0, "Enter an AT Protocol handle or DID.")
+  .refine(
+    (value) =>
+      value.startsWith("did:")
+        ? value.length <= 2048 && didMethods.some((method) => value.startsWith(method))
+        : value.length <= 253 && handle.test(value.toLowerCase()),
+    "Enter a handle like alice.bsky.social, or a did:plc / did:web DID.",
+  );
+
+export const etherAmount = z
+  .string()
+  .transform((value) => value.trim())
+  .refine(
+    (value) => /^(0|[1-9][0-9]{0,17})(\.[0-9]{1,18})?$/.test(value),
+    "Enter a positive ETH amount with at most 18 decimal places.",
+  )
+  .refine((value) => Number(value) > 0, "ETH amount must be greater than zero.");
+
+export const transactionHash = z
+  .string()
+  .transform((value) => value.trim())
+  .refine(
+    (value) => /^0x[0-9a-fA-F]{64}$/.test(value),
+    "Enter the 32-byte transaction hash, starting with 0x.",
+  );
+
+export const signInForm = z.object({ identifier });
+export const recipientForm = z.object({ recipient: identifier });
+export const amountForm = z.object({ amount: etherAmount });
+export const recoverForm = z.object({ txHash: transactionHash });
+export const inviteForm = z.object({
+  address: z.string().min(1, "Choose a linked address."),
+});

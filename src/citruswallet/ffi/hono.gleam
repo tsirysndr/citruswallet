@@ -272,6 +272,14 @@ pub fn files(root: String) -> Middleware {
   serve_static(js.object([#("root", js.string(root))]))
 }
 
+/// Serves the single built document, whatever path asked for it, so a
+/// client-side route survives a reload or a shared link.
+pub fn document(root: String) -> Middleware {
+  serve_static(
+    js.object([#("root", js.string(root)), #("path", js.string("index.html"))]),
+  )
+}
+
 @external(javascript, "@hono/node-server/conninfo", "getConnInfo")
 fn conn_info(context: Context) -> Js
 

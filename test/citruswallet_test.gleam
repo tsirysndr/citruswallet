@@ -38,7 +38,7 @@ fn token_of(invitation_url: String) -> String {
 
 fn open_links() -> #(store.Store, linking.Links) {
   let store = open_store()
-  #(store, linking.new(store, "http://127.0.0.1:3000", 31_337))
+  #(store, linking.new(store, "http://127.0.0.1:4747", 31_337))
 }
 
 fn link_row(
@@ -90,8 +90,8 @@ pub fn ether_amounts_test() {
 // Network configuration.
 
 pub fn network_requires_loopback_for_anvil_test() {
-  assert network.configured("http://127.0.0.1:3000", "1") == Ok(network.mainnet)
-  assert network.configured("http://127.0.0.1:3000", "31337")
+  assert network.configured("http://127.0.0.1:4747", "1") == Ok(network.mainnet)
+  assert network.configured("http://127.0.0.1:4747", "31337")
     == Ok(network.anvil)
   assert network.configured("https://wallet.example", "31337")
     != Ok(network.anvil)
@@ -246,7 +246,7 @@ fn open_payments(handle: String) -> #(linking.Links, payments.Payments) {
       store: store,
       links: links,
       identities: identities,
-      origin: "http://127.0.0.1:3000",
+      origin: "http://127.0.0.1:4747",
       chain_id: 31_337,
       chain: None,
     ),
@@ -267,7 +267,7 @@ pub fn create_payment_waits_for_a_receiving_address_test() {
   assert payment.amount_wei == "250000000000000000"
   assert payment.recipient_label == "bob.bsky.social"
   assert payment.address == None
-  assert invitation != "http://127.0.0.1:3000/#invite="
+  assert invitation != "http://127.0.0.1:4747/#invite="
 }
 
 pub fn create_payment_is_ready_when_a_default_exists_test() {

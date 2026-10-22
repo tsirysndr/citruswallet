@@ -3,6 +3,11 @@ import { fileURLToPath } from 'node:url';
 import { startAnvil, waitForAnvil, RPC_URL } from './anvil.mjs';
 
 const cwd = fileURLToPath(new URL('..', import.meta.url));
+const API_PORT = process.env.PORT ?? '4747';
+const WEB_PORT = process.env.VITE_PORT ?? '5173';
+// A loopback IP literal, not localhost: AT Protocol OAuth refuses a
+// "localhost" redirect URI (RFC 8252).
+const APP_URL = 'http://127.0.0.1:' + WEB_PORT;
 const children = [];
 let stopping = false;
 function stop(code = 0) {
@@ -28,11 +33,17 @@ try {
   const anvil = track(startAnvil());
   await waitForAnvil(anvil);
   if (!stopping) {
-    console.log('\nCitrus Wallet: http://127.0.0.1:3000 · Anvil RPC: ' + RPC_URL + '\n');
+    // The browser talks to Vite, which proxies the API to the Gleam server, so
+    // APP_URL is the Vite origin: that is the origin OAuth must return to.
+    console.log('\nCitrus Wallet: ' + APP_URL + ' · Anvil RPC: ' + RPC_URL + '\n');
     track(spawn('gleam', ['run'], {
       cwd, stdio: 'inherit',
-      env: { ...process.env, APP_URL: 'http://127.0.0.1:3000', PORT: '3000', HOST: '127.0.0.1',
+      env: { ...process.env, APP_URL, PORT: API_PORT, HOST: '127.0.0.1',
         EVM_CHAIN_ID: '31337', ETH_RPC_URL: RPC_URL, DATABASE_PATH: './data/local.sqlite' },
+    }));
+    track(spawn('bunx', ['vite'], {
+      cwd, stdio: 'inherit',
+      env: { ...process.env, VITE_API_URL: 'http://127.0.0.1:' + API_PORT, VITE_PORT: WEB_PORT },
     }));
   }
 } catch (error) { console.error(error.message); stop(1); }

@@ -64,6 +64,10 @@ type Reply {
 type Route =
   fn(Server, Context) -> Promise(Result(Reply, HttpError))
 
+/// The frontend's own routes. Naming them keeps a mistyped API path a JSON
+/// 404 instead of a page.
+const screens = ["/wallet", "/payments", "/activity"]
+
 const session_lifetime = 28_800_000
 
 const binding_lifetime = 600_000
@@ -124,6 +128,7 @@ pub fn build(settings: Settings) -> hono.App {
   hono.get(app, "/api/profile", serve(server, account_profile))
 
   hono.use_(app, hono.files(settings.public_directory))
+  hono.use_on(app, screens, hono.document(settings.public_directory))
   hono.not_found(app, fn(ctx) {
     promise.resolve(refuse(ctx, error.not_found("Not found.")))
   })
