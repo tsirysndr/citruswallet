@@ -115,8 +115,14 @@ pub fn header(context: Context, name: String) -> Option(String) {
   js.as_string(js.call(request(context), "header", [js.string(name)]))
 }
 
+@external(javascript, "../../xrpc.mjs", "registerXrpc")
+pub fn xrpc(app: App, nsid: String, handler: Handler) -> Nil
+
+@external(javascript, "../../xrpc.mjs", "xrpcParameter")
+fn xrpc_parameter(context: Context, name: String) -> Js
+
 pub fn parameter(context: Context, name: String) -> Option(String) {
-  js.as_string(js.call(request(context), "param", [js.string(name)]))
+  js.as_string(xrpc_parameter(context, name))
 }
 
 pub fn text_body(context: Context) -> Promise(Result(String, Exception)) {

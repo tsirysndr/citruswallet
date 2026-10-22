@@ -1,5 +1,5 @@
 import citruswallet/directory.{type Actor, Actor}
-import citruswallet/drizzle/orm
+import citruswallet/drizzle/orm.{insert, run, set}
 import citruswallet/drizzle/schema/links as links_schema
 import citruswallet/error
 import citruswallet/identity.{Identity}
@@ -51,17 +51,17 @@ fn link_row(
 ) -> Nil {
   let schema = links_schema.define(decode.success(Nil))
   let assert Ok(_) =
-    orm.insert(schema.table, [
-      orm.set(schema.did, did),
-      orm.set(schema.address, address),
-      orm.set(schema.chain_id, 31_337),
-      orm.set(schema.message, "message"),
-      orm.set(schema.signature, "0x00"),
-      orm.set(schema.linked_at, "2026-01-01T00:00:00.000Z"),
-      orm.set(schema.is_public, is_public),
-      orm.set(schema.is_default, is_default),
+    insert(schema.table, [
+      set(schema.did, did),
+      set(schema.address, address),
+      set(schema.chain_id, 31_337),
+      set(schema.message, "message"),
+      set(schema.signature, "0x00"),
+      set(schema.linked_at, "2026-01-01T00:00:00.000Z"),
+      set(schema.is_public, is_public),
+      set(schema.is_default, is_default),
     ])
-    |> orm.run(links.store.database)
+    |> run(links.store.database)
   Nil
 }
 

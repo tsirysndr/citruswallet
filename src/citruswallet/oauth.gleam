@@ -7,7 +7,7 @@ import gleam/javascript/promise.{type Promise}
 import gleam/option.{None, Some}
 import gleam/string
 
-const scope = "atproto"
+const scope = "atproto repo:app.citruswallet.address"
 
 const state_lifetime = 600_000
 

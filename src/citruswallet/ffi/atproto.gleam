@@ -101,6 +101,13 @@ pub fn loopback_metadata(redirect_uri: String, scope: String) -> Js {
   )
 }
 
+/// Single-process session refresh locking, matching the systemd deployment.
+@external(javascript, "@atproto/oauth-client", "requestLocalLock")
+fn request_local_lock(
+  name: String,
+  operation: fn() -> Promise(Js),
+) -> Promise(Js)
+
 pub fn client(
   metadata metadata: Js,
   states states: Sessions,
@@ -109,6 +116,7 @@ pub fn client(
   js.construct(js.coerce(node_oauth_client_class), [
     js.object([
       #("clientMetadata", metadata),
+      #("requestLock", js.coerce(request_local_lock)),
       #("stateStore", store(states)),
       #("sessionStore", store(sessions)),
     ]),

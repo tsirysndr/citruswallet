@@ -1,4 +1,8 @@
-import citruswallet/drizzle/orm.{type Column, type Table}
+import citruswallet/drizzle/orm.{
+  type Column, type Table, asc, bool_column, composite_primary_key,
+  composite_unique, default_int, int_column, integer, not_null, only_where,
+  string_column, table as db_table, text, unique_index,
+}
 import gleam/dynamic/decode.{type Decoder}
 
 pub type Links(row) {
@@ -17,38 +21,38 @@ pub type Links(row) {
 
 pub fn define(decoder: Decoder(row)) -> Links(row) {
   let table =
-    orm.table(
+    db_table(
       "links",
       [
-        orm.text("did") |> orm.not_null,
-        orm.text("address") |> orm.not_null,
-        orm.integer("chain_id") |> orm.not_null,
-        orm.text("message") |> orm.not_null,
-        orm.text("signature") |> orm.not_null,
-        orm.text("linked_at") |> orm.not_null,
-        orm.integer("public") |> orm.not_null,
-        orm.integer("is_default") |> orm.not_null |> orm.default_int(0),
+        text("did") |> not_null,
+        text("address") |> not_null,
+        integer("chain_id") |> not_null,
+        text("message") |> not_null,
+        text("signature") |> not_null,
+        text("linked_at") |> not_null,
+        integer("public") |> not_null,
+        integer("is_default") |> not_null |> default_int(0),
       ],
       [
-        orm.composite_primary_key(["did", "address", "chain_id"]),
-        orm.composite_unique("links_address_chain", ["address", "chain_id"]),
-        orm.unique_index("one_default_per_chain", [
-          orm.asc("did"),
-          orm.asc("chain_id"),
+        composite_primary_key(["did", "address", "chain_id"]),
+        composite_unique("links_address_chain", ["address", "chain_id"]),
+        unique_index("one_default_per_chain", [
+          asc("did"),
+          asc("chain_id"),
         ])
-          |> orm.only_where("\"is_default\" = 1"),
+          |> only_where("\"is_default\" = 1"),
       ],
       decoder,
     )
   Links(
     table: table,
-    did: orm.string_column(table, "did"),
-    address: orm.string_column(table, "address"),
-    chain_id: orm.int_column(table, "chain_id"),
-    message: orm.string_column(table, "message"),
-    signature: orm.string_column(table, "signature"),
-    linked_at: orm.string_column(table, "linked_at"),
-    is_public: orm.bool_column(table, "public"),
-    is_default: orm.bool_column(table, "is_default"),
+    did: string_column(table, "did"),
+    address: string_column(table, "address"),
+    chain_id: int_column(table, "chain_id"),
+    message: string_column(table, "message"),
+    signature: string_column(table, "signature"),
+    linked_at: string_column(table, "linked_at"),
+    is_public: bool_column(table, "public"),
+    is_default: bool_column(table, "is_default"),
   )
 }

@@ -1,5 +1,8 @@
 import citruswallet/chain.{type Chain}
-import citruswallet/drizzle/orm
+import citruswallet/drizzle/orm.{
+  all, descending, eq, from as db_from, in_list, insert, is_null, limit, lte,
+  one, order_by, run, set, update, where,
+}
 import citruswallet/drizzle/schema/payments as payments_schema
 import citruswallet/error.{type HttpError}
 import citruswallet/ffi/node
@@ -150,32 +153,32 @@ pub fn create(
       let now = payments.now()
       let table = table()
       let _ =
-        orm.insert(table.table, [
-          orm.set(table.id, id),
-          orm.set(table.sender_did, sender_did),
-          orm.set(table.recipient_did, recipient.did),
-          orm.set(
+        insert(table.table, [
+          set(table.id, id),
+          set(table.sender_did, sender_did),
+          set(table.recipient_did, recipient.did),
+          set(
             table.recipient_label,
             option.unwrap(recipient.handle, recipient.did),
           ),
-          orm.set(table.chain_id, payments.chain_id),
-          orm.set(table.amount_wei, amount_wei),
-          orm.set(
+          set(table.chain_id, payments.chain_id),
+          set(table.amount_wei, amount_wei),
+          set(
             table.state,
             state_name(case link {
               Some(_) -> Ready
               None -> Waiting
             }),
           ),
-          orm.set(table.source, source_name(FromDefault)),
-          orm.set(table.address, option.map(link, fn(link) { link.address })),
-          orm.set(table.fingerprint, option.map(link, fingerprint)),
-          orm.set(table.invitation_hash, Some(node.sha256(token))),
-          orm.set(table.revision, 1),
-          orm.set(table.created_at, now),
-          orm.set(table.expires_at, now + intent_lifetime),
+          set(table.source, source_name(FromDefault)),
+          set(table.address, option.map(link, fn(link) { link.address })),
+          set(table.fingerprint, option.map(link, fingerprint)),
+          set(table.invitation_hash, Some(node.sha256(token))),
+          set(table.revision, 1),
+          set(table.created_at, now),
+          set(table.expires_at, now + intent_lifetime),
         ])
-        |> orm.run(payments.store.database)
+        |> run(payments.store.database)
       promise.resolve(
         result.map(row(payments, Some(id)), fn(payment) {
           #(payment, invitation_url(payments, token))
@@ -205,14 +208,14 @@ fn wei_of(amount: Option(String)) -> Result(String, HttpError) {
 
 pub fn list(payments: Payments, sender_did: String) -> List(Payment) {
   let table = table()
-  orm.from(table.table)
-  |> orm.where([
-    orm.eq(table.sender_did, sender_did),
-    orm.eq(table.chain_id, payments.chain_id),
+  db_from(table.table)
+  |> where([
+    eq(table.sender_did, sender_did),
+    eq(table.chain_id, payments.chain_id),
   ])
-  |> orm.order_by([orm.descending(table.created_at)])
-  |> orm.limit(50)
-  |> orm.all(payments.store.database)
+  |> order_by([descending(table.created_at)])
+  |> limit(50)
+  |> all(payments.store.database)
   |> list.map(reconcile(payments, _))
 }
 
@@ -250,12 +253,10 @@ pub fn invitation(
   let token = node.random_hex(32)
   let table = table()
   let _ =
-    orm.update(
-      table.table,
-      [orm.set(table.invitation_hash, Some(node.sha256(token)))],
-      [orm.eq(table.id, payment.id)],
-    )
-    |> orm.run(payments.store.database)
+    update(table.table, [set(table.invitation_hash, Some(node.sha256(token)))], [
+      eq(table.id, payment.id),
+    ])
+    |> run(payments.store.database)
   Ok(invitation_url(payments, token))
 }
 
@@ -301,21 +302,21 @@ pub fn accept(
   ))
   let table = table()
   let _ =
-    orm.update(
+    update(
       table.table,
       [
-        orm.set(table.address, Some(link.address)),
-        orm.set(table.fingerprint, Some(fingerprint(link))),
-        orm.set(table.source, source_name(FromRecipient)),
-        orm.set(table.state, state_name(Ready)),
-        orm.set(table.revision, payment.revision + 1),
+        set(table.address, Some(link.address)),
+        set(table.fingerprint, Some(fingerprint(link))),
+        set(table.source, source_name(FromRecipient)),
+        set(table.state, state_name(Ready)),
+        set(table.revision, payment.revision + 1),
       ],
       [
-        orm.eq(table.id, payment.id),
-        orm.eq(table.revision, payment.revision),
+        eq(table.id, payment.id),
+        eq(table.revision, payment.revision),
       ],
     )
-    |> orm.run(payments.store.database)
+    |> run(payments.store.database)
   row(payments, Some(payment.id))
 }
 
@@ -333,15 +334,15 @@ pub fn cancel(
   )
   let table = table()
   let _ =
-    orm.update(
+    update(
       table.table,
       [
-        orm.set(table.state, state_name(Cancelled)),
-        orm.set(table.invitation_hash, None),
+        set(table.state, state_name(Cancelled)),
+        set(table.invitation_hash, None),
       ],
-      [orm.eq(table.id, payment.id)],
+      [eq(table.id, payment.id)],
     )
-    |> orm.run(payments.store.database)
+    |> run(payments.store.database)
   row(payments, Some(payment.id))
 }
 
@@ -468,11 +469,11 @@ fn reserve(
 ) -> Result(Attempt, HttpError) {
   let table = table()
   let _ =
-    orm.update(table.table, [orm.set(table.state, state_name(Expired))], [
-      orm.eq(table.state, state_name(Prepared)),
-      orm.lte(table.expires_at, payments.now()),
+    update(table.table, [set(table.state, state_name(Expired))], [
+      eq(table.state, state_name(Prepared)),
+      lte(table.expires_at, payments.now()),
     ])
-    |> orm.run(payments.store.database)
+    |> run(payments.store.database)
   use payment <- result.try(
     result.map(owned(payments, id, sender_did), reconcile(payments, _)),
   )
@@ -490,22 +491,22 @@ fn reserve(
     return: Error(error.conflict("Sender wallet was unlinked.")),
   )
   let written =
-    orm.update(
+    update(
       table.table,
       [
-        orm.set(table.state, state_name(Prepared)),
-        orm.set(table.attempt_id, Some(node.random_hex(32))),
-        orm.set(table.from_address, Some(from)),
-        orm.set(table.nonce, Some(nonce)),
-        orm.set(table.prepared_at, Some(payments.now())),
+        set(table.state, state_name(Prepared)),
+        set(table.attempt_id, Some(node.random_hex(32))),
+        set(table.from_address, Some(from)),
+        set(table.nonce, Some(nonce)),
+        set(table.prepared_at, Some(payments.now())),
       ],
       [
-        orm.eq(table.id, payment.id),
-        orm.eq(table.state, state_name(Ready)),
-        orm.eq(table.revision, payment.revision),
+        eq(table.id, payment.id),
+        eq(table.state, state_name(Ready)),
+        eq(table.revision, payment.revision),
       ],
     )
-    |> orm.run(payments.store.database)
+    |> run(payments.store.database)
   use _ <- result.try(result.replace_error(
     written,
     error.conflict(
@@ -592,16 +593,16 @@ fn accepted(
   use _ <- result.try(case payment.tx_hash {
     Some(_) -> Ok(0)
     None ->
-      orm.update(
+      update(
         table.table,
         [
-          orm.set(table.tx_hash, Some(hash)),
-          orm.set(table.state, state_name(Submitted)),
-          orm.set(table.error, None),
+          set(table.tx_hash, Some(hash)),
+          set(table.state, state_name(Submitted)),
+          set(table.error, None),
         ],
-        [orm.eq(table.id, payment.id), orm.is_null(table.tx_hash)],
+        [eq(table.id, payment.id), is_null(table.tx_hash)],
       )
-      |> orm.run(payments.store.database)
+      |> run(payments.store.database)
       |> result.replace_error(error.conflict(
         "This transaction is already attached to another payment.",
       ))
@@ -620,19 +621,19 @@ fn check_transaction(
       let table = table()
       let record = fn(values) {
         let _ =
-          orm.update(table.table, values, [
-            orm.eq(table.id, payment.id),
+          update(table.table, values, [
+            eq(table.id, payment.id),
           ])
-          |> orm.run(payments.store.database)
+          |> run(payments.store.database)
         row(payments, Some(payment.id))
       }
       promise.resolve(case outcome {
         Ok(#(state, reason)) ->
           record([
-            orm.set(table.state, state_name(state)),
-            orm.set(table.error, reason),
+            set(table.state, state_name(state)),
+            set(table.error, reason),
           ])
-        Error(_) -> record([orm.set(table.error, Some(rpc_unavailable))])
+        Error(_) -> record([set(table.error, Some(rpc_unavailable))])
       })
     }
   }
@@ -714,12 +715,12 @@ fn row(payments: Payments, id: Option(String)) -> Result(Payment, HttpError) {
   let missing = error.not_found("Payment not found.")
   use id <- result.try(option.to_result(id, missing))
   let table = table()
-  orm.from(table.table)
-  |> orm.where([
-    orm.eq(table.id, id),
-    orm.eq(table.chain_id, payments.chain_id),
+  db_from(table.table)
+  |> where([
+    eq(table.id, id),
+    eq(table.chain_id, payments.chain_id),
   ])
-  |> orm.one(payments.store.database)
+  |> one(payments.store.database)
   |> option.to_result(missing)
 }
 
@@ -749,12 +750,12 @@ fn invited(
   )
   let table = table()
   use payment <- result.try(
-    orm.from(table.table)
-    |> orm.where([
-      orm.eq(table.invitation_hash, Some(node.sha256(token))),
-      orm.eq(table.chain_id, payments.chain_id),
+    db_from(table.table)
+    |> where([
+      eq(table.invitation_hash, Some(node.sha256(token))),
+      eq(table.chain_id, payments.chain_id),
     ])
-    |> orm.one(payments.store.database)
+    |> one(payments.store.database)
     |> option.to_result(missing),
   )
   use <- bool.guard(
@@ -796,27 +797,27 @@ fn reconcile(payments: Payments, payment: Payment) -> Payment {
   )
   let table = table()
   let _ =
-    orm.update(
+    update(
       table.table,
       [
-        orm.set(table.address, address),
-        orm.set(table.fingerprint, proof),
-        orm.set(
+        set(table.address, address),
+        set(table.fingerprint, proof),
+        set(
           table.state,
           state_name(case link {
             Some(_) -> Ready
             None -> Waiting
           }),
         ),
-        orm.set(table.revision, payment.revision + 1),
+        set(table.revision, payment.revision + 1),
       ],
       [
-        orm.eq(table.id, payment.id),
-        orm.eq(table.revision, payment.revision),
-        orm.in_list(table.state, list.map(open_states, state_name)),
+        eq(table.id, payment.id),
+        eq(table.revision, payment.revision),
+        in_list(table.state, list.map(open_states, state_name)),
       ],
     )
-    |> orm.run(payments.store.database)
+    |> run(payments.store.database)
   result.unwrap(row(payments, Some(payment.id)), payment)
 }
 

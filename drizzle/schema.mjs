@@ -2,6 +2,7 @@
 // (src/wallet/drizzle/schema/*.gleam) so that `drizzle-kit generate` can read
 // them. Run `gleam build` first.
 import {
+  address_repository_records,
   challenges,
   kv,
   links,
@@ -15,3 +16,5 @@ export const linksTable = links();
 export const paymentsTable = payments();
 
 export const userProfilesTable = user_profiles();
+
+export const addressRepositoryRecordsTable = address_repository_records();

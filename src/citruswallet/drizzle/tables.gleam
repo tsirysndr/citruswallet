@@ -1,4 +1,5 @@
-import citruswallet/drizzle/orm
+import citruswallet/drizzle/orm.{underlying}
+import citruswallet/drizzle/schema/address_repository_records
 import citruswallet/drizzle/schema/challenges
 import citruswallet/drizzle/schema/kv
 import citruswallet/drizzle/schema/links
@@ -8,21 +9,25 @@ import citruswallet/ffi/js.{type Js}
 import gleam/dynamic/decode
 
 pub fn kv() -> Js {
-  orm.underlying(kv.define(decode.success(Nil)).table)
+  underlying(kv.define(decode.success(Nil)).table)
 }
 
 pub fn challenges() -> Js {
-  orm.underlying(challenges.define(decode.success(Nil)).table)
+  underlying(challenges.define(decode.success(Nil)).table)
 }
 
 pub fn links() -> Js {
-  orm.underlying(links.define(decode.success(Nil)).table)
+  underlying(links.define(decode.success(Nil)).table)
 }
 
 pub fn payments() -> Js {
-  orm.underlying(payments.define(decode.success(Nil)).table)
+  underlying(payments.define(decode.success(Nil)).table)
 }
 
 pub fn user_profiles() -> Js {
-  orm.underlying(user_profiles.define(decode.success(Nil)).table)
+  underlying(user_profiles.define(decode.success(Nil)).table)
+}
+
+pub fn address_repository_records() -> Js {
+  underlying(address_repository_records.define(decode.success(Nil)))
 }

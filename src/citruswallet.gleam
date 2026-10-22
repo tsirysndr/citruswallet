@@ -5,10 +5,13 @@ import citruswallet/ffi/hono
 import citruswallet/ffi/node
 import citruswallet/ffi/url
 import citruswallet/identity
+import citruswallet/jetstream
 import citruswallet/network.{type Network}
 import citruswallet/oauth
 import citruswallet/store.{type Store}
+import citruswallet/xrpc/context
 import gleam/int
+import gleam/javascript/promise
 import gleam/option.{type Option, None, Some}
 import gleam/result
 
@@ -52,7 +55,7 @@ fn start() -> Result(Nil, String) {
   )
   use store <- result.try(database(network))
   let app =
-    app.build(app.Settings(
+    app.build(context.Settings(
       store: store,
       oauth: oauth.client(store, origin),
       origin: origin,
@@ -69,6 +72,11 @@ fn start() -> Result(Nil, String) {
         "./web/dist",
       ),
     ))
+  use listener <- result.try(
+    result.map_error(jetstream.start(store, directory, origin), fn(reason) {
+      reason.message
+    }),
+  )
   let host = option.unwrap(node.environment("HOST"), "127.0.0.1")
   let server =
     hono.listen(app, port, host, fn() {
@@ -85,10 +93,14 @@ fn start() -> Result(Nil, String) {
   let cleanup = node.every(60_000, fn() { store.cleanup(store, node.now()) })
   let stop = fn() {
     node.cancel(cleanup)
-    hono.shutdown(server, fn() {
-      store.close(store)
-      node.exit(0)
-    })
+    let _ =
+      promise.map(jetstream.stop(listener), fn(_) {
+        hono.shutdown(server, fn() {
+          store.close(store)
+          node.exit(0)
+        })
+      })
+    Nil
   }
   node.on_signal("SIGINT", stop)
   node.on_signal("SIGTERM", stop)

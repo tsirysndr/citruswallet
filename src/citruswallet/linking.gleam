@@ -1,4 +1,9 @@
-import citruswallet/drizzle/orm
+import citruswallet/address_records
+import citruswallet/drizzle/orm.{
+  type Assignment, all, bool_decoder, delete, descending, eq, from, gt, insert,
+  on_conflict_update, one, order_by, pick, run as db_run, select, set, target,
+  update as db_update, where,
+}
 import citruswallet/drizzle/schema/challenges as challenges_schema
 import citruswallet/drizzle/schema/links as links_schema
 import citruswallet/error.{type HttpError}
@@ -57,8 +62,8 @@ fn link_decoder() -> Decoder(Link) {
   use message <- decode.field("message", decode.string)
   use signature <- decode.field("signature", decode.string)
   use linked_at <- decode.field("linked_at", decode.string)
-  use is_public <- decode.field("public", orm.bool_decoder())
-  use is_default <- decode.field("is_default", orm.bool_decoder())
+  use is_public <- decode.field("public", bool_decoder())
+  use is_default <- decode.field("is_default", bool_decoder())
   decode.success(Link(
     did: did,
     address: address,
@@ -78,7 +83,7 @@ fn challenge_decoder() -> Decoder(Challenge) {
   use address <- decode.field("address", decode.string)
   use message <- decode.field("message", decode.string)
   use expires <- decode.field("expires", decode.int)
-  use is_public <- decode.field("public", orm.bool_decoder())
+  use is_public <- decode.field("public", bool_decoder())
   decode.success(Challenge(
     id: id,
     session: session,
@@ -135,16 +140,16 @@ pub fn create(
   store.forget_challenges(links.store, session)
   let challenges = challenges()
   let _ =
-    orm.insert(challenges.table, [
-      orm.set(challenges.id, challenge.id),
-      orm.set(challenges.session, challenge.session),
-      orm.set(challenges.did, challenge.did),
-      orm.set(challenges.address, challenge.address),
-      orm.set(challenges.message, challenge.message),
-      orm.set(challenges.expires, challenge.expires),
-      orm.set(challenges.is_public, challenge.is_public),
+    insert(challenges.table, [
+      set(challenges.id, challenge.id),
+      set(challenges.session, challenge.session),
+      set(challenges.did, challenge.did),
+      set(challenges.address, challenge.address),
+      set(challenges.message, challenge.message),
+      set(challenges.expires, challenge.expires),
+      set(challenges.is_public, challenge.is_public),
     ])
-    |> orm.run(links.store.database)
+    |> db_run(links.store.database)
   Ok(challenge)
 }
 
@@ -223,13 +228,13 @@ fn record(
       failed: error.conflict("Could not record this wallet. Try again."),
       run: fn(database) {
         let consumed =
-          orm.delete(challenges.table, [
-            orm.eq(challenges.id, challenge.id),
-            orm.eq(challenges.session, challenge.session),
-            orm.eq(challenges.did, challenge.did),
-            orm.gt(challenges.expires, links.now()),
+          delete(challenges.table, [
+            eq(challenges.id, challenge.id),
+            eq(challenges.session, challenge.session),
+            eq(challenges.did, challenge.did),
+            gt(challenges.expires, links.now()),
           ])
-          |> orm.run(database)
+          |> db_run(database)
         use <- bool.guard(
           when: consumed != Ok(1),
           return: Error(error.bad_request("Challenge already used or expired.")),
@@ -244,31 +249,31 @@ fn record(
           )),
         )
         let written =
-          orm.insert(table.table, [
-            orm.set(table.did, challenge.did),
-            orm.set(table.address, challenge.address),
-            orm.set(table.chain_id, links.chain_id),
-            orm.set(table.message, challenge.message),
-            orm.set(table.signature, signature),
-            orm.set(table.linked_at, node.iso8601(links.now())),
-            orm.set(table.is_public, challenge.is_public),
-            orm.set(table.is_default, False),
+          insert(table.table, [
+            set(table.did, challenge.did),
+            set(table.address, challenge.address),
+            set(table.chain_id, links.chain_id),
+            set(table.message, challenge.message),
+            set(table.signature, signature),
+            set(table.linked_at, node.iso8601(links.now())),
+            set(table.is_public, challenge.is_public),
+            set(table.is_default, False),
           ])
-          |> orm.on_conflict_update(
+          |> on_conflict_update(
             [
-              orm.target(table.did),
-              orm.target(table.address),
-              orm.target(table.chain_id),
+              target(table.did),
+              target(table.address),
+              target(table.chain_id),
             ],
             [
-              orm.set(table.message, challenge.message),
-              orm.set(table.signature, signature),
-              orm.set(table.linked_at, node.iso8601(links.now())),
-              orm.set(table.is_public, challenge.is_public),
+              set(table.message, challenge.message),
+              set(table.signature, signature),
+              set(table.linked_at, node.iso8601(links.now())),
+              set(table.is_public, challenge.is_public),
               ..private_withdraws_default(table, challenge.is_public)
             ],
           )
-          |> orm.run(database)
+          |> db_run(database)
         use <- bool.guard(
           when: result.is_error(written),
           return: Error(error.conflict(
@@ -281,16 +286,26 @@ fn record(
         {
           True, None -> {
             let _ =
-              orm.update(table.table, [orm.set(table.is_default, True)], [
-                orm.eq(table.did, challenge.did),
-                orm.eq(table.address, challenge.address),
-                orm.eq(table.chain_id, links.chain_id),
+              db_update(table.table, [set(table.is_default, True)], [
+                eq(table.did, challenge.did),
+                eq(table.address, challenge.address),
+                eq(table.chain_id, links.chain_id),
               ])
-              |> orm.run(database)
+              |> db_run(database)
             Nil
           }
           _, _ -> Nil
         }
+        address_records.queue_verified(
+          links.store.client,
+          challenge.did,
+          links.chain_id,
+          challenge.address,
+          challenge.is_public,
+          challenge.message,
+          signature,
+          node.iso8601(links.now()),
+        )
         Ok(Nil)
       },
     ),
@@ -301,10 +316,10 @@ fn record(
 fn private_withdraws_default(
   table: links_schema.Links(Link),
   is_public: Bool,
-) -> List(orm.Assignment) {
+) -> List(Assignment) {
   case is_public {
     True -> []
-    False -> [orm.set(table.is_default, False)]
+    False -> [set(table.is_default, False)]
   }
 }
 
@@ -315,13 +330,13 @@ pub fn list(
 ) -> List(Link) {
   let table = table()
   let filter = case public_only {
-    True -> [orm.eq(table.is_public, True)]
+    True -> [eq(table.is_public, True)]
     False -> []
   }
-  orm.from(table.table)
-  |> orm.where([orm.eq(table.did, did), ..filter])
-  |> orm.order_by([orm.descending(table.linked_at)])
-  |> orm.all(links.store.database)
+  from(table.table)
+  |> where([eq(table.did, did), ..filter])
+  |> order_by([descending(table.linked_at)])
+  |> all(links.store.database)
 }
 
 pub fn find(
@@ -331,13 +346,13 @@ pub fn find(
   chain_id chain_id: Int,
 ) -> Option(Link) {
   let table = table()
-  orm.from(table.table)
-  |> orm.where([
-    orm.eq(table.did, did),
-    orm.eq(table.address, string.lowercase(address)),
-    orm.eq(table.chain_id, chain_id),
+  from(table.table)
+  |> where([
+    eq(table.did, did),
+    eq(table.address, string.lowercase(address)),
+    eq(table.chain_id, chain_id),
   ])
-  |> orm.one(links.store.database)
+  |> one(links.store.database)
 }
 
 pub fn default_address(
@@ -346,14 +361,14 @@ pub fn default_address(
   chain_id: Int,
 ) -> Option(Link) {
   let table = table()
-  orm.from(table.table)
-  |> orm.where([
-    orm.eq(table.did, did),
-    orm.eq(table.chain_id, chain_id),
-    orm.eq(table.is_public, True),
-    orm.eq(table.is_default, True),
+  from(table.table)
+  |> where([
+    eq(table.did, did),
+    eq(table.chain_id, chain_id),
+    eq(table.is_public, True),
+    eq(table.is_default, True),
   ])
-  |> orm.one(links.store.database)
+  |> one(links.store.database)
 }
 
 pub fn set_default(
@@ -378,17 +393,17 @@ pub fn set_default(
       ),
       run: fn(database) {
         let _ =
-          orm.update(table.table, [orm.set(table.is_default, False)], [
-            orm.eq(table.did, did),
-            orm.eq(table.chain_id, links.chain_id),
+          db_update(table.table, [set(table.is_default, False)], [
+            eq(table.did, did),
+            eq(table.chain_id, links.chain_id),
           ])
-          |> orm.run(database)
-        orm.update(table.table, [orm.set(table.is_default, True)], [
-          orm.eq(table.did, did),
-          orm.eq(table.address, string.lowercase(address)),
-          orm.eq(table.chain_id, links.chain_id),
+          |> db_run(database)
+        db_update(table.table, [set(table.is_default, True)], [
+          eq(table.did, did),
+          eq(table.address, string.lowercase(address)),
+          eq(table.chain_id, links.chain_id),
         ])
-        |> orm.run(database)
+        |> db_run(database)
         |> result.replace_error(error.conflict(
           "Could not update the receiving default. Try again.",
         ))
@@ -408,14 +423,34 @@ pub fn unlink(
     return: Error(error.bad_request("Invalid Ethereum address.")),
   )
   let table = table()
-  let _ =
-    orm.delete(table.table, [
-      orm.eq(table.did, did),
-      orm.eq(table.address, string.lowercase(address)),
-      orm.eq(table.chain_id, links.chain_id),
-    ])
-    |> orm.run(links.store.database)
-  Ok(Nil)
+  store.transaction(
+    links.store,
+    failed: error.conflict("Could not unlink this wallet."),
+    run: fn(database) {
+      let removed =
+        delete(table.table, [
+          eq(table.did, did),
+          eq(table.address, string.lowercase(address)),
+          eq(table.chain_id, links.chain_id),
+        ])
+        |> db_run(database)
+      use count <- result.try(result.replace_error(
+        removed,
+        error.conflict("Could not unlink this wallet."),
+      ))
+      case count > 0 {
+        True ->
+          address_records.queue_removed(
+            links.store.client,
+            did,
+            links.chain_id,
+            address,
+          )
+        False -> Nil
+      }
+      Ok(Nil)
+    },
+  )
 }
 
 pub fn to_json(link: Link) -> Json {
@@ -450,19 +485,19 @@ fn require_address(address: Option(String)) -> Result(String, HttpError) {
 
 fn owner_of(links: Links, address: String) -> Option(String) {
   let table = table()
-  orm.select(table.table, orm.pick("did", table.did))
-  |> orm.where([
-    orm.eq(table.address, address),
-    orm.eq(table.chain_id, links.chain_id),
+  select(table.table, pick("did", table.did))
+  |> where([
+    eq(table.address, address),
+    eq(table.chain_id, links.chain_id),
   ])
-  |> orm.one(links.store.database)
+  |> one(links.store.database)
 }
 
 fn find_challenge(links: Links, id: String) -> Option(Challenge) {
   let challenges = challenges()
-  orm.from(challenges.table)
-  |> orm.where([orm.eq(challenges.id, id)])
-  |> orm.one(links.store.database)
+  from(challenges.table)
+  |> where([eq(challenges.id, id)])
+  |> one(links.store.database)
 }
 
 fn host_of(origin: String) -> String {

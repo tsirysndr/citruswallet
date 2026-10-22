@@ -1,5 +1,7 @@
 import citruswallet/directory.{type Actor, type Directory, Actor}
-import citruswallet/drizzle/orm
+import citruswallet/drizzle/orm.{
+  eq, from, insert, on_conflict_update, one, run, set, target, where,
+}
 import citruswallet/drizzle/schema/user_profiles
 import citruswallet/error.{type HttpError}
 import citruswallet/ffi/node
@@ -35,27 +37,27 @@ fn table() -> user_profiles.UserProfiles(Profile) {
 
 pub fn get(store: Store, did: String) -> Option(Profile) {
   let table = table()
-  orm.from(table.table)
-  |> orm.where([orm.eq(table.did, did)])
-  |> orm.one(store.database)
+  from(table.table)
+  |> where([eq(table.did, did)])
+  |> one(store.database)
 }
 
 /// Timestamps are Unix milliseconds. The first insertion time never changes.
 pub fn save(store: Store, actor: Actor, now: Int) -> Result(Actor, HttpError) {
   let table = table()
   let values = [
-    orm.set(table.handle, actor.handle),
-    orm.set(table.display_name, actor.display_name),
-    orm.set(table.avatar, actor.avatar),
-    orm.set(table.updated_at, Some(now)),
+    set(table.handle, actor.handle),
+    set(table.display_name, actor.display_name),
+    set(table.avatar, actor.avatar),
+    set(table.updated_at, Some(now)),
   ]
-  orm.insert(table.table, [
-    orm.set(table.did, actor.did),
-    orm.set(table.created_at, Some(now)),
+  insert(table.table, [
+    set(table.did, actor.did),
+    set(table.created_at, Some(now)),
     ..values
   ])
-  |> orm.on_conflict_update([orm.target(table.did)], values)
-  |> orm.run(store.database)
+  |> on_conflict_update([target(table.did)], values)
+  |> run(store.database)
   |> result.replace(actor)
   |> result.replace_error(error.unavailable(
     "Could not save your profile. Please try again.",

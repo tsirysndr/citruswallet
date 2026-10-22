@@ -1,4 +1,8 @@
-import citruswallet/drizzle/orm.{type Database}
+import citruswallet/drizzle/orm.{
+  type Database, connect, delete as db_delete, eq, gt, insert, lte, migrate,
+  on_conflict_update, one, pick, run as db_run, select, set, target,
+  transaction as db_transaction, where,
+}
 import citruswallet/drizzle/schema/challenges
 import citruswallet/drizzle/schema/kv
 import citruswallet/ffi/better_sqlite.{type Client}
@@ -17,8 +21,8 @@ pub fn open(
   migrations migrations: String,
 ) -> Result(Store, Exception) {
   use client <- result.try(better_sqlite.open(path))
-  let database = orm.connect(client)
-  use _ <- result.try(orm.migrate(database, folder: migrations))
+  let database = connect(client)
+  use _ <- result.try(migrate(database, folder: migrations))
   Ok(Store(client: client, database: database))
 }
 
@@ -31,7 +35,7 @@ pub fn transaction(
   failed failed: e,
   run operation: fn(Database) -> Result(a, e),
 ) -> Result(a, e) {
-  orm.transaction(store.database, failed: failed, run: operation)
+  db_transaction(store.database, failed: failed, run: operation)
 }
 
 fn table() -> kv.Kv(Nil) {
@@ -47,17 +51,17 @@ pub fn put(
 ) -> Nil {
   let kv = table()
   let _ =
-    orm.insert(kv.table, [
-      orm.set(kv.namespace, namespace),
-      orm.set(kv.key, key),
-      orm.set(kv.value, value),
-      orm.set(kv.expires, expires),
+    insert(kv.table, [
+      set(kv.namespace, namespace),
+      set(kv.key, key),
+      set(kv.value, value),
+      set(kv.expires, expires),
     ])
-    |> orm.on_conflict_update([orm.target(kv.namespace), orm.target(kv.key)], [
-      orm.set(kv.value, value),
-      orm.set(kv.expires, expires),
+    |> on_conflict_update([target(kv.namespace), target(kv.key)], [
+      set(kv.value, value),
+      set(kv.expires, expires),
     ])
-    |> orm.run(store.database)
+    |> db_run(store.database)
   Nil
 }
 
@@ -68,13 +72,13 @@ pub fn get(
   now now: Int,
 ) -> Option(String) {
   let kv = table()
-  orm.select(kv.table, orm.pick("value", kv.value))
-  |> orm.where([
-    orm.eq(kv.namespace, namespace),
-    orm.eq(kv.key, key),
-    orm.gt(kv.expires, now),
+  select(kv.table, pick("value", kv.value))
+  |> where([
+    eq(kv.namespace, namespace),
+    eq(kv.key, key),
+    gt(kv.expires, now),
   ])
-  |> orm.one(store.database)
+  |> one(store.database)
 }
 
 pub fn delete(
@@ -84,11 +88,11 @@ pub fn delete(
 ) -> Nil {
   let kv = table()
   let _ =
-    orm.delete(kv.table, [
-      orm.eq(kv.namespace, namespace),
-      orm.eq(kv.key, key),
+    db_delete(kv.table, [
+      eq(kv.namespace, namespace),
+      eq(kv.key, key),
     ])
-    |> orm.run(store.database)
+    |> db_run(store.database)
   Nil
 }
 
@@ -117,18 +121,18 @@ pub fn cleanup(store: Store, now: Int) -> Nil {
   let kv = table()
   let challenges = challenges.define(decode.success(Nil))
   let _ =
-    orm.delete(kv.table, [orm.lte(kv.expires, now)])
-    |> orm.run(store.database)
+    db_delete(kv.table, [lte(kv.expires, now)])
+    |> db_run(store.database)
   let _ =
-    orm.delete(challenges.table, [orm.lte(challenges.expires, now)])
-    |> orm.run(store.database)
+    db_delete(challenges.table, [lte(challenges.expires, now)])
+    |> db_run(store.database)
   Nil
 }
 
 pub fn forget_challenges(store: Store, session: String) -> Nil {
   let challenges = challenges.define(decode.success(Nil))
   let _ =
-    orm.delete(challenges.table, [orm.eq(challenges.session, session)])
-    |> orm.run(store.database)
+    db_delete(challenges.table, [eq(challenges.session, session)])
+    |> db_run(store.database)
   Nil
 }
