@@ -8,6 +8,7 @@ import { BottomNav, HeaderNav } from "./components/Nav";
 import { CitrusMark } from "./components/CitrusMark";
 import { InstallApp } from "./components/InstallApp";
 import { KeyboardShortcuts } from "./components/KeyboardShortcuts";
+import { MetaMaskConnection } from "./components/MetaMaskConnection";
 import { InstallMetaMask } from "./components/InstallMetaMask";
 import { forgetBroadcast, pendingBroadcast } from "./broadcast";
 import { useRefresh, useRun, useStatus } from "./hooks";
@@ -83,6 +84,7 @@ export function App() {
       </header>
 
       <main className="app-main">
+        <MetaMaskConnection />
         <Outlet />
         {error && (
           <p className="mt-5 text-[13px] text-bad">

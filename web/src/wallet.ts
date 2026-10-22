@@ -34,7 +34,19 @@ export async function connectWallet(network: Network): Promise<Eip1193Provider> 
   if (injected) return injected;
   if (!isMobileWalletBrowser()) return provider();
   const client = await mobileWalletClient();
-  if (client.status !== "connected") await client.connect({ chainIds: [network.chainIdHex as `0x${string}`] });
+  if (client.status !== "connected") {
+    const connectingProvider = client.getProvider();
+    const showRequest = (uri: string) => window.dispatchEvent(
+      new CustomEvent("citrus:metamask-request", { detail: uri }),
+    );
+    connectingProvider.on("display_uri", showRequest);
+    try {
+      await client.connect({ chainIds: [network.chainIdHex as `0x${string}`] });
+    } finally {
+      connectingProvider.removeListener("display_uri", showRequest);
+      window.dispatchEvent(new CustomEvent("citrus:metamask-request", { detail: null }));
+    }
+  }
   const wallet = client.getProvider();
   if (connectedMobileWallet !== wallet) {
     connectedMobileWallet = wallet;

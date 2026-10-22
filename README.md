@@ -273,8 +273,10 @@ The floating keyboard button opens the shortcut guide. Press `G`, then `A`, `W`,
 ### MetaMask on mobile
 
 Phones and tablets offer **Connect MetaMask** through the official MetaMask
-Connect EVM client. Connections open the mobile app using a universal link;
+Connect EVM client. Connections open the mobile app using a native deep link;
 return to Citrus after approving the connection, linking signature, or payment.
+If unlocking does not show the connection prompt, return to Citrus and use
+**Open MetaMask again** to reopen the same pending request.
 The MetaMask in-app browser continues to use its injected provider, and desktop
 browsers continue to use the extension. Device hints choose the UI; Citrus does
 not claim it can inspect which apps are installed. A download link is available

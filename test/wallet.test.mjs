@@ -6,21 +6,23 @@ import { runInNewContext } from 'node:vm';
 
 function walletFixture({ mobile = true, injected, connectError } = {}) {
   const calls = [];
+  const listeners = new Map();
+  const events = [];
   const wallet = { request: async ({ method }) => {
     calls.push(method);
     if (method === 'eth_chainId') return '0x1';
     if (method === 'eth_getBalance') return '0x1';
     return ['0xabc'];
-  }, once() {} };
+  }, once() {}, on(name, fn) { listeners.set(name, fn); }, removeListener(name) { listeners.delete(name); } };
   const client = { status: 'disconnected', getProvider: () => wallet,
-    connect: async () => { calls.push('connect'); if (connectError) throw connectError; client.status = 'connected'; } };
+    connect: async () => { calls.push('connect'); listeners.get('display_uri')?.('metamask://connect/mwp?p=original&c=1'); if (connectError) throw connectError; client.status = 'connected'; } };
   const source = stripTypeScriptTypes(readFileSync('web/src/wallet.ts', 'utf8'))
     .replace(/^import .*;$/gm, '').replace(/export /g, '');
   const api = runInNewContext(source + '\n({ connectWallet, readBalances, checkWallet, walletAccount, provider })', {
-    window: { ethereum: injected, dispatchEvent() {} }, Event,
+    window: { ethereum: injected, dispatchEvent(event) { events.push(event); } }, Event, CustomEvent,
     isMobileWalletBrowser: () => mobile, mobileWalletClient: async () => client,
   });
-  return { api, wallet, calls };
+  return { api, wallet, calls, events, listeners };
 }
 const network = { chainId: 1, chainIdHex: '0x1' };
 const session = { did: 'did:plc:alice', network, links: [] };
@@ -74,5 +76,18 @@ test('mobile UI includes iPad desktop mode but does not treat desktop as app det
     assert.equal(runInNewContext(source + '\nisMobileWalletBrowser()', {
       navigator: { userAgent, platform, maxTouchPoints },
     }), expected);
+  }
+});
+
+
+test('pending connection exposes the original request and clears retry state on success or rejection', async () => {
+  for (const connectError of [undefined, new Error('Rejected')]) {
+    const { api, events, listeners } = walletFixture({ connectError });
+    if (connectError) await assert.rejects(api.connectWallet(network));
+    else await api.connectWallet(network);
+    const requests = events.filter(event => event.type === 'citrus:metamask-request');
+    assert.equal(requests[0].detail, 'metamask://connect/mwp?p=original&c=1');
+    assert.equal(requests.at(-1).detail, null);
+    assert.equal(listeners.size, 0);
   }
 });

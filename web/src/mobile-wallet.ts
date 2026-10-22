@@ -17,7 +17,8 @@ export function mobileWalletClient() {
       },
       api: { supportedNetworks: { "0x1": "https://eth.drpc.org" } },
       analytics: { enabled: false },
-      mobile: { useDeeplink: false },
+      // Preserve the session payload by opening the native scheme directly.
+      mobile: { useDeeplink: true },
       skipAutoAnnounce: true,
     }),
   ).catch((error) => { client = undefined; throw error; });
