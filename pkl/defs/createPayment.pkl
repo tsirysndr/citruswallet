@@ -18,6 +18,11 @@ defs = new Dynamic {
             `type` = "string"
             `maxLength` = 2048
           }
+          `description` = new Dynamic {
+            `type` = "string"
+            `maxLength` = 2000
+            `maxGraphemes` = 500
+          }
           `amount` = new Dynamic {
             `type` = "string"
             `maxLength` = 80

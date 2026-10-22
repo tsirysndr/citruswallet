@@ -127,6 +127,9 @@ export interface Payment {
   chainId: number
   asset: string
   amount: string
+  description?: string | null
+  sender?: Actor | null
+  recipient?: Actor | null
   amountWei: string
   state: PaymentState
   address: string | null

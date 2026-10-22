@@ -213,6 +213,19 @@
         "amount": {
           "type": "string"
         },
+        "description": {
+          "type": "string",
+          "maxLength": 2000,
+          "maxGraphemes": 500
+        },
+        "sender": {
+          "type": "ref",
+          "ref": "app.citruswallet.defs#actor"
+        },
+        "recipient": {
+          "type": "ref",
+          "ref": "app.citruswallet.defs#actor"
+        },
         "amountWei": {
           "type": "string"
         },
@@ -260,7 +273,10 @@
         "error",
         "attemptId",
         "fromAddress",
-        "nonce"
+        "nonce",
+        "description",
+        "sender",
+        "recipient"
       ]
     },
     "transaction": {

@@ -150,6 +150,19 @@ defs = new Dynamic {
       `amount` = new Dynamic {
         `type` = "string"
       }
+      `description` = new Dynamic {
+        `type` = "string"
+        `maxLength` = 2000
+        `maxGraphemes` = 500
+      }
+      `sender` = new Dynamic {
+        `type` = "ref"
+        `ref` = "app.citruswallet.defs#actor"
+      }
+      `recipient` = new Dynamic {
+        `type` = "ref"
+        `ref` = "app.citruswallet.defs#actor"
+      }
       `amountWei` = new Dynamic {
         `type` = "string"
       }
@@ -191,7 +204,7 @@ defs = new Dynamic {
         `type` = "integer"
       }
     }
-    `nullable` = List("address", "txHash", "error", "attemptId", "fromAddress", "nonce")
+    `nullable` = List("address", "txHash", "error", "attemptId", "fromAddress", "nonce", "description", "sender", "recipient")
   }
   `transaction` = new Dynamic {
     `type` = "object"

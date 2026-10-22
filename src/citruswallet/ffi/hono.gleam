@@ -316,3 +316,7 @@ pub fn shutdown(server: Server, finished: fn() -> Nil) -> Nil {
   let _ = js.call(server, "close", [js.coerce(fn(_) { finished() })])
   Nil
 }
+
+pub fn int_parameter(context: Context, name: String) -> Option(Int) {
+  js.as_int(xrpc_parameter(context, name))
+}

@@ -59,6 +59,7 @@ pub opaque type Query(row) {
     condition: Option(Condition),
     order: List(Order),
     limit: Option(Int),
+    offset: Option(Int),
   )
 }
 
@@ -406,6 +407,7 @@ pub fn from(table: Table(row)) -> Query(row) {
     condition: None,
     order: [],
     limit: None,
+    offset: None,
   )
 }
 
@@ -417,6 +419,7 @@ pub fn select(table: Table(row), projection: Projection(a)) -> Query(a) {
     condition: None,
     order: [],
     limit: None,
+    offset: None,
   )
 }
 
@@ -468,9 +471,13 @@ fn compile(query: Query(row), database: Database) -> Js {
     [] -> filtered
     order -> js.call(filtered, "orderBy", order)
   }
-  case query.limit {
+  let limited = case query.limit {
     Some(count) -> js.call(ordered, "limit", [js.int(count)])
     None -> ordered
+  }
+  case query.offset {
+    Some(count) -> js.call(limited, "offset", [js.int(count)])
+    None -> limited
   }
 }
 
@@ -560,4 +567,51 @@ fn assignments(values: List(Assignment)) -> Js {
 
 pub fn is_unique_violation(exception: Exception) -> Bool {
   string.contains(exception.message, "UNIQUE constraint")
+}
+
+@external(javascript, "drizzle-orm", "or")
+fn or_raw(condition: Js) -> Condition
+
+@external(javascript, "drizzle-orm", "asc")
+fn asc_raw(column: Js) -> Order
+
+@external(javascript, "drizzle-orm", "count")
+fn count_raw() -> Js
+
+pub fn any_of(conditions: List(Condition)) -> Condition {
+  js.coerce(js.apply(js.coerce(or_raw), conditions))
+}
+
+pub fn ascending(column: Column(a)) -> Order {
+  asc_raw(column.raw)
+}
+
+pub fn offset(query: Query(row), count: Int) -> Query(row) {
+  Query(..query, offset: Some(count))
+}
+
+pub fn count_rows() -> Projection(Int) {
+  Projection(
+    js.object([#("count", count_raw())]),
+    decode.at(["count"], decode.int),
+  )
+}
+
+/// Literal substring search: SQL values stay bound, including % and _.
+pub fn contains(column: Column(a), value: String) -> Condition {
+  js.coerce(
+    js.apply(js.coerce(sql_tag), [
+      js.list(list.map(["instr(lower(", "), lower(", ")) > 0"], js.string)),
+      column.raw,
+      js.string(value),
+    ]),
+  )
+}
+
+pub fn in_query(
+  column: Column(a),
+  query: Query(a),
+  database: Database,
+) -> Condition {
+  in_array_raw(column.raw, compile(query, database))
 }

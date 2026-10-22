@@ -60,6 +60,11 @@ pub fn register(app: hono.App, server: Server) -> Nil {
   )
   hono.xrpc(
     app,
+    methods.delete_payment,
+    context.serve(server, payment.delete_payment),
+  )
+  hono.xrpc(
+    app,
     methods.cancel_payment,
     context.serve(server, payment.cancel_payment),
   )

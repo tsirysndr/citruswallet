@@ -22,6 +22,11 @@
               "type": "string",
               "maxLength": 2048
             },
+            "description": {
+              "type": "string",
+              "maxLength": 2000,
+              "maxGraphemes": 500
+            },
             "amount": {
               "type": "string",
               "maxLength": 80

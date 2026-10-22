@@ -188,6 +188,11 @@ export const schemaDict = {
                 type: 'string',
                 maxLength: 2048,
               },
+              description: {
+                type: 'string',
+                maxLength: 2000,
+                maxGraphemes: 500,
+              },
               amount: {
                 type: 'string',
                 maxLength: 80,
@@ -410,6 +415,19 @@ export const schemaDict = {
           amount: {
             type: 'string',
           },
+          description: {
+            type: 'string',
+            maxLength: 2000,
+            maxGraphemes: 500,
+          },
+          sender: {
+            type: 'ref',
+            ref: 'lex:app.citruswallet.defs#actor',
+          },
+          recipient: {
+            type: 'ref',
+            ref: 'lex:app.citruswallet.defs#actor',
+          },
           amountWei: {
             type: 'string',
           },
@@ -458,6 +476,9 @@ export const schemaDict = {
           'attemptId',
           'fromAddress',
           'nonce',
+          'description',
+          'sender',
+          'recipient',
         ],
       },
       transaction: {
@@ -573,6 +594,40 @@ export const schemaDict = {
         properties: {
           invitationUrl: {
             type: 'string',
+          },
+        },
+      },
+    },
+  },
+  AppCitruswalletDeletePayment: {
+    lexicon: 1,
+    id: 'app.citruswallet.deletePayment',
+    defs: {
+      main: {
+        type: 'procedure',
+        input: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['id'],
+            properties: {
+              id: {
+                type: 'string',
+                maxLength: 64,
+              },
+            },
+          },
+        },
+        output: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['ok'],
+            properties: {
+              ok: {
+                type: 'boolean',
+              },
+            },
           },
         },
       },
@@ -712,12 +767,75 @@ export const schemaDict = {
     defs: {
       main: {
         type: 'query',
+        parameters: {
+          type: 'params',
+          properties: {
+            q: {
+              type: 'string',
+              maxLength: 512,
+            },
+            direction: {
+              type: 'string',
+              enum: ['all', 'sent', 'received'],
+            },
+            status: {
+              type: 'string',
+              enum: [
+                'all',
+                'waiting',
+                'ready',
+                'prepared',
+                'submitted',
+                'confirming',
+                'confirmed',
+                'failed',
+                'cancelled',
+                'expired',
+              ],
+            },
+            after: {
+              type: 'string',
+              maxLength: 15,
+              description:
+                'Inclusive Unix timestamp in milliseconds, encoded as a decimal string.',
+            },
+            before: {
+              type: 'string',
+              maxLength: 15,
+              description:
+                'Inclusive Unix timestamp in milliseconds, encoded as a decimal string.',
+            },
+            page: {
+              type: 'integer',
+              minimum: 1,
+              maximum: 1000000,
+            },
+            pageSize: {
+              type: 'integer',
+              minimum: 1,
+              maximum: 50,
+            },
+            sort: {
+              type: 'string',
+              enum: ['newest', 'oldest'],
+            },
+          },
+        },
         output: {
           encoding: 'application/json',
           schema: {
             type: 'object',
-            required: ['payments'],
+            required: ['payments', 'total', 'page', 'pageSize'],
             properties: {
+              total: {
+                type: 'integer',
+              },
+              page: {
+                type: 'integer',
+              },
+              pageSize: {
+                type: 'integer',
+              },
               payments: {
                 type: 'array',
                 items: {
@@ -1073,6 +1191,7 @@ export const ids = {
   AppCitruswalletCreateInvitation: 'app.citruswallet.createInvitation',
   AppCitruswalletCreatePayment: 'app.citruswallet.createPayment',
   AppCitruswalletDefs: 'app.citruswallet.defs',
+  AppCitruswalletDeletePayment: 'app.citruswallet.deletePayment',
   AppCitruswalletGetAddresses: 'app.citruswallet.getAddresses',
   AppCitruswalletGetInvitation: 'app.citruswallet.getInvitation',
   AppCitruswalletGetPayment: 'app.citruswallet.getPayment',

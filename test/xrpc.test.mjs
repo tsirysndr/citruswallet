@@ -164,7 +164,11 @@ test('payment and invitation IDs use XRPC inputs; DID and self-payment checks su
   await assert.rejects(f.query('getInvitation', { token }));
   await f.login(bob);
   assert.equal((await f.query('getInvitation', { token })).payment.id, id);
-  await assert.rejects(f.query('getPayment', { id }));
+  const received = (await f.query('getPayment', { id })).payment;
+  assert.equal(received.id, id);
+  assert.equal('attemptId' in received, false);
+  await assert.rejects(f.call('cancelPayment', { id }));
+  await assert.rejects(f.call('createInvitation', { id }));
   await f.login(alice);
   assert.equal((await f.call('cancelPayment', { id })).payment.state, 'cancelled');
 });
@@ -233,4 +237,86 @@ test('OAuth login requests collection scope, retains credentials, and rotates se
   assert.equal((await f.query('getSession')).did, alice);
   assert.equal(f.store.client.prepare("SELECT count(*) AS n FROM kv WHERE namespace='browser'").get().n, 1);
   assert.equal(f.store.client.prepare('SELECT did FROM user_profiles WHERE did=?').get(alice).did, alice);
+});
+
+test('payment descriptions stay internal, survive reads, and validate before inserting', async t => {
+  const f = fixture(t);
+  await f.login();
+  const input = { identifier: 'bob.test', expectedDid: bob, amount: '0.01' };
+  const created = await f.call('createPayment', { ...input, description: '  Dinner 🍋\nThanks!  ' });
+  assert.equal(created.payment.description, 'Dinner 🍋\nThanks!');
+  assert.equal(f.store.client.prepare('SELECT description FROM payments WHERE id=?').get(created.payment.id).description, 'Dinner 🍋\nThanks!');
+  assert.equal((await f.query('getPayment', { id: created.payment.id })).payment.description, 'Dinner 🍋\nThanks!');
+  assert.equal(f.writes.length, 0, 'description is never published to the repository');
+  assert.equal((await f.call('createPayment', { ...input, description: ' \n ' })).payment.description, null);
+  assert.equal((await f.call('createPayment', input)).payment.description, null);
+  const count = f.store.client.prepare('SELECT count(*) AS n FROM payments').get().n;
+  await assert.rejects(f.call('createPayment', { ...input, description: 'a'.repeat(501) }), e => e.status === 400);
+  await assert.rejects(f.call('createPayment', { ...input, description: 123 }), e => e.status === 400);
+  assert.equal(f.store.client.prepare('SELECT count(*) AS n FROM payments').get().n, count);
+  await f.login(bob);
+  assert.equal((await f.query('listPayments', { direction: 'received' })).total, 3);
+  assert.equal((await f.query('getPayment', { id: created.payment.id })).payment.description, 'Dinner 🍋\nThanks!');
+  await f.login('did:plc:outsider');
+  assert.equal((await f.query('listPayments', { q: 'Dinner' })).total, 0);
+  await assert.rejects(f.query('getPayment', { id: created.payment.id }), e => e.error === 'NotFound');
+});
+
+test('activity filters run before pagination, sort deterministically, and isolate participants', async t => {
+  const f = fixture(t);
+  await f.login();
+  const now = Date.now();
+  const put = f.store.client.prepare(`INSERT INTO payments(id,sender_did,recipient_did,recipient_label,chain_id,amount_wei,state,description,created_at,expires_at)
+    VALUES(?,?,?,?,1,'10000000000000000',?,?,?,?)`);
+  for (let i = 0; i < 55; i++) put.run(`sent-${String(i).padStart(2,'0')}`, alice, bob, 'bob.test', i === 54 ? 'cancelled' : 'ready', i === 53 ? 'Lunch 100%_ literal' : `Dinner ${i}`, now - i * 1000, now + 600000);
+  put.run('received', bob, alice, 'alice.test', 'confirmed', 'Refund', now + 1, now + 600000);
+  put.run('expired', alice, bob, 'bob.test', 'waiting', 'Old', now - 100000, now - 1);
+  put.run('private', 'did:plc:other', 'did:plc:outsider', 'outsider.test', 'ready', 'Dinner hidden', now + 2, now + 600000);
+  f.store.client.prepare('INSERT INTO user_profiles(did,handle,display_name,avatar,updated_at) VALUES(?,?,?,?,?)').run(bob, 'bob.test', 'Robert Citrus', 'https://cdn.bsky.app/img/avatar/plain/test@jpeg', now);
+  let result = await f.query('listPayments', { pageSize: 20 });
+  assert.equal(result.total, 57);
+  assert.equal(result.payments.length, 20);
+  assert.equal(result.payments[0].id, 'received');
+  assert.equal(result.payments[0].sender.displayName, 'Robert Citrus');
+  const second = await f.query('listPayments', { pageSize: 20, page: 2 });
+  assert.equal(new Set([...result.payments, ...second.payments].map(p => p.id)).size, 40);
+  assert.equal((await f.query('listPayments', { page: 3, pageSize: 20 })).payments.length, 17);
+  assert.equal((await f.query('listPayments', { direction: 'received' })).total, 1);
+  assert.equal((await f.query('listPayments', { direction: 'sent' })).total, 56);
+  assert.equal((await f.query('listPayments', { status: 'ready' })).total, 54);
+  assert.equal((await f.query('listPayments', { status: 'waiting' })).total, 0);
+  assert.equal((await f.query('listPayments', { status: 'expired' })).payments[0].id, 'expired');
+  assert.equal((await f.query('listPayments', { q: '100%_' })).payments[0].id, 'sent-53');
+  assert.equal((await f.query('listPayments', { q: "' OR 1=1 --" })).total, 0);
+  assert.equal((await f.query('listPayments', { q: 'robert citrus', direction: 'sent' })).total, 56);
+  assert.equal((await f.query('listPayments', { after: String(now), before: String(now) })).total, 1);
+  assert.equal((await f.query('listPayments', { sort: 'oldest', pageSize: 1 })).payments[0].id, 'expired');
+  assert.equal((await f.query('listPayments', { page: 999 })).payments.length, 0);
+  assert.equal((await f.raw('/xrpc/app.citruswallet.listPayments?page=1.5')).status, 400);
+  for (const params of [{ page: 0 }, { pageSize: 51 }, { status: 'unknown' }, { direction: 'unknown' }, { after: String(now), before: String(now-1) }, { q: 'x'.repeat(513) }, { after: 'not-a-date' }, { before: '-1' }]) {
+    await assert.rejects(f.query('listPayments', params), e => e.status === 400);
+  }
+});
+
+test('only senders may delete cancelled intents; prepared, broadcast, and other-user records survive', async t => {
+  const f = fixture(t);
+  await f.login();
+  const { payment } = await f.call('createPayment', { identifier: 'bob.test', expectedDid: bob, amount: '0.1' });
+  const id = payment.id;
+  await assert.rejects(f.call('deletePayment', { id }), e => e.error === 'Conflict');
+  await f.call('cancelPayment', { id });
+  await f.login(bob);
+  await assert.rejects(f.call('deletePayment', { id }), e => e.error === 'NotFound');
+  await f.login(alice);
+  for (const state of ['ready','prepared','submitted','confirming','confirmed','failed','expired']) {
+    f.store.client.prepare('UPDATE payments SET state=? WHERE id=?').run(state, id);
+    await assert.rejects(f.call('deletePayment', { id }), e => e.error === 'Conflict');
+  }
+  f.store.client.prepare("UPDATE payments SET state='cancelled',tx_hash=? WHERE id=?").run('0x'+'a'.repeat(64), id);
+  await assert.rejects(f.call('deletePayment', { id }), e => e.error === 'Conflict');
+  f.store.client.prepare('UPDATE payments SET tx_hash=NULL WHERE id=?').run(id);
+  assert.equal((await f.call('deletePayment', { id })).ok, true);
+  assert.equal((await f.query('listPayments')).total, 0);
+  await assert.rejects(f.query('getPayment', { id }), e => e.error === 'NotFound');
+  await assert.rejects(f.call('deletePayment', { id }), e => e.error === 'NotFound');
 });

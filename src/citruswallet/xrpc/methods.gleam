@@ -10,6 +10,8 @@ pub const create_invitation = "app.citruswallet.createInvitation"
 
 pub const create_payment = "app.citruswallet.createPayment"
 
+pub const delete_payment = "app.citruswallet.deletePayment"
+
 pub const get_addresses = "app.citruswallet.getAddresses"
 
 pub const get_invitation = "app.citruswallet.getInvitation"

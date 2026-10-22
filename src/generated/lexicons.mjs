@@ -202,6 +202,11 @@ export const schemas = [
                 "type": "string",
                 "maxLength": 2048
               },
+              "description": {
+                "type": "string",
+                "maxLength": 2000,
+                "maxGraphemes": 500
+              },
               "amount": {
                 "type": "string",
                 "maxLength": 80
@@ -446,6 +451,19 @@ export const schemas = [
           "amount": {
             "type": "string"
           },
+          "description": {
+            "type": "string",
+            "maxLength": 2000,
+            "maxGraphemes": 500
+          },
+          "sender": {
+            "type": "ref",
+            "ref": "app.citruswallet.defs#actor"
+          },
+          "recipient": {
+            "type": "ref",
+            "ref": "app.citruswallet.defs#actor"
+          },
           "amountWei": {
             "type": "string"
           },
@@ -493,7 +511,10 @@ export const schemas = [
           "error",
           "attemptId",
           "fromAddress",
-          "nonce"
+          "nonce",
+          "description",
+          "sender",
+          "recipient"
         ]
       },
       "transaction": {
@@ -647,6 +668,44 @@ export const schemas = [
   },
   {
     "lexicon": 1,
+    "id": "app.citruswallet.deletePayment",
+    "defs": {
+      "main": {
+        "type": "procedure",
+        "input": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "id"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "maxLength": 64
+              }
+            }
+          }
+        },
+        "output": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "ok"
+            ],
+            "properties": {
+              "ok": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
     "id": "app.citruswallet.getAddresses",
     "defs": {
       "main": {
@@ -790,14 +849,85 @@ export const schemas = [
     "defs": {
       "main": {
         "type": "query",
+        "parameters": {
+          "type": "params",
+          "properties": {
+            "q": {
+              "type": "string",
+              "maxLength": 512
+            },
+            "direction": {
+              "type": "string",
+              "enum": [
+                "all",
+                "sent",
+                "received"
+              ]
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "all",
+                "waiting",
+                "ready",
+                "prepared",
+                "submitted",
+                "confirming",
+                "confirmed",
+                "failed",
+                "cancelled",
+                "expired"
+              ]
+            },
+            "after": {
+              "type": "string",
+              "maxLength": 15,
+              "description": "Inclusive Unix timestamp in milliseconds, encoded as a decimal string."
+            },
+            "before": {
+              "type": "string",
+              "maxLength": 15,
+              "description": "Inclusive Unix timestamp in milliseconds, encoded as a decimal string."
+            },
+            "page": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "pageSize": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            },
+            "sort": {
+              "type": "string",
+              "enum": [
+                "newest",
+                "oldest"
+              ]
+            }
+          }
+        },
         "output": {
           "encoding": "application/json",
           "schema": {
             "type": "object",
             "required": [
-              "payments"
+              "payments",
+              "total",
+              "page",
+              "pageSize"
             ],
             "properties": {
+              "total": {
+                "type": "integer"
+              },
+              "page": {
+                "type": "integer"
+              },
+              "pageSize": {
+                "type": "integer"
+              },
               "payments": {
                 "type": "array",
                 "items": {

@@ -4,12 +4,42 @@ id = "app.citruswallet.listPayments"
 defs = new Dynamic {
   `main` = new Dynamic {
     `type` = "query"
+    `parameters` = new Dynamic {
+      `type` = "params"
+      `properties` = new Dynamic {
+        `q` = new Dynamic { `type` = "string"
+          `maxLength` = 512 }
+        `direction` = new Dynamic { `type` = "string"
+          `enum` = List("all", "sent", "received") }
+        `status` = new Dynamic { `type` = "string"
+          `enum` = List("all", "waiting", "ready", "prepared", "submitted", "confirming", "confirmed", "failed", "cancelled", "expired") }
+        `after` = new Dynamic { `type` = "string"
+          `maxLength` = 15
+          `description` = "Inclusive Unix timestamp in milliseconds, encoded as a decimal string." }
+        `before` = new Dynamic { `type` = "string"
+          `maxLength` = 15
+          `description` = "Inclusive Unix timestamp in milliseconds, encoded as a decimal string." }
+        `page` = new Dynamic { `type` = "integer"
+          `minimum` = 1
+          `maximum` = 1000000
+          `default` = 1 }
+        `pageSize` = new Dynamic { `type` = "integer"
+          `minimum` = 1
+          `maximum` = 50
+          `default` = 20 }
+        `sort` = new Dynamic { `type` = "string"
+          `enum` = List("newest", "oldest") }
+      }
+    }
     `output` = new Dynamic {
       `encoding` = "application/json"
       `schema` = new Dynamic {
         `type` = "object"
-        `required` = List("payments")
+        `required` = List("payments", "total", "page", "pageSize")
         `properties` = new Dynamic {
+          `total` = new Dynamic { `type` = "integer" }
+          `page` = new Dynamic { `type` = "integer" }
+          `pageSize` = new Dynamic { `type` = "integer" }
           `payments` = new Dynamic {
             `type` = "array"
             `items` = new Dynamic {

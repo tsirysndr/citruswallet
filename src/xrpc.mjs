@@ -17,7 +17,14 @@ export function registerXrpc(app, nsid, handler) {
           if (url.searchParams.getAll(key).length !== 1) throw new Error('Duplicate parameter');
         }
         values = Object.fromEntries(url.searchParams);
-        lexicons.assertValidXrpcParams(nsid, values);
+        for (const [key, schema] of Object.entries(def.parameters?.properties ?? {})) {
+          if (schema.type === 'integer' && key in values) {
+            if (!/^-?\d+$/.test(values[key])) throw new Error('Invalid integer');
+            values[key] = Number(values[key]);
+            if (!Number.isSafeInteger(values[key])) throw new Error('Invalid integer');
+          }
+        }
+        values = lexicons.assertValidXrpcParams(nsid, values) ?? values;
       } else {
         if (ctx.req.header('content-type')?.split(';')[0].trim() !== 'application/json') {
           return ctx.json({ error: 'InvalidRequest', message: 'Expected application/json.' }, 415);

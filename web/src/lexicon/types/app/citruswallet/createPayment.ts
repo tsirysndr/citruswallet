@@ -9,6 +9,7 @@ export interface QueryParams {}
 export interface InputSchema {
   identifier: string
   expectedDid: string
+  description?: string
   amount: string
   [k: string]: unknown
 }

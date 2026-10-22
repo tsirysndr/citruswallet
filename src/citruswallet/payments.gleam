@@ -1,14 +1,18 @@
 import citruswallet/chain.{type Chain}
+import citruswallet/directory
 import citruswallet/drizzle/orm.{
-  all, descending, eq, from as db_from, in_list, insert, is_null, limit, lte,
-  one, order_by, run, set, update, where,
+  all, all_of, any_of, ascending, contains, count_rows, delete, descending, eq,
+  from as db_from, gt, in_list, in_query, insert, is_null, limit, lte, offset,
+  one, order_by, pick, run, select, set, update, where,
 }
 import citruswallet/drizzle/schema/payments as payments_schema
+import citruswallet/drizzle/schema/user_profiles
 import citruswallet/error.{type HttpError}
 import citruswallet/ffi/node
 import citruswallet/ffi/viem
 import citruswallet/identity.{type Identity, type Lookup}
 import citruswallet/linking.{type Link, type Links}
+import citruswallet/profiles
 import citruswallet/store.{type Store}
 import citruswallet/validate
 import gleam/bool
@@ -46,6 +50,7 @@ pub type Payment {
     recipient_label: String,
     chain_id: Int,
     amount_wei: String,
+    description: Option(String),
     state: State,
     source: Source,
     address: Option(String),
@@ -127,7 +132,17 @@ pub fn create(
   identifier identifier: Option(String),
   expected_did expected_did: Option(String),
   amount amount: Option(String),
+  description description: Option(String),
 ) -> Promise(Result(#(Payment, String), HttpError)) {
+  let description = option.map(description, string.trim)
+  use <- guard(
+    string.length(option.unwrap(description, "")) <= 500,
+    error.bad_request("Payment description must be 500 characters or fewer."),
+  )
+  let description = case description {
+    Some("") -> None
+    _ -> description
+  }
   case wei_of(amount) {
     Error(reason) -> promise.resolve(Error(reason))
     Ok(amount_wei) -> {
@@ -163,6 +178,7 @@ pub fn create(
           ),
           set(table.chain_id, payments.chain_id),
           set(table.amount_wei, amount_wei),
+          set(table.description, description),
           set(
             table.state,
             state_name(case link {
@@ -206,17 +222,123 @@ fn wei_of(amount: Option(String)) -> Result(String, HttpError) {
   Ok(wei)
 }
 
-pub fn list(payments: Payments, sender_did: String) -> List(Payment) {
+pub type Filters {
+  Filters(
+    query: String,
+    direction: String,
+    status: String,
+    after: Int,
+    before: Int,
+    page: Int,
+    page_size: Int,
+    sort: String,
+  )
+}
+
+pub type Page {
+  Page(payments: List(Payment), total: Int)
+}
+
+pub fn list(payments: Payments, did: String) -> List(Payment) {
+  history(
+    payments,
+    did,
+    Filters("", "all", "all", 0, 253_402_300_799_999, 1, 20, "newest"),
+  ).payments
+}
+
+pub fn history(payments: Payments, did: String, filters: Filters) -> Page {
   let table = table()
-  db_from(table.table)
-  |> where([
-    eq(table.sender_did, sender_did),
+  let participant = case filters.direction {
+    "sent" -> eq(table.sender_did, did)
+    "received" -> eq(table.recipient_did, did)
+    _ -> any_of([eq(table.sender_did, did), eq(table.recipient_did, did)])
+  }
+  let conditions = [
+    participant,
     eq(table.chain_id, payments.chain_id),
-  ])
-  |> order_by([descending(table.created_at)])
-  |> limit(50)
-  |> all(payments.store.database)
-  |> list.map(reconcile(payments, _))
+    gt(table.created_at, filters.after - 1),
+    lte(table.created_at, filters.before),
+  ]
+  let conditions = case filters.status {
+    "all" -> conditions
+    "expired" -> [
+      any_of([
+        eq(table.state, "expired"),
+        option.unwrap(
+          all_of([
+            in_list(table.state, ["waiting", "ready", "prepared"]),
+            lte(table.expires_at, payments.now()),
+          ]),
+          eq(table.state, "expired"),
+        ),
+      ]),
+      ..conditions
+    ]
+    status -> {
+      let conditions = [eq(table.state, status), ..conditions]
+      case list.contains(["waiting", "ready", "prepared"], status) {
+        True -> [gt(table.expires_at, payments.now()), ..conditions]
+        False -> conditions
+      }
+    }
+  }
+  let conditions = case string.trim(filters.query) {
+    "" -> conditions
+    query -> {
+      let profiles = user_profiles.define(decode.success(Nil))
+      let matching_profiles =
+        select(profiles.table, pick("did", profiles.did))
+        |> where([
+          any_of([
+            contains(profiles.handle, query),
+            contains(profiles.display_name, query),
+          ]),
+        ])
+      [
+        any_of([
+          contains(table.description, query),
+          contains(table.recipient_label, query),
+          contains(table.sender_did, query),
+          contains(table.recipient_did, query),
+          contains(table.address, query),
+          contains(table.from_address, query),
+          contains(table.tx_hash, query),
+          in_query(table.sender_did, matching_profiles, payments.store.database),
+          in_query(
+            table.recipient_did,
+            matching_profiles,
+            payments.store.database,
+          ),
+        ]),
+        ..conditions
+      ]
+    }
+  }
+  let total =
+    select(table.table, count_rows())
+    |> where(conditions)
+    |> one(payments.store.database)
+    |> option.unwrap(0)
+  let order = case filters.sort {
+    "oldest" -> [ascending(table.created_at), ascending(table.id)]
+    _ -> [descending(table.created_at), descending(table.id)]
+  }
+  let rows =
+    db_from(table.table)
+    |> where(conditions)
+    |> order_by(order)
+    |> limit(filters.page_size)
+    |> offset({ filters.page - 1 } * filters.page_size)
+    |> all(payments.store.database)
+  Page(rows, total)
+}
+
+fn profile_json(payments: Payments, did: String) -> Json {
+  case profiles.get(payments.store, did) {
+    Some(profile) -> directory.to_json(profile.actor)
+    None -> json.null()
+  }
 }
 
 pub fn get(
@@ -224,7 +346,9 @@ pub fn get(
   sender_did: String,
   id: Option(String),
 ) -> Promise(Result(Payment, HttpError)) {
-  case result.map(owned(payments, id, sender_did), reconcile(payments, _)) {
+  case
+    result.map(participant(payments, id, sender_did), reconcile(payments, _))
+  {
     Error(reason) -> promise.resolve(Error(reason))
     Ok(payment) ->
       case payment.tx_hash, payment.state {
@@ -875,6 +999,9 @@ pub fn to_json(
     #("asset", json.string("ETH")),
     #("amount", json.string(viem.to_ether(payment.amount_wei))),
     #("amountWei", json.string(payment.amount_wei)),
+    #("description", json.nullable(payment.description, json.string)),
+    #("sender", profile_json(payments, payment.sender_did)),
+    #("recipient", profile_json(payments, payment.recipient_did)),
     #("state", json.string(state_name(displayed))),
     #(
       "address",
@@ -966,6 +1093,7 @@ fn payment_decoder() -> Decoder(Payment) {
   use recipient_label <- decode.field("recipient_label", decode.string)
   use chain_id <- decode.field("chain_id", decode.int)
   use amount_wei <- decode.field("amount_wei", decode.string)
+  use description <- decode.field("description", decode.optional(decode.string))
   use state <- decode.field("state", decode.string)
   use source <- decode.field("source", decode.string)
   use address <- decode.field("address", decode.optional(decode.string))
@@ -988,6 +1116,7 @@ fn payment_decoder() -> Decoder(Payment) {
     recipient_label: recipient_label,
     chain_id: chain_id,
     amount_wei: amount_wei,
+    description: description,
     state: option.unwrap(state_of(state), Failed),
     source: case source {
       "recipient" -> FromRecipient
@@ -1025,5 +1154,49 @@ fn unless(condition: Bool, fallback: a, continue: fn() -> a) -> a {
   case condition {
     True -> continue()
     False -> fallback
+  }
+}
+
+fn participant(
+  payments: Payments,
+  id: Option(String),
+  did: String,
+) -> Result(Payment, HttpError) {
+  use payment <- result.try(row(payments, id))
+  case payment.sender_did == did || payment.recipient_did == did {
+    True -> Ok(payment)
+    False -> Error(error.not_found("Payment not found."))
+  }
+}
+
+/// Only the sender can remove a cancelled, never-broadcast intent.
+pub fn delete_cancelled(
+  payments: Payments,
+  did: String,
+  id: Option(String),
+) -> Result(Nil, HttpError) {
+  use payment <- result.try(owned(payments, id, did))
+  use <- bool.guard(
+    when: payment.state != Cancelled || payment.tx_hash != None,
+    return: Error(error.conflict(
+      "Only cancelled payment intents can be deleted.",
+    )),
+  )
+  let table = table()
+  use changed <- result.try(
+    delete(table.table, [
+      eq(table.id, payment.id),
+      eq(table.sender_did, did),
+      eq(table.state, "cancelled"),
+      is_null(table.tx_hash),
+    ])
+    |> run(payments.store.database)
+    |> result.replace_error(error.unavailable(
+      "Could not delete the intent. Please try again.",
+    )),
+  )
+  case changed {
+    1 -> Ok(Nil)
+    _ -> Error(error.conflict("The payment changed. Refresh and try again."))
   }
 }
