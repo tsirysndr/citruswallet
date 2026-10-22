@@ -3,7 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
 import { Controller, useForm } from "react-hook-form";
 import type { z } from "zod";
-import { send } from "../api";
+import { rpc } from "../api";
 import { accountBalance } from "../balances";
 import { inviteTokenAtom } from "../atoms";
 import { useRefresh, useRun, useStatus } from "../hooks";
@@ -52,7 +52,7 @@ export function IdentityPanel({ className }: { className?: string }) {
   const start = (body: Record<string, unknown>, message: string) =>
     run(async () => {
       status(message);
-      const { url } = await send<{ url: string }>("/auth/start", body);
+      const { url } = await rpc.startLogin( body);
       window.location.assign(url);
     });
 
@@ -137,7 +137,7 @@ export function IdentityPanel({ className }: { className?: string }) {
             className="mt-2"
             onClick={() =>
               run(async () => {
-                await send("/api/logout");
+                await rpc.logout({});
                 await refresh();
                 status("Signed out.");
               })

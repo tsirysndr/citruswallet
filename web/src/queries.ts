@@ -1,13 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
-import { api, rememberCsrf } from "./api";
-import type { Actor, Payment, Session } from "./types";
+import { rpc, rememberCsrf } from "./api";
+import type { Session } from "./types";
 import { readBalances } from "./wallet";
 
 export function useSession() {
   return useQuery({
     queryKey: ["session"],
     queryFn: async () => {
-      const session = await api<Session>("/api/session");
+      const session = await rpc.getSession();
       rememberCsrf(session.csrf);
       return session;
     },
@@ -21,9 +21,7 @@ export function useProfile(did: string | null | undefined) {
     enabled: Boolean(did),
     queryFn: async () => {
       try {
-        const response = await fetch("/api/profile");
-        if (!response.ok) return null;
-        return ((await response.json()).actor as Actor | null) ?? null;
+        return (await rpc.getProfile()).actor;
       } catch {
         return null;
       }
@@ -35,7 +33,7 @@ export function usePayments(session: Session | undefined) {
   return useQuery({
     queryKey: ["payments", session?.did],
     enabled: Boolean(session?.did),
-    queryFn: async () => (await api<{ payments: Payment[] }>("/api/payments")).payments,
+    queryFn: async () => (await rpc.listPayments()).payments,
   });
 }
 
@@ -44,7 +42,7 @@ export function usePayment(id: string | null, session: Session | undefined) {
     queryKey: ["payment", id],
     enabled: Boolean(id && session?.did),
     queryFn: async () =>
-      (await api<{ payment: Payment }>(`/api/payments/${id}`)).payment,
+      (await rpc.getPayment({ id: id! })).payment,
   });
 }
 
@@ -53,7 +51,7 @@ export function useInvitation(token: string | null, session: Session | undefined
     queryKey: ["invitation", token, session?.did],
     enabled: Boolean(token && session?.did),
     queryFn: async () =>
-      (await api<{ payment: Payment }>(`/api/invitations/${token}`)).payment,
+      (await rpc.getInvitation({ token: token! })).payment,
   });
 }
 
@@ -74,11 +72,12 @@ export function useActorSearch(query: string) {
     enabled: query.length >= 2 && !query.startsWith("did:"),
     staleTime: Infinity,
     queryFn: async ({ signal }) => {
-      const response = await fetch(`/api/actors/search?q=${encodeURIComponent(query)}`, {
-        signal,
-      });
-      if (!response.ok) return [];
-      return ((await response.json()).actors as Actor[]) ?? [];
+      try {
+        return (await rpc.searchActors({ q: query }, { signal })).actors;
+      } catch (error) {
+        if (signal.aborted) throw error;
+        return [];
+      }
     },
   });
 }

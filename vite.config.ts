@@ -10,7 +10,7 @@ const projectRoot = fileURLToPath(new URL(".", import.meta.url));
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, projectRoot, "VITE_");
   const api = env.VITE_API_URL || "http://localhost:4747";
-  const proxied = ["/api", "/auth", "/client-metadata.json"];
+  const proxied = ["/xrpc", "/auth", "/client-metadata.json"];
 
   return {
     root: "web",

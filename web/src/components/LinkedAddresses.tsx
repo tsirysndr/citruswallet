@@ -1,4 +1,4 @@
-import { remove, send } from "../api";
+import { rpc } from "../api";
 import { balanceOf } from "../balances";
 import { useRefresh, useRun, useStatus } from "../hooks";
 import { useBalances, useSession } from "../queries";
@@ -19,7 +19,7 @@ export function LinkedAddresses({ className }: { className?: string }) {
   const status = useStatus();
   const refresh = useRefresh();
 
-  if (!session?.links.length) return null;
+  if (!session || (!session.links.length && !session.addressSyncPending)) return null;
 
   return (
     <Panel className={className}>
@@ -43,6 +43,18 @@ export function LinkedAddresses({ className }: { className?: string }) {
           Refresh balances
         </Button>
       </PanelHeading>
+      {session.addressSyncPending && (
+        <div className="mb-4">
+          <Hint>A public address update or removal is pending. Retry, or sign in again to renew permission.</Hint>
+          <Button variant="subtle" onClick={() => run(async () => {
+            const result = await rpc.syncAddresses({});
+            await refresh();
+            status(result.addressSyncPending
+              ? "Still pending. Sign in again if repository permission has expired."
+              : "Public address records updated.", result.addressSyncPending);
+          })}>Retry public record update</Button>
+        </div>
+      )}
       {session.links.map((link) => {
         const here = link.chain_id === session.network.chainId;
         const balance = here ? balanceOf(link.address, session, balances) : null;
@@ -69,7 +81,7 @@ export function LinkedAddresses({ className }: { className?: string }) {
                   variant="subtle"
                   onClick={() =>
                     run(async () => {
-                      await send("/api/links/default", { address: link.address });
+                      await rpc.setDefaultAddress({ address: link.address });
                       await refresh();
                       status("Receiving default updated.");
                     })
@@ -83,9 +95,9 @@ export function LinkedAddresses({ className }: { className?: string }) {
                   variant="subtle"
                   onClick={() =>
                     run(async () => {
-                      await remove(`/api/links/${link.address}`);
+                      const result = await rpc.unlinkAddress({ address: link.address });
                       await refresh();
-                      status("Wallet unlinked.");
+                      status(result.addressSyncPending ? "Wallet unlinked locally. Public record removal is pending." : "Wallet unlinked.");
                     })
                   }
                 >

@@ -1,3 +1,6 @@
+import { AtpBaseClient } from "./lexicon";
+import { XRPCError } from "@atproto/xrpc";
+
 /* Wallet keys and OAuth/session credentials never enter browser storage. */
 let csrf = "";
 const unauthorizedListeners = new Set<() => void>();
@@ -19,24 +22,34 @@ export class RequestError extends Error {
   }
 }
 
-export async function api<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const response = await fetch(path, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      "x-csrf-token": csrf,
-      ...options.headers,
-    },
-  });
+const client = new AtpBaseClient(async (path, init) => {
+  const headers = new Headers(init?.headers);
+  headers.set("x-csrf-token", csrf);
+  const response = await fetch(path, { ...init, headers, credentials: "same-origin" });
   if (response.status === 401) {
     for (const listener of unauthorizedListeners) listener();
   }
-  const data = await response.json();
-  if (!response.ok) throw new RequestError(data.error ?? "Request failed.", response.status);
-  return data as T;
-}
+  return response;
+}).app.citruswallet;
 
-export const send = <T>(path: string, body: unknown = {}): Promise<T> =>
-  api<T>(path, { method: "POST", body: JSON.stringify(body) });
+type DataClient<T> = {
+  [K in keyof T as T[K] extends (...args: never[]) => Promise<unknown> ? K : never]:
+    T[K] extends (...args: infer A) => Promise<{ data: infer D }>
+      ? (...args: A) => Promise<D> : never;
+};
 
-export const remove = <T>(path: string): Promise<T> => api<T>(path, { method: "DELETE" });
+// Keep generated parameter/result types while unwrapping XRPC's response
+// envelope and retaining the app's existing session-expiry error handling.
+export const rpc = new Proxy(client, {
+  get(target, key) {
+    const method = Reflect.get(target, key);
+    if (typeof method !== "function") return method;
+    return async (...args: unknown[]) => {
+      try { return (await method.apply(target, args)).data; }
+      catch (error) {
+        if (error instanceof XRPCError) throw new RequestError(error.message, error.status);
+        throw error;
+      }
+    };
+  },
+}) as unknown as DataClient<typeof client>;

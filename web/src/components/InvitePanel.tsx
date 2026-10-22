@@ -3,12 +3,11 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useAtom } from "jotai";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
-import { send } from "../api";
+import { rpc } from "../api";
 import { forgetInvite, inviteTokenAtom } from "../atoms";
 import { label } from "../format";
 import { useRun, useStatus } from "../hooks";
 import { useInvitation, useSession } from "../queries";
-import type { Payment } from "../types";
 import { inviteForm } from "../validation";
 import {
   Button,
@@ -74,9 +73,8 @@ export function InvitePanel({ className }: { className?: string }) {
         noValidate
         onSubmit={form.handleSubmit(({ address }) =>
           run(async () => {
-            const result = await send<{ payment: Payment }>(
-              `/api/invitations/${token}/accept`,
-              { address },
+            const result = await rpc.acceptInvitation(
+              { token, address },
             );
             queries.setQueryData(["invitation", token, session?.did], result.payment);
             status(

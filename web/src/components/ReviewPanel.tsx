@@ -4,13 +4,13 @@ import { useAtom, useAtomValue } from "jotai";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
-import { send } from "../api";
+import { rpc } from "../api";
 import { acknowledgedAtom, invitationUrlAtom, reviewIdAtom } from "../atoms";
 import { forgetBroadcast, pendingBroadcast, rememberBroadcast } from "../broadcast";
 import { label } from "../format";
 import { useRefresh, useRun, useStatus } from "../hooks";
 import { usePayment, useSession } from "../queries";
-import type { Attempt, Payment } from "../types";
+import type { Payment } from "../types";
 import { recoverForm } from "../validation";
 import { checkWallet, provider, walletAccount } from "../wallet";
 import {
@@ -80,13 +80,14 @@ export function ReviewPanel({ className }: { className?: string }) {
       if (!acknowledged)
         throw new Error("Review and acknowledge the payment details first.");
       const shown = payment;
+      if (!shown.address) throw new Error("The recipient has no receiving address.");
       const wallet = provider();
       const fromAddress = await walletAccount(wallet, session.network);
       if (pendingBroadcast(did))
         throw new Error(
           "Check the previous MetaMask prompt and recover its transaction hash before sending another payment.",
         );
-      const prepared = await send<Attempt>(`/api/payments/${shown.id}/prepare`, {
+      const prepared = await rpc.preparePayment({ id: shown.id,
         revision: shown.revision,
         address: shown.address,
         fromAddress,
@@ -116,9 +117,8 @@ export function ReviewPanel({ className }: { className?: string }) {
         throw error;
       }
       rememberBroadcast(did, { ...pending, txHash });
-      const result = await send<{ payment: Payment }>(
-        `/api/payments/${pending.id}/submit`,
-        { attemptId: pending.attemptId, txHash },
+      const result = await rpc.submitPayment(
+        { id: pending.id, attemptId: pending.attemptId, txHash },
       );
       forgetBroadcast(did);
       cache(result.payment);
@@ -169,9 +169,7 @@ export function ReviewPanel({ className }: { className?: string }) {
           <Button
             onClick={() =>
               run(async () => {
-                const result = await send<{ invitationUrl: string }>(
-                  `/api/payments/${payment.id}/invitation`,
-                );
+                const result = await rpc.createInvitation({ id: payment.id });
                 setInvitationUrl(result.invitationUrl);
                 status(
                   "Invitation generated. Earlier invitation links for this payment no longer work.",
@@ -213,9 +211,9 @@ export function ReviewPanel({ className }: { className?: string }) {
             noValidate
             onSubmit={recover.handleSubmit(({ txHash }) =>
               run(async () => {
-                const result = await send<{ payment: Payment }>(
-                  `/api/payments/${payment.id}/submit`,
-                  { attemptId: payment.attemptId, txHash },
+                if (!payment.attemptId) throw new Error("No payment attempt to recover.");
+                const result = await rpc.submitPayment(
+                  { id: payment.id, attemptId: payment.attemptId, txHash },
                 );
                 cache(result.payment);
                 await refresh();
@@ -273,9 +271,7 @@ export function ReviewPanel({ className }: { className?: string }) {
             variant="subtle"
             onClick={() =>
               run(async () => {
-                const result = await send<{ payment: Payment }>(
-                  `/api/payments/${payment.id}/cancel`,
-                );
+                const result = await rpc.cancelPayment({ id: payment.id });
                 cache(result.payment);
                 await refresh();
                 status("Payment intent cancelled. No funds were reserved.");

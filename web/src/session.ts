@@ -2,7 +2,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useSetAtom } from "jotai";
 import { useEffect } from "react";
-import { api, onUnauthorized, rememberCsrf } from "./api";
+import { rpc, onUnauthorized, rememberCsrf } from "./api";
 import { acknowledgedAtom, invitationUrlAtom, reviewIdAtom, statusAtom } from "./atoms";
 import { useSession } from "./queries";
 import type { Session } from "./types";
@@ -30,7 +30,7 @@ export function useSessionGuard() {
       checking = true;
       try {
         // Only a successful session response can confirm that the login is gone.
-        const current = await api<Session>("/api/session");
+        const current = await rpc.getSession();
         if (disposed || queries.getQueryData<Session>(["session"])?.did !== did) return;
         rememberCsrf(current.csrf);
         if (current.did !== did) {

@@ -2,16 +2,15 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useAtomValue, useSetAtom } from "jotai";
 import { useEffect, useRef } from "react";
 import { Link, Outlet, useNavigate } from "@tanstack/react-router";
-import { send } from "./api";
+import { rpc } from "./api";
 import { inviteTokenAtom, reviewIdAtom, statusAtom } from "./atoms";
 import { BottomNav, HeaderNav } from "./components/Nav";
 import { CitrusMark } from "./components/CitrusMark";
-import { ThemeToggle } from "./components/ThemeToggle";
+import { InstallMetaMask } from "./components/InstallMetaMask";
 import { forgetBroadcast, pendingBroadcast } from "./broadcast";
 import { useRefresh, useRun, useStatus } from "./hooks";
 import { useSession } from "./queries";
 import { useSessionGuard } from "./session";
-import type { Payment } from "./types";
 
 /* A reload must never turn one approved transfer into two: a remembered
    broadcast is reported to the server before anything else can be sent. */
@@ -40,9 +39,8 @@ function useRecovery() {
         );
         return;
       }
-      const result = await send<{ payment: Payment }>(
-        `/api/payments/${pending.id}/submit`,
-        { attemptId: pending.attemptId, txHash: pending.txHash },
+      const result = await rpc.submitPayment(
+        { id: pending.id, attemptId: pending.attemptId, txHash: pending.txHash },
       );
       forgetBroadcast(did);
       queries.setQueryData(["payment", pending.id], result.payment);
@@ -71,14 +69,14 @@ export function App() {
           to="/"
           className="brand-logo"
         >
-          <span className="logo-mark"><CitrusMark /></span><span>Citrus<span className="logo-wallet"> Wallet</span></span>
+          <span className="logo-mark"><CitrusMark /></span><span>Citrus<span className="logo-wallet hidden min-[400px]:inline"> Wallet</span></span>
         </Link>
         <HeaderNav marks={marks} />
         <div className="flex items-center gap-2.5">
-          <span className="hidden rounded-full border border-edge px-2.5 py-1.5 text-[11px] tracking-[0.04em] text-ink-muted lg:inline">
+          <span className="hidden rounded-full border border-edge px-2.5 py-1.5 text-[11px] tracking-[0.04em] text-ink-muted xl:inline">
             {session?.network.name ?? "AT Protocol × Ethereum"}
           </span>
-          <ThemeToggle />
+          <InstallMetaMask />
         </div>
       </header>
 

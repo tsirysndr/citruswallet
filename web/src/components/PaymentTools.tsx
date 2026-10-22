@@ -4,11 +4,11 @@ import { useSetAtom } from "jotai";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import type { z } from "zod";
-import { send } from "../api";
+import { rpc } from "../api";
 import { invitationUrlAtom, reviewIdAtom } from "../atoms";
 import { useRefresh, useRun, useStatus } from "../hooks";
 import { useSession } from "../queries";
-import type { Actor, Payment, Recipient } from "../types";
+import type { Actor, Recipient } from "../types";
 import { amountForm, recipientForm } from "../validation";
 import { Typeahead } from "./Typeahead";
 import { Avatar } from "./Avatar";
@@ -59,7 +59,7 @@ export function PaymentTools({ className }: { className?: string }) {
       recipient.clearErrors("recipient");
       let found: Recipient;
       try {
-        found = await send<Recipient>("/api/recipients/resolve", { identifier });
+        found = await rpc.resolveRecipient({ identifier });
         if (found.did === session.did)
           throw new Error("You cannot send ETH to yourself. Choose another account.");
       } catch (error) {
@@ -85,8 +85,7 @@ export function PaymentTools({ className }: { className?: string }) {
   const create = (value: string) =>
     run(async () => {
       if (!resolved) throw new Error("Resolve the recipient first.");
-      const result = await send<{ payment: Payment; invitationUrl?: string }>(
-        "/api/payments",
+      const result = await rpc.createPayment(
         {
           identifier: resolved.identifier,
           expectedDid: resolved.recipient.did,

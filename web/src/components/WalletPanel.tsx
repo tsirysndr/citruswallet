@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { send } from "../api";
+import { metamaskStoreUrl, useMetaMask } from "../metamask";
+import { rpc } from "../api";
 import { balanceOf } from "../balances";
 import { useRefresh, useRun, useStatus } from "../hooks";
 import { shortAddress } from "../format";
 import { useBalances, useSession } from "../queries";
-import type { Challenge } from "../types";
 import { checkWallet, provider, walletAccount } from "../wallet";
 import {
   Badge,
@@ -32,6 +32,7 @@ export function WalletPanel({ className }: { className?: string }) {
   const refresh = useRefresh();
   const [discoverable, setDiscoverable] = useState(false);
 
+  const hasMetaMask = useMetaMask();
   const signedIn = Boolean(session?.did);
   const address = balances?.address ?? null;
   const onNetwork = balances?.onNetwork ?? false;
@@ -41,7 +42,7 @@ export function WalletPanel({ className }: { className?: string }) {
       const network = session!.network;
       const wallet = provider();
       const account = await walletAccount(wallet, network);
-      const challenge = await send<Challenge>("/api/challenge", {
+      const challenge = await rpc.createChallenge({
         address: account,
         public: discoverable,
       });
@@ -53,9 +54,11 @@ export function WalletPanel({ className }: { className?: string }) {
         params: [hexOf(challenge.message), account],
       });
       await checkWallet(wallet, account, network);
-      await send("/api/verify", { id: challenge.id, signature });
+      const result = await rpc.verifyChallenge({ id: challenge.id, signature });
       await refresh();
-      status("Wallet linked. Your keys stay in MetaMask.");
+      status(result.addressSyncPending
+        ? "Wallet linked. Public record update is pending; retry below or sign in again."
+        : "Wallet linked. Your keys stay in MetaMask.");
     });
 
   return (
@@ -72,12 +75,27 @@ export function WalletPanel({ className }: { className?: string }) {
         Linking has no gas fee.
       </Hint>
       <Checkbox id="discoverable" checked={discoverable} onChange={setDiscoverable}>
-        Allow public payments to this address (first public wallet becomes my
-        receiving default)
+        Publish this address to my AT Protocol repository and allow public
+        payments (first public wallet becomes my receiving default)
       </Checkbox>
-      <Button className="mt-4 w-full" disabled={!signedIn} onClick={link}>
-        Connect MetaMask &amp; link
-      </Button>
+      {hasMetaMask ? (
+        <Button className="mt-4 w-full" disabled={!signedIn} onClick={link}>
+          Connect MetaMask &amp; link
+        </Button>
+      ) : (
+        <div className="mt-4">
+          <a
+            href={metamaskStoreUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex w-full items-center justify-center gap-2.5 rounded-[6px] bg-ink px-4 py-3 text-[13px] font-semibold text-white hover:opacity-90"
+          >
+            <img src="/metamask.png" alt="" width={28} height={28} />
+            Install MetaMask for Chrome
+          </a>
+          <Hint className="mt-2">MetaMask was not detected. On mobile, open this site in the MetaMask app’s browser.</Hint>
+        </div>
+      )}
       {signedIn && address && session && (
         <Balance>
           {onNetwork

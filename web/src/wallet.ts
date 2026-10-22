@@ -8,11 +8,16 @@ export type WalletBalances = {
 
 export const noBalances: WalletBalances = { address: null, onNetwork: false, wei: {} };
 
-export function provider(): Eip1193Provider {
+export function detectedMetaMask(): Eip1193Provider | null {
   const injected = window.ethereum;
   const wallet =
     injected?.providers?.find((candidate) => candidate.isMetaMask) ??
     (injected?.isMetaMask ? injected : null);
+  return wallet;
+}
+
+export function provider(): Eip1193Provider {
+  const wallet = detectedMetaMask();
   if (!wallet)
     throw new Error(
       "Open this page in a browser with MetaMask installed, or in the MetaMask in-app browser.",
