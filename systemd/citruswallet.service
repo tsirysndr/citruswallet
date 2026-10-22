@@ -1,0 +1,27 @@
+[Unit]
+Description=Citrus Wallet API and built web frontend
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/github/citruswallet
+# Build the static frontend and Gleam API before starting the server.
+ExecStartPre=/bin/bash -ic 'exec bun run build'
+# The API serves web/dist; do not start Vite or Anvil in this service.
+ExecStart=/bin/bash -ic 'exec doppler run -c prd -- bun run start'
+TimeoutStartSec=15min
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=citruswallet
+
+Environment=HOME=/root
+Environment=USER=root
+Environment=NODE_ENV=production
+EnvironmentFile=-/etc/default/citruswallet
+
+[Install]
+WantedBy=multi-user.target
