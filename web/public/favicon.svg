@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
+  <circle cx="24" cy="24" r="24" fill="#c5f277" />
+  <g transform="translate(4 4) scale(.833333)" stroke="#191916">
+    <circle cx="24" cy="24" r="20" stroke-width="2" />
+    <circle cx="24" cy="24" r="4" fill="#191916" stroke="none" />
+    <g stroke-width="4" stroke-linecap="round">
+      <path d="M24 10v6" />
+      <path d="M24 10v6" transform="rotate(45 24 24)" />
+      <path d="M24 10v6" transform="rotate(90 24 24)" />
+      <path d="M24 10v6" transform="rotate(135 24 24)" />
+      <path d="M24 10v6" transform="rotate(180 24 24)" />
+      <path d="M24 10v6" transform="rotate(225 24 24)" />
+      <path d="M24 10v6" transform="rotate(270 24 24)" />
+      <path d="M24 10v6" transform="rotate(315 24 24)" />
+    </g>
+  </g>
+</svg>
