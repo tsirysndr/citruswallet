@@ -1,7 +1,7 @@
-name = "atproto_wallet"
+name = "citruswallet"
 version = "0.1.0"
 target = "javascript"
-description = "AT Protocol OAuth and MetaMask wallet linking, in Gleam on Node.js"
+description = "Citrus Wallet — AT Protocol OAuth and MetaMask wallet linking, in Gleam on Node.js"
 
 [javascript]
 runtime = "nodejs"

@@ -5,15 +5,15 @@ import gleam/json.{type Json}
 import gleam/option.{type Option, None, Some}
 import gleam/result
 import gleam/string
-import wallet/drizzle/orm
-import wallet/drizzle/schema/challenges as challenges_schema
-import wallet/drizzle/schema/links as links_schema
-import wallet/error.{type HttpError}
-import wallet/ffi/node
-import wallet/ffi/url
-import wallet/ffi/viem
-import wallet/store.{type Store}
-import wallet/validate
+import citruswallet/drizzle/orm
+import citruswallet/drizzle/schema/challenges as challenges_schema
+import citruswallet/drizzle/schema/links as links_schema
+import citruswallet/error.{type HttpError}
+import citruswallet/ffi/node
+import citruswallet/ffi/url
+import citruswallet/ffi/viem
+import citruswallet/store.{type Store}
+import citruswallet/validate
 
 pub type Links {
   Links(store: Store, origin: String, chain_id: Int, now: fn() -> Int)

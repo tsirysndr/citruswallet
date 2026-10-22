@@ -1,9 +1,9 @@
 {
-  "name": "atproto-ethereum-link",
+  "name": "citruswallet",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "AT Protocol OAuth and MetaMask wallet linking, written in Gleam on Node.js",
+  "description": "Citrus Wallet \u2014 AT Protocol OAuth and MetaMask wallet linking, in Gleam on Node.js",
   "engines": {
     "node": ">=24"
   },

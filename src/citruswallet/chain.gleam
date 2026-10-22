@@ -2,10 +2,10 @@ import gleam/int
 import gleam/javascript/promise.{type Promise}
 import gleam/list
 import gleam/option.{type Option, None, Some}
-import wallet/error.{type HttpError}
-import wallet/ffi/js.{type Js}
-import wallet/ffi/url
-import wallet/ffi/viem
+import citruswallet/error.{type HttpError}
+import citruswallet/ffi/js.{type Js}
+import citruswallet/ffi/url
+import citruswallet/ffi/viem
 
 pub type Chain {
   Chain(client: viem.Client)

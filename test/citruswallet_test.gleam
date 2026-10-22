@@ -5,17 +5,17 @@ import gleam/option.{type Option, None, Some}
 import gleam/result
 import gleam/string
 import gleeunit
-import wallet/directory.{type Actor, Actor}
-import wallet/drizzle/orm
-import wallet/drizzle/schema/links as links_schema
-import wallet/error
-import wallet/identity.{Identity}
-import wallet/linking
-import wallet/network
-import wallet/payments
-import wallet/rate_limit
-import wallet/store
-import wallet/validate
+import citruswallet/directory.{type Actor, Actor}
+import citruswallet/drizzle/orm
+import citruswallet/drizzle/schema/links as links_schema
+import citruswallet/error
+import citruswallet/identity.{Identity}
+import citruswallet/linking
+import citruswallet/network
+import citruswallet/payments
+import citruswallet/rate_limit
+import citruswallet/store
+import citruswallet/validate
 
 pub fn main() -> Nil {
   gleeunit.main()

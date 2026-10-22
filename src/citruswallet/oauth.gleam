@@ -1,10 +1,10 @@
 import gleam/javascript/promise.{type Promise}
 import gleam/option.{None, Some}
 import gleam/string
-import wallet/ffi/atproto
-import wallet/ffi/js.{type Js}
-import wallet/ffi/node
-import wallet/store.{type Store}
+import citruswallet/ffi/atproto
+import citruswallet/ffi/js.{type Js}
+import citruswallet/ffi/node
+import citruswallet/store.{type Store}
 
 const scope = "atproto"
 
@@ -27,7 +27,7 @@ fn metadata(origin: String) -> Js {
     False ->
       js.object([
         #("client_id", js.string(origin <> "/client-metadata.json")),
-        #("client_name", js.string("AT Protocol Wallet Link")),
+        #("client_name", js.string("Citrus Wallet")),
         #("client_uri", js.string(origin)),
         #("redirect_uris", js.list([js.string(redirect_uri)])),
         #("scope", js.string(scope)),

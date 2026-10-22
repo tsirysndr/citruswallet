@@ -1,4 +1,4 @@
-import wallet/ffi/js.{type Exception, type Js}
+import citruswallet/ffi/js.{type Exception, type Js}
 
 pub type Client =
   Js

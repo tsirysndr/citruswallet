@@ -2,11 +2,11 @@ import gleam/dynamic/decode
 import gleam/int
 import gleam/option.{type Option, None, Some}
 import gleam/result
-import wallet/drizzle/orm.{type Database}
-import wallet/drizzle/schema/challenges
-import wallet/drizzle/schema/kv
-import wallet/ffi/better_sqlite.{type Client}
-import wallet/ffi/js.{type Exception}
+import citruswallet/drizzle/orm.{type Database}
+import citruswallet/drizzle/schema/challenges
+import citruswallet/drizzle/schema/kv
+import citruswallet/ffi/better_sqlite.{type Client}
+import citruswallet/ffi/js.{type Exception}
 
 pub type Store {
   Store(client: Client, database: Database)

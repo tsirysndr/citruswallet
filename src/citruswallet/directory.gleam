@@ -5,11 +5,11 @@ import gleam/json.{type Json}
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/string
-import wallet/error.{type HttpError}
-import wallet/ffi/atproto
-import wallet/ffi/http
-import wallet/ffi/url
-import wallet/identity
+import citruswallet/error.{type HttpError}
+import citruswallet/ffi/atproto
+import citruswallet/ffi/http
+import citruswallet/ffi/url
+import citruswallet/identity
 
 pub type Actor {
   Actor(

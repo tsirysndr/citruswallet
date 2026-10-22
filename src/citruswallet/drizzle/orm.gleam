@@ -3,8 +3,8 @@ import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/result
 import gleam/string
-import wallet/ffi/better_sqlite.{type Client}
-import wallet/ffi/js.{type Exception, type Js}
+import citruswallet/ffi/better_sqlite.{type Client}
+import citruswallet/ffi/js.{type Exception, type Js}
 
 pub type Database =
   Js

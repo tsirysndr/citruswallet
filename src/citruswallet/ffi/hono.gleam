@@ -1,7 +1,7 @@
 import gleam/javascript/promise.{type Promise}
 import gleam/list
 import gleam/option.{type Option, None, Some}
-import wallet/ffi/js.{type Exception, type Js}
+import citruswallet/ffi/js.{type Exception, type Js}
 
 pub type App =
   Js

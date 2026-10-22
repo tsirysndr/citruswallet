@@ -7,16 +7,16 @@ import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/result
 import gleam/string
-import wallet/chain.{type Chain}
-import wallet/drizzle/orm
-import wallet/drizzle/schema/payments as payments_schema
-import wallet/error.{type HttpError}
-import wallet/ffi/node
-import wallet/ffi/viem
-import wallet/identity.{type Identity, type Lookup}
-import wallet/linking.{type Link, type Links}
-import wallet/store.{type Store}
-import wallet/validate
+import citruswallet/chain.{type Chain}
+import citruswallet/drizzle/orm
+import citruswallet/drizzle/schema/payments as payments_schema
+import citruswallet/error.{type HttpError}
+import citruswallet/ffi/node
+import citruswallet/ffi/viem
+import citruswallet/identity.{type Identity, type Lookup}
+import citruswallet/linking.{type Link, type Links}
+import citruswallet/store.{type Store}
+import citruswallet/validate
 
 pub type State {
   Waiting

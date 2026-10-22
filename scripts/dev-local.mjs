@@ -28,7 +28,7 @@ try {
   const anvil = track(startAnvil());
   await waitForAnvil(anvil);
   if (!stopping) {
-    console.log('\nLocal wallet linking: http://127.0.0.1:3000 · Anvil RPC: ' + RPC_URL + '\n');
+    console.log('\nCitrus Wallet: http://127.0.0.1:3000 · Anvil RPC: ' + RPC_URL + '\n');
     track(spawn('gleam', ['run'], {
       cwd, stdio: 'inherit',
       env: { ...process.env, APP_URL: 'http://127.0.0.1:3000', PORT: '3000', HOST: '127.0.0.1',

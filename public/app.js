@@ -6,10 +6,10 @@ let inviteError='';
 let busy = false, history = [];
 const inviteFragment = new URLSearchParams(window.location.hash.slice(1)).get('invite');
 if (inviteFragment && /^[a-f0-9]{64}$/.test(inviteFragment)) {
-  sessionStorage.setItem('wallet-link-invite', inviteFragment);
+  sessionStorage.setItem('citruswallet-invite', inviteFragment);
   window.history.replaceState(null, '', '/');
 }
-let inviteToken = sessionStorage.getItem('wallet-link-invite');
+let inviteToken = sessionStorage.getItem('citruswallet-invite');
 function status(message, error = false) { $('status').textContent = message; $('status').classList.toggle('error', error); }
 async function api(path, options = {}) {
   const response = await fetch(path, { ...options, headers: { 'Content-Type': 'application/json', 'x-csrf-token': session?.csrf ?? '', ...options.headers } });
@@ -17,7 +17,7 @@ async function api(path, options = {}) {
   if (!response.ok) throw new Error(data.error ?? 'Request failed.');
   return data;
 }
-const broadcastKey = () => `wallet-link-broadcast:${session.did}`;
+const broadcastKey = () => `citruswallet-broadcast:${session.did}`;
 function formatUnits(wei, decimals, places = 6) {
   const unit = 10n ** BigInt(decimals), value = BigInt(wei);
   const fraction = (value % unit).toString().padStart(decimals, '0').slice(0, places).replace(/0+$/, '');
@@ -57,10 +57,11 @@ function initials(actor) {
   const source = actor.displayName ?? actor.handle;
   return ([...source][0] ?? '?').toUpperCase();
 }
+/* Kept inside the palette's own arc, from orange through yellow to teal. */
 function avatarHue(did) {
   let hash = 0;
-  for (const character of did) hash = (hash * 31 + character.codePointAt(0)) % 360;
-  return hash;
+  for (const character of did) hash = (hash * 31 + character.codePointAt(0)) % 151;
+  return 20 + hash;
 }
 function placeholderAvatar(actor) {
   const node = text('div', initials(actor), 'avatar placeholder');
@@ -204,7 +205,7 @@ function render() {
   }
   if (!history.length) $('payment-history').append(text('p','No payment intents yet.','hint'));
   renderReview(); renderInvitation();
-  document.querySelectorAll('button').forEach(button=>{button.disabled=busy;});
+  document.querySelectorAll('button:not([data-keep-enabled])').forEach(button=>{button.disabled=busy;});
   $('connect').disabled=busy||!loggedIn;
   $('send-payment').disabled=busy||!$('review-confirm').checked||!session?.paymentsEnabled;
   $('accept-invite').disabled=busy||!invitation||!['waiting','ready'].includes(invitation.state)||!$('invite-wallet').value;
@@ -338,7 +339,7 @@ $('recover-payment').onclick=()=>run(async()=>{
 });
 $('invite-wallet').onchange=()=>render();
 $('accept-invite').onclick=()=>run(async()=>{invitation=(await api(`/api/invitations/${inviteToken}/accept`,{method:'POST',body:JSON.stringify({address:$('invite-wallet').value})})).payment;status('Receiving address shared. The sender must return and approve the transfer.');});
-$('dismiss-invite').onclick=()=>{inviteToken=null;invitation=null;sessionStorage.removeItem('wallet-link-invite');render();};
+$('dismiss-invite').onclick=()=>{inviteToken=null;invitation=null;sessionStorage.removeItem('citruswallet-invite');render();};
 $('retry-review').onclick=()=>{
   sessionStorage.removeItem(broadcastKey());$('review-confirm').checked=false;render();
   status('Review the same prepared transaction again. Check MetaMask for an existing transfer before approving another request.');

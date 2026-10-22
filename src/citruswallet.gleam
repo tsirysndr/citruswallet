@@ -1,16 +1,16 @@
 import gleam/int
 import gleam/option.{type Option, None, Some}
 import gleam/result
-import wallet/app
-import wallet/chain.{type Chain}
-import wallet/directory
-import wallet/ffi/hono
-import wallet/ffi/node
-import wallet/ffi/url
-import wallet/identity
-import wallet/network.{type Network}
-import wallet/oauth
-import wallet/store.{type Store}
+import citruswallet/app
+import citruswallet/chain.{type Chain}
+import citruswallet/directory
+import citruswallet/ffi/hono
+import citruswallet/ffi/node
+import citruswallet/ffi/url
+import citruswallet/identity
+import citruswallet/network.{type Network}
+import citruswallet/oauth
+import citruswallet/store.{type Store}
 
 pub fn main() -> Nil {
   case start() {
@@ -66,7 +66,7 @@ fn start() -> Result(Nil, String) {
   let server =
     hono.listen(app, port, host, fn() {
       node.log(
-        "Wallet Link running at "
+        "Citrus Wallet running at "
         <> origin
         <> " · "
         <> network.name

@@ -1,6 +1,6 @@
 import gleam/dynamic/decode.{type Decoder}
 import gleam/option.{type Option}
-import wallet/drizzle/orm.{type Column, type Table}
+import citruswallet/drizzle/orm.{type Column, type Table}
 
 pub type Payments(row) {
   Payments(

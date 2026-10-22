@@ -7,22 +7,22 @@ import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/result
 import gleam/string
-import wallet/chain.{type Chain}
-import wallet/directory
-import wallet/error.{type HttpError, HttpError}
-import wallet/ffi/atproto
-import wallet/ffi/hono.{type Context, type Response}
-import wallet/ffi/js.{type Js}
-import wallet/ffi/node
-import wallet/ffi/url
-import wallet/identity.{type Lookup}
-import wallet/linking.{type Links}
-import wallet/network.{type Network}
-import wallet/oauth
-import wallet/payments.{type Payments}
-import wallet/rate_limit.{type Limiter}
-import wallet/store.{type Store}
-import wallet/validate
+import citruswallet/chain.{type Chain}
+import citruswallet/directory
+import citruswallet/error.{type HttpError, HttpError}
+import citruswallet/ffi/atproto
+import citruswallet/ffi/hono.{type Context, type Response}
+import citruswallet/ffi/js.{type Js}
+import citruswallet/ffi/node
+import citruswallet/ffi/url
+import citruswallet/identity.{type Lookup}
+import citruswallet/linking.{type Links}
+import citruswallet/network.{type Network}
+import citruswallet/oauth
+import citruswallet/payments.{type Payments}
+import citruswallet/rate_limit.{type Limiter}
+import citruswallet/store.{type Store}
+import citruswallet/validate
 
 pub type Settings {
   Settings(
@@ -169,8 +169,8 @@ fn configure(settings: Settings) -> Server {
       max_age: Some(session_lifetime),
     ),
     cookie_name: case secure {
-      True -> "__Host-atwallet"
-      False -> "atwallet"
+      True -> "__Host-citruswallet"
+      False -> "citruswallet"
     },
   )
 }

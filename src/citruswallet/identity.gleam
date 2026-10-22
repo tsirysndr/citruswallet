@@ -5,9 +5,9 @@ import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/result
 import gleam/string
-import wallet/error.{type HttpError}
-import wallet/ffi/atproto
-import wallet/ffi/js
+import citruswallet/error.{type HttpError}
+import citruswallet/ffi/atproto
+import citruswallet/ffi/js
 
 pub type Identity {
   Identity(did: String, handle: Option(String))

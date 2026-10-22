@@ -6,7 +6,7 @@ import {
   kv,
   links,
   payments,
-} from "../build/dev/javascript/atproto_wallet/wallet/drizzle/tables.mjs";
+} from "../build/dev/javascript/citruswallet/citruswallet/drizzle/tables.mjs";
 
 export const kvTable = kv();
 export const challengesTable = challenges();

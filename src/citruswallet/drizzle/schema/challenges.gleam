@@ -1,5 +1,5 @@
 import gleam/dynamic/decode.{type Decoder}
-import wallet/drizzle/orm.{type Column, type Table}
+import citruswallet/drizzle/orm.{type Column, type Table}
 
 pub type Challenges(row) {
   Challenges(
