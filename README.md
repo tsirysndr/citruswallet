@@ -206,7 +206,7 @@ The server is written in Gleam, compiled to JavaScript and run on Node.js, with 
 
 Every dependency binding is written in Gleam. `src/ffi.mjs` is the only JavaScript on the server: a generic bridge for the few constructs Gleam cannot express (property access, method calls, `new`, object literals, thrown exceptions, BigInt, mutable cells). It contains no application logic and knows about no package.
 
-The frontend is a React single-page app in TypeScript, built by Vite: Tailwind CSS for styling, TanStack Router for its four screens, TanStack Query for everything read from the server, Jotai for the state that is only the page's own, and React Hook Form with Zod for every input. Zod mirrors the server's own rules so a typo is caught before a request is made, never instead of one — the server validates everything it receives. Inter and JetBrains Mono are bundled and served from this origin, so the page loads no third-party fonts; addresses, handles, balances and amounts are set in the monospace face.
+The frontend is a React single-page app in TypeScript, built by Vite: Tailwind CSS for styling, TanStack Router for its four screens, TanStack Query for everything read from the server, Jotai for the state that is only the page's own, and React Hook Form with Zod for every input. Zod mirrors the server's own rules so a typo is caught before a request is made, never instead of one — the server validates everything it receives. Roboto Mono Variable is bundled and served from this origin, so the page loads no third-party font; addresses, handles, balances and amounts use the same monospace family.
 
 The layout is mobile-first: one column with a bottom tab bar on a phone, and a wider layout with the same sections in the header on a desktop. `web/public/theme.js` is the one classic script on the page, resolving the light or dark preference into a `data-theme` attribute before the first paint; the content policy forbids inline scripts, so it cannot live in the document. Client routes are served the built document by name, so a reload or a shared link to a screen works, while a mistyped API path stays a JSON 404.
 
@@ -232,3 +232,20 @@ OAuth requests base AT Protocol access and write access to the `app.citruswallet
 Supported assets/wallets: native ETH and standard externally owned accounts on chain 1 or 31337. ERC-20 transfers, contract wallets/ERC-1271, WalletConnect, escrow, automatic payouts, wallet-based account recovery are outside this implementation. Real provider login and the actual MetaMask extension prompts still require manual testing with your own accounts.
 
 The MetaMask installation prompt appears in the top bar and wallet panel when MetaMask is not detected, linking to the official Chrome Web Store listing. `web/public/metamask.png` is the logo from that listing, served locally. Light mode is the default even for old saved dark-mode preferences, and the theme switcher is hidden.
+
+
+## Payment descriptions and activity
+
+Payment creation accepts an optional `description` (up to 500 characters, with a 2,000-byte API limit). It is trimmed, blank values become NULL, and migration 0004 adds a nullable column without modifying old payment data. Descriptions are internal to Citrus Wallet, visible only to payment participants, and never included in repository records or transaction data.
+
+`app.citruswallet.listPayments` lists both sent and received payments for the authenticated DID. It accepts `q`, `direction` (`all`, `sent`, `received`), `status`, `after`, `before`, `sort` (`newest`, `oldest`), `page`, and `pageSize` (1–50). The response includes `payments`, `total`, `page`, and `pageSize`. Date bounds are inclusive Unix milliseconds encoded as decimal **strings** to avoid the XRPC client's 32-bit integer serialization. Search uses bound literal substrings across descriptions, handles, names, DIDs, wallet addresses, and transaction hashes. Filtering and stable creation-time/ID sorting happen in SQLite before pagination. Expiration is accounted for in status filters.
+
+The activity UI debounces search by 300ms, cancels superseded requests, resets pagination when filters change, and offers transaction type/status filters, active-filter chips, and a themed date-range dialog. Presets include all time, last 7/30/90 days, this/last month, and this/last year. Date ranges use the viewer's local calendar. Profiles and rounded avatars are included in responses; unknown profiles are fetched through the vetted AppView lookup, with a cached fallback.
+
+Recipients can read their incoming payment details, but only senders can prepare, submit, cancel, or generate invitations. `app.citruswallet.deletePayment` permanently deletes only a sender-owned cancelled intent without a transaction hash. The UI confirms deletion; it removes the shared intent, not an on-chain transaction. Other payment states remain protected.
+
+## Installable web app
+
+The production frontend registers `/sw.js` and exposes `/manifest.webmanifest`, PNG icons derived from the Citrus logo, an Apple touch icon, and an install control in the footer. Supported browsers show a native install prompt; other browsers get installation instructions. MetaMask must still be available in the chosen browser—installing Citrus does not install or embed MetaMask.
+
+The service worker only caches the static offline page and its public assets. It does **not** cache authenticated responses, wallet data, avatars, OAuth requests, or payment requests, and never queues transfers. Offline navigation shows a reconnect screen. Updates wait for existing windows to close instead of reloading an in-progress payment. The sign-in form includes a local, animated Atmosphere app-logo strip adapted from Rocksky, with pause and reduced-motion support.

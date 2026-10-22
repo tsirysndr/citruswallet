@@ -39,7 +39,7 @@ export function Privacy() {
         <ul>
           <li><strong>Account profiles:</strong> your AT Protocol DID, handle, display name, avatar URL, and profile creation and update timestamps. We obtain these from your account provider and public AT Protocol services. We also index public profiles associated with address records received through Jetstream, including accounts that have not signed in here.</li>
           <li><strong>Wallet links:</strong> chain, Ethereum address, signed ownership message and signature, receiving preferences, and whether a link is public.</li>
-          <li><strong>Payment records:</strong> sender and recipient identifiers, addresses, amounts, payment status, timestamps, invitation information, and transaction hashes. Invitations are stored with hashed tokens.</li>
+          <li><strong>Payment records:</strong> sender and recipient identifiers, addresses, amounts, optional descriptions, payment status, timestamps, invitation information, and transaction hashes. Invitations are stored with hashed tokens. Payment descriptions are visible to the participants in Citrus Wallet and are not published on-chain or to AT Protocol.</li>
           <li><strong>Authentication and operation:</strong> server-side OAuth credentials, sessions, temporary login state, and technical information needed to handle requests, prevent abuse, and diagnose failures, such as IP addresses and error logs.</li>
         </ul>
         <p>Citrus Wallet does not receive your AT Protocol password, wallet private keys, or recovery phrase. Your wallet handles transaction signing.</p>
@@ -63,12 +63,12 @@ export function Privacy() {
       </section>
       <section>
         <h2>6. Cookies and browser storage</h2>
-        <p>We use session and security cookies for authentication and request protection. Browser storage preserves invitation state across sign-in and pending transaction details to help avoid duplicate transfers. The app does not include advertising trackers or third-party analytics. Clearing browser storage can remove transaction recovery information; check your wallet history before retrying a payment.</p>
+        <p>We use session and security cookies for authentication and request protection. Browser storage preserves invitation state across sign-in and pending transaction details to help avoid duplicate transfers. The installed web app caches only public offline-page assets, not account data, payment API responses, or OAuth responses. The app does not include advertising trackers or third-party analytics. Clearing browser storage can remove transaction recovery information; check your wallet history before retrying a payment.</p>
       </section>
       <section>
         <h2>7. Retention and your choices</h2>
         <p>Profile, wallet, and payment records persist in our database; they are not automatically erased when you sign out or a payment expires. We retain records to provide account and payment history, synchronize addresses, resolve issues, and protect against abuse. Backups may retain earlier copies. Temporary login and security records have expiration periods.</p>
-        <p>You can unlink an address, sign out, and revoke Citrus Wallet’s authorization through your account provider. Signing out removes the current browser session and associated server-side OAuth credentials; it does not delete your profile or payment history.</p>
+        <p>You can permanently delete cancelled payment intents you created; this also removes them from the recipient’s Citrus Wallet history, although earlier copies may remain in backups. You can unlink an address, sign out, and revoke Citrus Wallet’s authorization through your account provider. Signing out removes the current browser session and associated server-side OAuth credentials; it does not delete your profile or payment history.</p>
         <p>Contact {contact} to request access, correction, or deletion, or to object to or request restriction of processing. Depending on where you live, you may also have portability rights and the right to complain to your local data protection authority. We may need to verify account ownership. Some records may need to be retained for legal or security reasons, and we cannot remove independently held public copies.</p>
       </section>
       <section>
