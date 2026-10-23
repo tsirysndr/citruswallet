@@ -1,3 +1,5 @@
+import { localWalletState, subscribeWallet } from "../../local-wallet";
+import { useSyncExternalStore } from "react";
 import { ContentSkeleton } from "../ContentSkeleton";
 import { isMobileWalletBrowser } from "../../mobile-wallet";
 import { useState } from "react";
@@ -34,6 +36,9 @@ export function WalletPanel({ className }: { className?: string }) {
   const refresh = useRefresh();
   const [discoverable, setDiscoverable] = useState(false);
 
+  const walletState = useSyncExternalStore(subscribeWallet, localWalletState);
+  const [mode, setMode] = useState(() => localStorage.getItem("citrus:wallet-mode") || "citrus");
+  const builtIn = walletState !== "absent" && mode !== "metamask";
   const hasMetaMask = useMetaMask();
   const signedIn = Boolean(session?.did);
   const address = balances?.address ?? null;
@@ -50,7 +55,7 @@ export function WalletPanel({ className }: { className?: string }) {
       });
       if (challenge.chainId !== network.chainId)
         throw new Error("Server network changed. Reload and try again.");
-      status("Review the DID and domain, then sign the linking message in MetaMask…");
+      status(builtIn ? "Linking your Citrus wallet…" : "Review the linking message in MetaMask…");
       const signature = await wallet.request({
         method: "personal_sign",
         params: [hexOf(challenge.message), account],
@@ -60,7 +65,7 @@ export function WalletPanel({ className }: { className?: string }) {
       await refresh();
       status(result.addressSyncPending
         ? "Wallet linked. Public record update is pending; retry below or sign in again."
-        : "Wallet linked. Your keys stay in MetaMask.");
+        : "Wallet linked. Your keys stay on your device.");
     });
 
   return (
@@ -73,16 +78,17 @@ export function WalletPanel({ className }: { className?: string }) {
         </Badge>
       </PanelHeading>
       <Hint>
-        Approve a message in MetaMask to prove that you control this address.
+        Link your wallet to your Atmosphere account to send and receive payments.
         Linking has no gas fee.
       </Hint>
+      {walletState !== "absent" && <select aria-label="Wallet to use" value={mode} onChange={e => { setMode(e.target.value); localStorage.setItem("citrus:wallet-mode", e.target.value); void refresh(); }}><option value="citrus">Citrus wallet</option><option value="metamask">MetaMask (optional)</option></select>}
       <Checkbox id="discoverable" checked={discoverable} onChange={setDiscoverable}>
         Publish this address to my AT Protocol repository and allow public
         payments (first public wallet becomes my receiving default)
       </Checkbox>
-      {hasMetaMask || isMobileWalletBrowser() ? (
-        <Button className="mt-4 w-full" disabled={!signedIn} onClick={link}>
-          {isMobileWalletBrowser() ? "Open MetaMask & link" : "Connect MetaMask & link"}
+      {builtIn || hasMetaMask || isMobileWalletBrowser() ? (
+        <Button className="mt-4 w-full" disabled={!signedIn || (builtIn && walletState === "locked")} onClick={link}>
+          {builtIn ? (walletState === "locked" ? "Unlock your wallet above" : "Link Citrus wallet") : isMobileWalletBrowser() ? "Open MetaMask & link" : "Connect MetaMask & link"}
         </Button>
       ) : (
         <div className="mt-4">
@@ -98,7 +104,7 @@ export function WalletPanel({ className }: { className?: string }) {
           <Hint className="mt-2">MetaMask was not detected. On mobile, open this site in the MetaMask app’s browser.</Hint>
         </div>
       )}
-      {isMobileWalletBrowser() && !hasMetaMask && (
+      {!builtIn && isMobileWalletBrowser() && !hasMetaMask && (
         <Hint className="mt-2">Approve the connection and linking message in MetaMask, then return here.
           {" "}<a href="https://metamask.io/download/" target="_blank" rel="noopener noreferrer" className="font-semibold underline">Get the MetaMask app</a>
         </Hint>
@@ -112,7 +118,7 @@ export function WalletPanel({ className }: { className?: string }) {
       )}
       <Hint className="mt-2.5">
         {session?.did
-          ? `${session.network.name} · chain ${session.network.chainId} · standard MetaMask accounts`
+          ? `${session.network.name} · chain ${session.network.chainId} · self-custody`
           : "Sign in with AT Protocol to continue."}
       </Hint>
     </Panel>

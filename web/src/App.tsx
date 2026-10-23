@@ -1,3 +1,5 @@
+import { WalletUnlock } from "./components/WalletUnlock";
+import { WalletApproval } from "./components/WalletApproval";
 import { ContentSkeleton } from "./components/ContentSkeleton";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAtomValue, useSetAtom } from "jotai";
@@ -12,7 +14,6 @@ import { ActivitySearch } from "./components/ActivitySearch";
 import { InstallApp } from "./components/InstallApp";
 import { KeyboardShortcuts } from "./components/KeyboardShortcuts";
 import { MetaMaskConnection } from "./components/MetaMaskConnection";
-import { InstallMetaMask } from "./components/InstallMetaMask";
 import { forgetBroadcast, pendingBroadcast } from "./broadcast";
 import { useRefresh, useRun, useStatus } from "./hooks";
 import { useSession } from "./queries";
@@ -58,6 +59,12 @@ function useRecovery() {
 }
 
 export function App() {
+  const walletQueries = useQueryClient();
+  useEffect(() => {
+    const changed = () => { void walletQueries.invalidateQueries({ queryKey: ["balances"] }); };
+    window.addEventListener("citrus:wallet-connected", changed);
+    return () => window.removeEventListener("citrus:wallet-connected", changed);
+  }, [walletQueries]);
   const { data: session, error, isPending } = useSession();
   const { message, error: failed } = useAtomValue(statusAtom);
   const busy = useAtomValue(busyAtom);
@@ -92,12 +99,14 @@ export function App() {
         </Link>
         <div className="flex items-center gap-2.5">
           {session?.did && <><Notifications /><ActivitySearch /></>}
-          <div className="hidden md:block"><InstallMetaMask /></div>
+
         </div>
       </header>
 
       <main className="app-main">
         <MetaMaskConnection />
+        <WalletApproval />
+        <WalletUnlock />
         {isPending ? <div className="page-content"><ContentSkeleton variant="card" label="Opening Citrus" /></div> : <Outlet />}
         {error && (
           <p className="mt-5 text-[13px] text-bad">

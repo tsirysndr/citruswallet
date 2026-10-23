@@ -1,3 +1,5 @@
+import { requestUnlock } from "./wallet-unlock";
+import { configureLocalNetwork, localProvider, localWalletState } from "./local-wallet";
 import type { Network, Session } from "./types";
 import { isMobileWalletBrowser, mobileWalletClient } from "./mobile-wallet";
 
@@ -20,6 +22,7 @@ export function detectedMetaMask(): Eip1193Provider | null {
 }
 
 export function provider(): Eip1193Provider {
+  if (localWalletState() !== "absent" && localStorage.getItem("citrus:wallet-mode") !== "metamask") return localProvider;
   const wallet = detectedMetaMask() ?? connectedMobileWallet;
   if (!wallet)
     throw new Error(
@@ -30,6 +33,11 @@ export function provider(): Eip1193Provider {
 
 // Only explicit wallet actions may open the MetaMask app. Balance reads never connect.
 export async function connectWallet(network: Network): Promise<Eip1193Provider> {
+  configureLocalNetwork(network);
+  if (localWalletState() !== "absent" && localStorage.getItem("citrus:wallet-mode") !== "metamask") {
+    if (localWalletState() === "locked") await requestUnlock();
+    return localProvider;
+  }
   const injected = detectedMetaMask();
   if (injected) return injected;
   if (!isMobileWalletBrowser()) return provider();
@@ -111,6 +119,7 @@ export async function checkWallet(
 /* Balances are read through the wallet's own provider, so they need no server RPC. */
 export async function readBalances(session: Session): Promise<WalletBalances> {
   if (!session.did) return noBalances;
+  configureLocalNetwork(session.network);
   let wallet: Eip1193Provider;
   try {
     wallet = provider();

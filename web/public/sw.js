@@ -17,14 +17,14 @@ self.addEventListener('push', event => {
     icon: '/icons/icon-192.png',
     badge: '/icons/icon-192.png',
     tag: valid ? 'payment-' + data.paymentId : 'citrus-payment',
-    data: valid ? { paymentId: data.paymentId, notificationId: String(data.notificationId || '') } : {},
+    data: valid ? { paymentId: data.paymentId, notificationId: String(data.notificationId || ''), chainId: [1, 4326].includes(data.chainId) ? data.chainId : 1 } : {},
   }));
 });
 self.addEventListener('notificationclick', event => {
   event.notification.close();
-  const { paymentId, notificationId } = event.notification.data || {};
+  const { paymentId, notificationId, chainId } = event.notification.data || {};
   const valid = typeof paymentId === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(paymentId);
-  const path = valid ? '/payments?notificationPayment=' + encodeURIComponent(paymentId) + '&notificationId=' + encodeURIComponent(notificationId || '') : '/activity';
+  const path = valid ? '/payments?notificationPayment=' + encodeURIComponent(paymentId) + '&notificationId=' + encodeURIComponent(notificationId || '') + '&chainId=' + ([1, 4326].includes(chainId) ? chainId : 1) : '/activity';
   event.waitUntil((async () => {
     const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
     const existing = windows.find(client => client.url === new URL(path, self.location.origin).href);

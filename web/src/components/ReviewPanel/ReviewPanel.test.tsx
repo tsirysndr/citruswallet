@@ -9,7 +9,7 @@ it("requires acknowledgement before enabling MetaMask payment approval", async (
   store.set(reviewIdAtom, payment.id);
   const { user } = await renderComponent(<ReviewPanel />, { store });
   const send = await screen.findByRole("button", {
-    name: "Review in MetaMask & send",
+    name: "Review & send",
   });
   expect(send).toBeDisabled();
   await user.click(screen.getByRole("checkbox"));
@@ -51,7 +51,7 @@ it("never sends a transaction when preparation changes the reviewed recipient ad
   await screen.findByRole("checkbox");
   await user.click(screen.getByRole("checkbox"));
   await user.click(
-    screen.getByRole("button", { name: "Review in MetaMask & send" }),
+    screen.getByRole("button", { name: "Review & send" }),
   );
   await waitFor(() =>
     expect(store.get(statusAtom).message).toMatch(/differs from your review/),

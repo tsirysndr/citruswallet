@@ -1,3 +1,4 @@
+import { lockLocalWallet } from "./local-wallet";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useSetAtom } from "jotai";
@@ -34,6 +35,7 @@ export function useSessionGuard() {
         if (disposed || queries.getQueryData<Session>(["session"])?.did !== did) return;
         rememberCsrf(current.csrf);
         if (current.did !== did) {
+          lockLocalWallet();
           await queries.cancelQueries({ predicate: (query) => privateQueries.has(String(query.queryKey[0])) });
           if (disposed) return;
           queries.removeQueries({ predicate: (query) => privateQueries.has(String(query.queryKey[0])) });

@@ -1,0 +1,1 @@
+export { LocalWallet } from './LocalWallet';

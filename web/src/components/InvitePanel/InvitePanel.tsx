@@ -71,7 +71,7 @@ export function InvitePanel({ className }: { className?: string }) {
         </Mono>
       )}
       {session?.did && !invitation && !error && <ContentSkeleton variant="card" label="Loading invitation" />}
-      <a className="my-3 inline-block text-sm font-semibold underline md:hidden" href={`citruswallet://invite#invite=${token}`}>Open in Citrus Wallet app</a>
+      <a className="my-3 inline-block text-sm font-semibold underline md:hidden" href={`citruswallet://invite?chainId=${session?.network.chainId || 1}#invite=${token}`}>Open in Citrus Wallet app</a>
       <form
         noValidate
         onSubmit={form.handleSubmit(({ address }) =>

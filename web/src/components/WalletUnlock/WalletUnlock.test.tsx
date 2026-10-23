@@ -1,0 +1,20 @@
+import { expect, it, afterEach } from 'vitest';
+import { act } from '@testing-library/react';
+import { createStore } from 'jotai';
+import { renderComponent, screen } from '../../test/render';
+import { busyAtom } from '../../atoms';
+import { requestUnlock } from '../../wallet-unlock';
+import { lockLocalWallet } from '../../local-wallet';
+import { WalletUnlock } from './index';
+afterEach(() => lockLocalWallet());
+it('does not disable unlock or cancellation while a payment awaits the wallet', async () => {
+  localStorage.setItem('citrus:encrypted-wallet:v1', '{}');
+  const store = createStore(); store.set(busyAtom, true);
+  const { user } = await renderComponent(<WalletUnlock />, { store });
+  let result!: Promise<void>;
+  act(() => { result = requestUnlock(); });
+  const rejection = expect(result).rejects.toMatchObject({ code: 4001 });
+  expect(screen.getByRole('button', { name: 'Unlock wallet' })).toBeEnabled();
+  await user.click(screen.getByRole('button', { name: 'Cancel' }));
+  await rejection;
+});

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { provider } from "./wallet";
+import { detectedMetaMask } from "./wallet";
 
 export const metamaskFirefoxUrl =
   "https://addons.mozilla.org/en-US/firefox/addon/ether-metamask";
@@ -14,7 +14,7 @@ export function metamaskStoreUrl() {
 
 function available() {
   try {
-    return Boolean(provider());
+    return Boolean(detectedMetaMask());
   } catch {
     return false;
   }

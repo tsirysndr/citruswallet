@@ -15,7 +15,7 @@ export function mobileWalletClient() {
         url: window.location.origin,
         iconUrl: new URL("/icons/icon-192.png", window.location.origin).href,
       },
-      api: { supportedNetworks: { "0x1": "https://ethereum-rpc.publicnode.com" } },
+      api: { supportedNetworks: { "0x1": "https://ethereum-rpc.publicnode.com", "0x10e6": "https://mainnet.megaeth.com/rpc" } },
       analytics: { enabled: false },
       // Preserve the session payload by opening the native scheme directly.
       mobile: { useDeeplink: true },

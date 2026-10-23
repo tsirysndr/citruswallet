@@ -36,7 +36,7 @@ export function LinkedAddresses({ className }: { className?: string }) {
               status(
                 balances?.onNetwork
                   ? "Balances refreshed from your wallet."
-                  : `Switch MetaMask to ${session.network.name} to read balances.`,
+                  : `Switch your wallet to ${session.network.name} to read balances.`,
               );
             })
           }
@@ -67,14 +67,14 @@ export function LinkedAddresses({ className }: { className?: string }) {
             <div className="min-w-0 flex-1">
               <Mono>{link.address}</Mono>
               <Hint>
-                {link.chain_id === 31337 ? "Anvil local" : "Ethereum mainnet"} ·{" "}
+                {link.chain_id === 4326 ? "MegaETH" : link.chain_id === 31337 ? "Anvil local" : "Ethereum mainnet"} ·{" "}
                 {link.public ? "Public" : "Private"}
                 {link.is_default ? " · Receiving default" : ""}
               </Hint>
               {here && balanceLoading && !balances && <ContentSkeleton variant="line" label="Loading balance" />}
               {balance && <p className="mt-1 font-mono text-[13px] text-info tabular-nums">{balance}</p>}
               {here && !balanceLoading && !balance && !balances?.onNetwork && (
-                <Hint>Balance hidden · MetaMask is on another network.</Hint>
+                <Hint>Balance hidden · wallet connection unavailable.</Hint>
               )}
             </div>
             <div className="flex w-full flex-wrap gap-2 md:w-auto">

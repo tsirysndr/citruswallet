@@ -1,7 +1,9 @@
+import { lockLocalWallet } from "./local-wallet";
+import { selectedChain } from "./network";
 import { AtpBaseClient } from "./lexicon";
 import { XRPCError } from "@atproto/xrpc";
 
-/* Wallet keys and OAuth/session credentials never enter browser storage. */
+/* OAuth/session credentials never enter browser storage. Wallet vaults are encrypted locally. */
 let csrf = "";
 const unauthorizedListeners = new Set<() => void>();
 
@@ -25,6 +27,8 @@ export class RequestError extends Error {
 const client = new AtpBaseClient(async (path, init) => {
   const headers = new Headers(init?.headers);
   headers.set("x-csrf-token", csrf);
+  const chain = selectedChain();
+  if (chain) headers.set("x-citrus-chain-id", chain);
   const response = await fetch(path, { ...init, headers, credentials: "same-origin" });
   if (response.status === 401) {
     for (const listener of unauthorizedListeners) listener();
@@ -45,6 +49,7 @@ export const rpc = new Proxy(client, {
     const method = Reflect.get(target, key);
     if (typeof method !== "function") return method;
     return async (...args: unknown[]) => {
+      if (key === "logout") lockLocalWallet();
       try { return (await method.apply(target, args)).data; }
       catch (error) {
         if (error instanceof XRPCError) throw new RequestError(error.message, error.status);

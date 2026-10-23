@@ -9,7 +9,7 @@ test('service worker displays generic deduplicated notifications and opens only 
  let done;handlers.push({data:{json:()=>({paymentId:'payment-1',notificationId:'5',body:'private details'})},waitUntil:p=>done=p});await done;
  assert.equal(shown[0][1].tag,'payment-payment-1');assert.equal(shown[0][1].body,'Open Citrus Wallet to view your payment.');
  handlers.notificationclick({notification:{data:shown[0][1].data,close(){}},waitUntil:p=>done=p});await done;
- assert.equal(opened[0],'/payments?notificationPayment=payment-1&notificationId=5');
+ assert.equal(opened[0],'/payments?notificationPayment=payment-1&notificationId=5&chainId=1');
  handlers.notificationclick({notification:{data:{paymentId:'https://evil.test'},close(){}},waitUntil:p=>done=p});await done;
  assert.equal(opened[1],'/activity');
 });

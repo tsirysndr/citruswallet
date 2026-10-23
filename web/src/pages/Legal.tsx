@@ -42,7 +42,7 @@ export function Privacy() {
           <li><strong>Payment records:</strong> sender and recipient identifiers, addresses, amounts, optional descriptions and KLIPY attachment references, payment status, timestamps, invitation information, and transaction hashes. Invitations are stored with hashed tokens. Payment descriptions are visible to the participants in Citrus Wallet and are not published on-chain or to AT Protocol.</li>
           <li><strong>Authentication and operation:</strong> server-side OAuth credentials, sessions, temporary login state, and technical information needed to handle requests, prevent abuse, and diagnose failures, such as IP addresses and error logs.</li>
         </ul>
-        <p>Citrus Wallet does not receive your AT Protocol password, wallet private keys, or recovery phrase. Your wallet handles transaction signing.</p>
+        <p>Citrus servers do not receive your AT Protocol password, wallet private keys, or recovery phrase. The built-in wallet processes recovery information locally on your device and encrypts it for storage. Your selected wallet handles transaction signing.</p>
       </section>
       <section>
         <h2>3. How we use information</h2>
@@ -58,13 +58,13 @@ export function Privacy() {
       <section>
         <h2>5. Services that receive information</h2>
         <p>Your AT Protocol provider handles login and repository writes. AppView services receive profile and handle-search requests from our server. Avatar images load directly from their image host, which can see your IP address. Jetstream supplies public repository events.</p>
-        <p>Ethereum RPC providers receive requests needed to check transactions; MetaMask and its providers handle wallet connections, balance queries, and broadcasting. Mobile app connections use MetaMask’s connection relay, with SDK analytics disabled. Mobile balance requests use the public dRPC endpoint. Our hosting infrastructure processes requests and stored data to run Citrus Wallet. These providers may operate in different countries and have their own privacy policies.</p>
+        <p>RPC providers receive requests needed to read balances, broadcast signed transactions, and verify payments. Built-in wallets generate, import, encrypt, and use keys on your device; Citrus servers do not receive your recovery phrase or private key. MetaMask and its providers handle wallet requests only when you choose MetaMask. Mobile app connections use MetaMask’s connection relay, with SDK analytics disabled. Balance and transaction requests use the selected network RPC. Our hosting infrastructure processes requests and stored data to run Citrus Wallet. These providers may operate in different countries and have their own privacy policies.</p>
         <p>Payment participants receive the details needed for their payment. Information may also be disclosed where required by law or necessary to address abuse or protect the service. We do not use the app to sell personal information or serve targeted advertisements.</p>
         <p>When you use the optional KLIPY media picker, searches, selected-media share events, an anonymous browser identifier, and network information are sent directly to KLIPY. Displaying an attachment loads media from KLIPY. We store only the selected media reference with the payment, visible to its participants, and do not publish it to Ethereum or AT Protocol. KLIPY media is not cached by our offline service worker.</p>
       </section>
       <section>
         <h2>6. Cookies and browser storage</h2>
-        <p>We use session and security cookies for authentication and request protection. Browser storage preserves invitation state across sign-in and pending transaction details to help avoid duplicate transfers. The installed web app caches only public offline-page assets, not account data, payment API responses, or OAuth responses. The app does not include advertising trackers or third-party analytics. Clearing browser storage can remove transaction recovery information; check your wallet history before retrying a payment.</p>
+        <p>We use session and security cookies for authentication and request protection. Browser storage preserves your encrypted local wallet, optional encrypted device-unlock copy, network preferences, invitation state, and pending transaction details. Your password or supported device authenticator unlocks the local wallet. The installed web app caches only public offline-page assets, not account data, payment API responses, or OAuth responses. The app does not include advertising trackers or third-party analytics. Clearing browser storage can remove your local wallet and transaction recovery information. Keep your recovery phrase or private key backup offline; check your wallet history before retrying a payment.</p>
       </section>
       <section>
         <h2>7. Retention and your choices</h2>

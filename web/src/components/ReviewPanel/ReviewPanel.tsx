@@ -65,7 +65,7 @@ export function ReviewPanel({ className }: { className?: string }) {
     ["Recipient", `${payment.recipientLabel} (name at creation)`],
     ["Pinned DID", payment.recipientDid],
     ["Network", `${session.network.name} · ${payment.chainId}`],
-    ["Amount", `${payment.amount} {payment.asset} + network fee`],
+    ["Amount", `${payment.amount} ${payment.asset} + network fee`],
     ["Address", payment.address ?? "Recipient has not selected an address"],
     ["Expires", new Date(payment.expiresAt).toLocaleString()],
   ];
@@ -93,7 +93,7 @@ export function ReviewPanel({ className }: { className?: string }) {
       const fromAddress = await walletAccount(wallet, session.network);
       if (pendingBroadcast(did))
         throw new Error(
-          "Check the previous MetaMask prompt and recover its transaction hash before sending another payment.",
+          "Check the previous wallet request and recover its transaction hash before sending another payment.",
         );
       const prepared = await rpc.preparePayment({ id: shown.id,
         revision: shown.revision,
@@ -117,7 +117,7 @@ export function ReviewPanel({ className }: { className?: string }) {
       const pending = { id: shown.id, attemptId: prepared.attemptId };
       rememberBroadcast(did, pending);
       cache(prepared.payment);
-      status("Review the address, amount, network fee, and nonce in MetaMask.");
+      status("Review the address, amount, and network fee in your wallet.");
       let txHash: string;
       try {
         txHash = await wallet.request({ method: "eth_sendTransaction", params: [tx] });
@@ -171,10 +171,10 @@ export function ReviewPanel({ className }: { className?: string }) {
             disabled={!acknowledged || !session.paymentsEnabled}
             onClick={pay}
           >
-            Review in MetaMask &amp; send
+            Review &amp; send
           </Button>
           <Hint className="mt-2.5">
-            Use a wallet linked to your own DID. MetaMask shows the final transaction
+            Use a wallet linked to your own DID. Your wallet shows the final transaction
             and network fee before you approve.
           </Hint>
         </>
@@ -257,14 +257,14 @@ export function ReviewPanel({ className }: { className?: string }) {
               forgetBroadcast(did);
               setAcknowledged(false);
               status(
-                "Review the same prepared transaction again. Check MetaMask for an existing transfer before approving another request.",
+                "Review the same prepared transaction again. Check your wallet for an existing transfer before approving another request.",
               );
             }}
           >
             No transaction was sent — review again
           </Button>
           <Hint className="mt-2.5">
-            If MetaMask broadcast a transaction but the page lost the response, find
+            If your wallet broadcast a transaction but the page lost the response, find
             its hash in your wallet. Do not create a second payment to retry it.
           </Hint>
         </div>
