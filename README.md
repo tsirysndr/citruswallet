@@ -7,9 +7,9 @@ Pay someone by their AT Protocol handle instead of their Ethereum address.
 
 ![Citrus Wallet signed in: an account card showing an avatar, display name, handle, linked balance and DID, beside the panel for linking a MetaMask wallet](preview.png)
 
-An Ethereum address is 42 characters of hex that nobody can check by eye, so sending ETH to a person means trusting an address copied from somewhere. An AT Protocol handle — `alice.bsky.social` — is something you already recognise. Citrus Wallet connects the two: you prove you control an address by signing a message naming your AT Protocol account in MetaMask, and from then on people can pay you by handle.
+An Ethereum address is 42 characters of hex that nobody can check by eye, so sending ETH to a person means trusting an address copied from somewhere. An AT Protocol handle — `alice.bsky.social` — is something you already recognise. Citrus Wallet connects the two: you prove you control an address by signing a message naming your AT Protocol account in Citrus Wallet or optional MetaMask, and from then on people can pay you by handle.
 
-Sending works in the open. You type a handle, the server resolves it to the account's stable DID and the address that account chose to receive on, and shows you the full address, the pinned DID, the network and the amount. Nothing moves until you approve the actual transaction in MetaMask, which is the only thing that signs or broadcasts it.
+Sending works in the open. You type a handle, the server resolves it to the account's stable DID and the address that account chose to receive on, and shows you the full address, the pinned DID, the network and the amount. Nothing moves until you approve the transaction. Built-in wallets sign on your device; MetaMask remains an optional external signer.
 
 If the person you want to pay has not set up a receiving address yet, you create an invitation instead — a link that reserves no funds and promises nothing. They open it, sign in as the account the invitation names, link a wallet, and choose an address to share with you alone, which can stay private from everyone else. You then come back and approve the transfer as usual.
 
@@ -19,7 +19,7 @@ The server holds no keys, signs nothing, and never takes custody: there is no es
 
 ## Local development
 
-Requires Bun, Node.js 24+, Gleam 1.19+, and a desktop browser with MetaMask.
+Requires Bun, Node.js 24+, Gleam 1.19+, and a modern browser. MetaMask is optional.
 
 ```sh
 bun install
@@ -46,15 +46,15 @@ AT Protocol login still uses your actual account provider over the internet. The
 1. Both users sign in with their AT Protocol accounts and link a wallet on the same network.
 2. The recipient checks **Allow public payments to this address** when linking. Their first public wallet on that chain becomes the receiving default. They can change it with **Make default**.
 3. The sender resolves the recipient's handle, reviews the returned DID, chooses an asset, enters its amount, and creates a payment intent.
-4. The sender reviews the full address, pinned DID, network, and amount, then checks the acknowledgement and selects **Review in MetaMask & send**.
-5. MetaMask displays the actual transaction and fee. After approval, use **Refresh status** to check the transaction against the server's RPC and the required confirmations.
+4. The sender reviews the full address, pinned DID, network, and amount, then checks the acknowledgement and selects **Review & send**.
+5. Your selected wallet displays the transaction and fee. After approval, use **Refresh status** to check the transaction against the server's RPC and the required confirmations.
 
 ### Invite someone without a receiving address
 
 1. Resolve their handle/DID and create a payment intent. It shows **Awaiting recipient setup**. No funds move or become reserved.
 2. Copy the generated invitation URL and share it yourself. The app does not send messages or notifications.
 3. The recipient opens it, signs in as the intended DID, links a wallet, and selects **Use this address for this payment**. The chosen address may stay private from other users; this sender can see it.
-4. The sender returns to their payment history, opens the intent, refreshes its status, and reviews/approves the transfer in MetaMask.
+4. The sender returns to their payment history, opens the intent, refreshes its status, and reviews/approves the transfer in their selected wallet.
 
 The invitation is **not a funded claim link** and does not promise that the sender will pay. Intents expire after seven days. Only the pinned recipient DID can accept, even if the original handle changes hands. Invitation tokens are hashed at rest; generating a new invitation invalidates the old link. URL fragments keep the initial token out of ordinary page request URLs, and the frontend preserves it in session storage across OAuth redirects.
 
@@ -78,7 +78,7 @@ Only the DID is authoritative — it comes from the OAuth login. The name and av
 
 ### Account balances
 
-The linked-addresses panel shows each address's balance on the active chain, and the identity panel totals them, read through MetaMask's own provider with `eth_getBalance`. No server RPC is involved, and no connection prompt is triggered: balances simply stay hidden until MetaMask is connected and on the configured network. **Refresh balances** re-reads them.
+The linked-addresses panel shows balances on the selected chain. Built-in wallets read the selected RPC directly, including while locked; optional MetaMask uses its provider. Balance reads never initiate a connection or signing prompt. **Refresh balances** re-reads them.
 
 ### ERC-20 assets
 
@@ -111,7 +111,7 @@ OAuth login upserts `user_profiles` by DID, storing the handle, display name, av
 bun run dev
 ```
 
-This defaults to Ethereum mainnet (chain 1), with `data/wallet.sqlite`. Linking, recipient resolution, and invitations work without an Ethereum RPC. Sending requires a trusted **server-side** `ETH_RPC_URL` for that chain. The URL is never included in API responses. Anvil RPC is configured automatically in `dev:local`.
+This defaults to MegaETH mainnet (chain 4326), with `data/wallet.sqlite`. Ethereum mainnet remains available. Public RPC defaults are supplied for both; override server verification endpoints with `MEGAETH_RPC_URL` and `ETH_RPC_URL`. Clients receive public network endpoints, never private server overrides. Anvil RPC is configured automatically in `dev:local`.
 
 See `.env.example`. Variables are read from the process; to explicitly load an `.env` file, export it into the environment before starting the app.
 
@@ -119,8 +119,9 @@ See `.env.example`. Variables are read from the process; to explicitly load an `
 | --- | --- |
 | `APP_URL` | `http://127.0.0.1:4747`; exact origin, no trailing slash |
 | `PORT`, `HOST` | `4747`, `127.0.0.1` |
-| `EVM_CHAIN_ID` | `1`; `31337` allowed only with a loopback app origin |
-| `ETH_RPC_URL` | Required for mainnet payments; loopback HTTP or HTTPS |
+| `EVM_CHAIN_ID` | `4326` by default; `1` for Ethereum; `31337` only with a loopback app origin |
+| `ETH_RPC_URL` | Ethereum verification RPC; defaults to PublicNode |
+| `MEGAETH_RPC_URL` | MegaETH verification RPC; defaults to `https://mainnet.megaeth.com/rpc` |
 | `DATABASE_PATH` | `data/wallet.sqlite`, or `data/local.sqlite` on Anvil |
 | `MIGRATIONS_DIR` | `./drizzle`; applied at startup |
 | `PUBLIC_DIR` | `./web/dist`; the built frontend, resolved against the working directory |
@@ -140,11 +141,11 @@ Handles are resolved with the official identity SDK's SSRF-protected fetch. The 
 
 A public default can change while an intent is awaiting preparation; this increments its revision and requires another sender review. Private invitation choices are scoped to that payment. Unlinking a receiving wallet invalidates its use for new preparation. Preparing freezes the destination and reserves a specific sender nonce in the app, so repeated preparation returns the same transaction instead of creating another send.
 
-The sender's MetaMask account must be linked to their authenticated DID on the payment network. The server verifies its RPC's chain before preparation. The frontend checks the prepared transaction against the reviewed address, amount, DID, and chain, then invokes `eth_sendTransaction`. Only MetaMask signs and broadcasts it.
+The sender's wallet account must be linked to their authenticated DID on the payment network. The server verifies its RPC's chain before preparation. The frontend checks the prepared transaction against the reviewed address, amount, DID, and chain, then invokes `eth_sendTransaction`. The selected wallet signs and broadcasts locally.
 
 After broadcast, the server stores the transaction hash before making RPC checks. It validates the sender, recipient, value, empty call data, nonce, chain, and receipt status. Mainnet requires **12 confirmations**; Anvil requires **1**. Status is checked on demand with **Refresh status**. A missing transaction or RPC outage is never treated as success. Previously checked receipts are rechecked when you refresh an individual payment, so a missing receipt can return it to submitted status.
 
-If the page loses the response after wallet approval, check MetaMask before retrying. A broadcast hash is preserved in the current tab's session storage until the server accepts it. The review panel also lets you attach the original transaction hash manually. An unresolved wallet request blocks another send in that tab until you recover its hash or explicitly indicate that no transaction was sent. A declined wallet request can retry the same prepared intent/nonce. Preparing reserves no funds and creates no on-chain lock.
+If the page loses the response after wallet approval, check your selected wallet before retrying. A broadcast hash is preserved in the current tab's session storage until the server accepts it. The review panel also lets you attach the original transaction hash manually. An unresolved wallet request blocks another send in that tab until you recover its hash or explicitly indicate that no transaction was sent. A declined wallet request can retry the same prepared intent/nonce. Preparing reserves no funds and creates no on-chain lock.
 
 Only unprepared intents can be cancelled in the app. An expired prepared intent releases its app-level nonce reservation on subsequent preparation, while retaining its attempt metadata so an already broadcast transaction can still be reported. Expiry and cancellation are off-chain workflow states: they cannot revoke a transaction already signed/broadcast or close a wallet prompt. The wallet's final approval is authoritative; changing transaction fields in MetaMask can cause the resulting transfer to fail this app's verification.
 
@@ -244,9 +245,9 @@ The wallet signature proves that the Ethereum account signed a message naming th
 
 OAuth requests base AT Protocol access and write access to the `app.citruswallet.address` collection. OAuth credentials are retained server-side for record synchronization. Browser sessions and temporary OAuth state are sensitive; keep the SQLite files private. Wallet keys, seed phrases, and transaction-signing credentials never reach the server.
 
-Supported assets/wallets: native ETH and standard externally owned accounts on chain 1 or 31337. ERC-20 transfers, contract wallets/ERC-1271, WalletConnect, escrow, automatic payouts, wallet-based account recovery are outside this implementation. Real provider login and the actual MetaMask extension prompts still require manual testing with your own accounts.
+Supported assets/wallets: native ETH and standard ERC-20 transfers on MegaETH and Ethereum, plus local Anvil development. Contract wallets/ERC-1271, escrow, automatic payouts, native Bitcoin, and server-managed recovery are outside this implementation. Real provider login, device biometrics, and external wallet prompts require platform testing.
 
-The MetaMask installation prompt appears in the top bar and wallet panel when MetaMask is not detected, linking to the official Chrome Web Store listing. `web/public/metamask.png` is the logo from that listing, served locally. Light mode is the default even for old saved dark-mode preferences, and the theme switcher is hidden.
+The optional MetaMask installation prompt appears in the wallet panel when MetaMask is not detected, linking to the official Chrome Web Store listing. `web/public/metamask.png` is the logo from that listing, served locally. Light mode is the default even for old saved dark-mode preferences, and the theme switcher is hidden.
 
 
 ## Payment descriptions and activity
@@ -261,7 +262,7 @@ Recipients can read their incoming payment details, but only senders can prepare
 
 ## Installable web app
 
-The production frontend registers `/sw.js` and exposes `/manifest.webmanifest`, PNG icons derived from the Citrus logo, an Apple touch icon, and an install control in the footer. Supported browsers show a native install prompt; other browsers get installation instructions. MetaMask must still be available in the chosen browser—installing Citrus does not install or embed MetaMask.
+The production frontend registers `/sw.js` and exposes `/manifest.webmanifest`, PNG icons derived from the Citrus logo, an Apple touch icon, and an install control in the footer. Supported browsers show a native install prompt; other browsers get installation instructions. The built-in encrypted wallet works in the PWA; MetaMask is optional.
 
 The service worker only caches the static offline page and its public assets. It does **not** cache authenticated responses, wallet data, avatars, OAuth requests, or payment requests, and never queues transfers. Offline navigation shows a reconnect screen. Updates wait for existing windows to close instead of reloading an in-progress payment. The sign-in form includes a local, animated Atmosphere app-logo strip, with pause and reduced-motion support.
 
@@ -299,8 +300,7 @@ in the wallet card if MetaMask is missing.
 
 The SDK loads only for an explicit mobile connection, with analytics disabled.
 Mobile balance reads use the public mainnet RPC at `https://ethereum-rpc.publicnode.com` and
-connections use MetaMask’s WebSocket relay. The CSP explicitly allows those two
-origins. Background balance reads never initiate a connection or app handoff.
+connections use MetaMask’s WebSocket relay. The CSP permits HTTPS RPC connections and the MetaMask relay. Background balance reads never initiate a connection or app handoff.
 After a page reload, tap Connect MetaMask to resume the SDK session. Account and
 chain checks, signed ownership challenges, and payment broadcast recovery apply
 to both app and extension connections.
@@ -326,3 +326,16 @@ The authenticated `app.citruswallet.subscribeNotifications` SSE endpoint support
 Browser Web Push is opt-in from the notification popover. `getWebPushConfig`, `registerWebPush`, and `unregisterWebPush` manage browser subscriptions with normal session/CSRF protections. The service worker displays a generic payment alert and opens a local payment page on click; it does not cache payment data. Chrome, Firefox and Safari push-service endpoints are allowlisted to prevent arbitrary outbound requests. Expired subscriptions are removed on HTTP 404/410. Signing keys are generated once and stored server-side in the database, so database backups preserve existing subscriptions. An explicit `WEB_PUSH_PUBLIC_KEY` / `WEB_PUSH_PRIVATE_KEY` pair can override them; rotating keys requires browsers to subscribe again. Only the public key is exposed to clients.
 
 Notification queries, validation, queue processing, retry policy, and background payment checks live in Gleam (`notifications`, `notification_worker`, and `web_push`). `notification_transport.mjs` contains only library, crypto, scheduler and SSE transport bindings. `markAllNotificationsRead` clears unread state only for the current recipient and chain. The web bell shows a red unread counter and opens a scrollable popover with individual and bulk read actions.
+
+
+### Built-in self-custody wallets
+
+Create a 12-word BIP-39 wallet or import an English recovery phrase/private key from the Wallet screen. Recovery uses the first Ethereum account (`m/44'/60'/0'/0/0`); extra BIP-39 passphrases and additional derivation paths are not supported. The same address works on each EVM network, but funds stay on their original network. New wallets confirm three randomly selected recovery words using tap-to-select choices, with the other nine words prefilled. No typing is needed.
+
+The shared `app/packages/wallet-core` uses viem accounts, scure BIP-39, and Noble AES-256-GCM/PBKDF2-SHA256 (600,000 iterations). Browser storage contains a versioned encrypted vault with fresh random salt and nonce; the password must have at least 12 characters. WebAuthn PRF can protect a second encrypted copy when the platform authenticator supports it, with required user verification. Touch ID/device PIN availability depends on the OS, browser, and authenticator; password unlock remains available. This is local wallet unlock, not server authentication.
+
+Expo uses SecureStore with device-only accessibility. Its 6–12 digit PIN is combined with a random device-stored secret before deriving the encryption key. Failed PIN attempts incur an increasing delay. Opt-in biometric unlock stores a separate OS-authentication-protected secret. Enrollment changes or unavailable biometrics require PIN fallback. Wallets lock on backgrounding and after five minutes without wallet actions; logout locks without deleting the backup or vault. JavaScript strings cannot be reliably zeroized: lock removes application references, not a guarantee of physical memory erasure.
+
+Secrets never enter API requests, React Query, telemetry, or public AT Protocol records. Keep the recovery backup offline: clearing browser data, uninstalling, losing the device, or losing the password/PIN can make the local vault inaccessible. Citrus cannot reset a wallet password or recover funds. Browser self-custody also relies on the integrity of the served application and device; this implementation has not received an independent security audit.
+
+Network settings select MegaETH or Ethereum, with optional HTTPS RPC overrides verified against `eth_chainId`. Custom RPCs run only on the client; API verification uses fixed server-configured RPCs. Existing production environments with explicit `EVM_CHAIN_ID=1` retain that setting until it is changed. Background confirmation checks cover both mainnets. Signing preserves the server-reserved nonce, verifies sender/chain, estimates fees, requires confirmation, and aborts if the wallet locks before broadcast.
