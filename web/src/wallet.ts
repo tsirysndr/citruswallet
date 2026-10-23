@@ -68,39 +68,56 @@ export async function connectWallet(network: Network): Promise<Eip1193Provider> 
   return connectedMobileWallet;
 }
 
-export async function walletAccount(wallet: Eip1193Provider, network: Network) {
-  const accounts: string[] = await wallet.request({ method: "eth_requestAccounts" });
+const accountRequests = new WeakMap<Eip1193Provider, { chain: string; promise: Promise<string> }>();
+function walletErrorCode(error: any) {
+  return error?.data?.originalError?.code ?? error?.rpcCode ?? error?.code;
+}
+const pendingNetworkMessage = 'Open MetaMask and finish the pending network request. Select the requested network there, then return to Citrus.';
+
+// Joining the same operation prevents duplicate permission/network prompts even
+// when multiple callers share a provider. Never retry add-chain automatically.
+export function walletAccount(wallet: Eip1193Provider, network: Network, status?: (message: string) => void): Promise<string> {
+  const pending = accountRequests.get(wallet);
+  if (pending) return pending.chain === network.chainIdHex ? pending.promise : Promise.reject(new Error('Finish the current wallet connection before changing networks.'));
+  const promise = prepareAccount(wallet, network, status).finally(() => {
+    if (accountRequests.get(wallet)?.promise === promise) accountRequests.delete(wallet);
+  });
+  accountRequests.set(wallet, { chain: network.chainIdHex, promise });
+  return promise;
+}
+async function prepareAccount(wallet: Eip1193Provider, network: Network, status?: (message: string) => void) {
+  let accounts: string[];
+  try { accounts = await wallet.request({ method: 'eth_requestAccounts' }); }
+  catch (error) {
+    if (walletErrorCode(error) !== -32002) throw error;
+    // A network prompt can also block requestAccounts for an already-authorized account.
+    accounts = await wallet.request({ method: 'eth_accounts' });
+    if (!accounts.length) throw new Error('Open MetaMask and finish the pending request, then try linking again.');
+  }
   const address = accounts[0];
-  if (!address) throw new Error("No Ethereum account selected.");
-  if ((await wallet.request({ method: "eth_chainId" })) !== network.chainIdHex) {
+  if (!address) throw new Error('No Ethereum account selected.');
+  const onNetwork = async () => (await wallet.request({ method: 'eth_chainId' })).toLowerCase() === network.chainIdHex.toLowerCase();
+  if (!await onNetwork()) {
+    status?.(`Open MetaMask to connect to ${network.name}.`);
     try {
-      await wallet.request({
-        method: "wallet_switchEthereumChain",
-        params: [{ chainId: network.chainIdHex }],
-      });
-    } catch (error: any) {
-      if (
-        (error.code !== 4902 && error.data?.originalError?.code !== 4902) ||
-        !network.rpcUrls
-      )
-        throw error;
-      await wallet.request({
-        method: "wallet_addEthereumChain",
-        params: [
-          {
-            chainId: network.chainIdHex,
-            chainName: network.name,
-            rpcUrls: network.rpcUrls,
-            nativeCurrency: network.nativeCurrency,
-          },
-        ],
-      });
-      await wallet.request({
-        method: "wallet_switchEthereumChain",
-        params: [{ chainId: network.chainIdHex }],
-      });
+      try { await wallet.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: network.chainIdHex }] }); }
+      catch (error) {
+        if (walletErrorCode(error) !== 4902 || !network.rpcUrls?.length) throw error;
+        await wallet.request({ method: 'wallet_addEthereumChain', params: [{ chainId: network.chainIdHex, chainName: network.name, rpcUrls: network.rpcUrls, nativeCurrency: network.nativeCurrency }] });
+        // MetaMask may already switch on approval. Do not open a redundant prompt.
+        if (!await onNetwork()) await wallet.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: network.chainIdHex }] });
+      }
+    } catch (error) {
+      if (walletErrorCode(error) !== -32002) throw error;
+      status?.(`${pendingNetworkMessage} Waiting for ${network.name}…`);
+      const deadline = Date.now() + 30_000;
+      while (!await onNetwork()) {
+        if (Date.now() >= deadline) throw new Error(`${pendingNetworkMessage} Then try linking again.`);
+        await new Promise(resolve => setTimeout(resolve, 750));
+      }
     }
   }
+  await checkWallet(wallet, address, network);
   return address;
 }
 

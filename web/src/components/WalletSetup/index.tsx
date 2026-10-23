@@ -40,10 +40,11 @@ export function WalletSetup({ onFinished, restart = false }: { onFinished?: () =
     if (!session) throw new Error('Reconnect to Citrus and try again.');
     localStorage.setItem('citrus:wallet-mode', kind);
     const provider = await connectWallet(session.network);
-    const account = await walletAccount(provider, session.network);
+    const account = await walletAccount(provider, session.network, status);
     if (kind === 'metamask') localStorage.setItem('citrus:metamask-address', account);
     setAddress(account);
     if (session.did) {
+      status(kind === 'metamask' ? 'Approve the wallet-linking message in MetaMask.' : 'Linking your wallet…');
       const challenge = await rpc.createChallenge({ address: account, public: true });
       if (challenge.chainId !== session.network.chainId) throw new Error('Network changed. Please try again.');
       const signature = await provider.request({ method: 'personal_sign', params: [stringToHex(challenge.message), account] });
@@ -52,6 +53,7 @@ export function WalletSetup({ onFinished, restart = false }: { onFinished?: () =
       await rpc.setDefaultAddress({ address: account });
       await refresh();
     }
+    status(session.did ? 'Wallet linked and set as your receiving default.' : 'Wallet connected. Sign in to finish setup.');
     setStage(session.did ? 'done' : 'signin');
   });
   const created = () => { setAddress(localBalanceAddress() || ''); setStage(session?.did ? 'link' : 'signin'); };

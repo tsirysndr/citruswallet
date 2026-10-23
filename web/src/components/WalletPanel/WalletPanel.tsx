@@ -48,7 +48,7 @@ export function WalletPanel({ className }: { className?: string }) {
     run(async () => {
       const network = session!.network;
       const wallet = await connectWallet(network);
-      const account = await walletAccount(wallet, network);
+      const account = await walletAccount(wallet, network, status);
       const challenge = await rpc.createChallenge({
         address: account,
         public: discoverable,
