@@ -1,3 +1,4 @@
+import { localBalanceAddress, localWalletState } from "./local-wallet";
 import { formatAmount } from "./format";
 import type { Session } from "./types";
 import type { WalletBalances } from "./wallet";
@@ -16,20 +17,18 @@ export function accountBalance(
   session: Session,
   balances: WalletBalances | undefined,
 ) {
-  const linked = session.links.filter(
-    (link) => link.chain_id === session.network.chainId,
-  );
-  const known = linked.filter(
-    (link) => balances?.wei[link.address.toLowerCase()] !== undefined,
-  );
-  if (!known.length) return null;
-  const total = known.reduce(
-    (sum, link) => sum + BigInt(balances!.wei[link.address.toLowerCase()]!),
-    0n,
-  );
-  const where =
-    known.length === linked.length
-      ? `${known.length} linked address${known.length === 1 ? "" : "es"}`
-      : `${known.length} of ${linked.length} linked addresses`;
-  return `${formatAmount(total.toString(), session.network.nativeCurrency)} across ${where}`;
+  if (balances?.unavailable) return null;
+  const addresses = [...new Set([
+    ...session.links.filter(link => link.chain_id === session.network.chainId).map(link => link.address.toLowerCase()),
+    ...(balances?.address ? [balances.address.toLowerCase()] : []),
+    ...(localBalanceAddress() ? [localBalanceAddress()!.toLowerCase()] : []),
+  ])];
+  if (!addresses.length) {
+    if (localWalletState() !== 'absent') return null;
+    return `${formatAmount('0', session.network.nativeCurrency)} across 0 addresses on this network`;
+  }
+  // An unavailable address must never be silently counted as zero.
+  if (addresses.some(address => balances?.wei[address] === undefined)) return null;
+  const total = addresses.reduce((sum, address) => sum + BigInt(balances!.wei[address]!), 0n);
+  return `${formatAmount(total.toString(), session.network.nativeCurrency)} across ${addresses.length} address${addresses.length === 1 ? '' : 'es'}`;
 }

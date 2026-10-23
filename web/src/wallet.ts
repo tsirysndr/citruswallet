@@ -1,5 +1,5 @@
 import { requestUnlock } from "./wallet-unlock";
-import { configureLocalNetwork, localProvider, localWalletState } from "./local-wallet";
+import { configureLocalNetwork, localProvider, localWalletState, localBalanceAddress } from "./local-wallet";
 import type { Network, Session } from "./types";
 import { isMobileWalletBrowser, mobileWalletClient } from "./mobile-wallet";
 
@@ -8,6 +8,7 @@ let connectedMobileWallet: Eip1193Provider | null = null;
 export type WalletBalances = {
   address: string | null;
   onNetwork: boolean;
+  unavailable?: boolean;
   wei: Record<string, string>;
 };
 
@@ -130,7 +131,7 @@ export async function readBalances(session: Session): Promise<WalletBalances> {
     const onNetwork =
       (await wallet.request({ method: "eth_chainId" })) === session.network.chainIdHex;
     const accounts: string[] = await wallet.request({ method: "eth_accounts" });
-    const address = accounts[0] ?? null;
+    const address = accounts[0] ?? localBalanceAddress();
     if (!onNetwork) return { address, onNetwork, wei: {} };
     const wanted = new Set(
       session.links
@@ -138,6 +139,8 @@ export async function readBalances(session: Session): Promise<WalletBalances> {
         .map((link) => link.address),
     );
     if (address) wanted.add(address);
+    const local = localBalanceAddress();
+    if (local) wanted.add(local);
     const wei: Record<string, string> = {};
     await Promise.all(
       [...wanted].map(async (each) => {
@@ -149,7 +152,7 @@ export async function readBalances(session: Session): Promise<WalletBalances> {
     );
     return { address, onNetwork, wei };
   } catch {
-    /* A wallet that refuses the read simply leaves balances unknown. */
-    return noBalances;
+    /* A failed read must not become an empty-account zero. */
+    return { ...noBalances, unavailable: true };
   }
 }

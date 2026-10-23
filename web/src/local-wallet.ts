@@ -5,6 +5,16 @@ import { createPublicClient, createWalletClient, defineChain, http, formatEther,
 import type { Network } from './types';
 
 const storageKey = 'citrus:encrypted-wallet:v1';
+const addressKey = 'citrus:wallet-public-address:v1';
+export function localBalanceAddress() {
+  if (!localStorage.getItem(storageKey)) return null;
+  const address = localStorage.getItem(addressKey);
+  return address && /^0x[0-9a-f]{40}$/i.test(address) ? address : null;
+}
+function rememberAddress(value: WalletSecret) {
+  // Public read-only metadata; signing always derives its address from the key.
+  try { localStorage.setItem(addressKey, accountFromSecret(value).address); } catch { /* Balance cache is optional. */ }
+}
 let secret: WalletSecret | null = null;
 let epoch = 0;
 let timeout: ReturnType<typeof setTimeout> | undefined;
@@ -25,6 +35,7 @@ export async function saveLocalWallet(value: WalletSecret, password: string) {
   if (generation !== epoch || localWalletState() !== 'absent') throw new Error('Wallet setup was interrupted. Try again.');
   localStorage.removeItem("citrus:wallet-passkey:v1");
   localStorage.setItem(storageKey, JSON.stringify(envelope));
+  rememberAddress(normalized);
   secret = normalized; touch(); changed();
 }
 export async function unlockLocalWallet(password: string) {
@@ -33,9 +44,10 @@ export async function unlockLocalWallet(password: string) {
   const generation = epoch;
   const value = await decryptSecret(validateEnvelope(JSON.parse(raw)), password);
   if (generation !== epoch || raw !== localStorage.getItem(storageKey)) throw new Error('Unlock was interrupted. Try again.');
+  rememberAddress(value);
   secret = value; touch(); changed();
 }
-export function saveUnlockedSecret(value: WalletSecret) { secret = value; touch(); changed(); }
+export function saveUnlockedSecret(value: WalletSecret) { rememberAddress(value); secret = value; touch(); changed(); }
 export function localAddress() { return secret ? accountFromSecret(secret).address : null; }
 export async function backupLocalWallet(password: string) {
   const raw = localStorage.getItem(storageKey);

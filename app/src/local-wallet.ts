@@ -7,6 +7,9 @@ import type { Network } from './types';
 const vaultKey = 'citrus-vault-v1', pepperKey = 'citrus-vault-device-key-v1', biometricKey = 'citrus-vault-biometric-v1';
 const options = { keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY };
 let secret: WalletSecret | null = null, state = 'loading', generation = 0;
+let balanceAddress: string | null = null;
+const addressKey = 'citrus-vault-public-address-v1';
+export function nativeBalanceAddress() { return balanceAddress; }
 let timer: ReturnType<typeof setTimeout> | undefined;
 const listeners = new Set<() => void>();
 function emit() { for (const listener of listeners) listener(); }
@@ -14,8 +17,18 @@ function touch() { clearTimeout(timer); timer = setTimeout(lockNativeWallet, 300
 export function nativeVaultState() { return state; }
 export function subscribeNativeVault(fn: () => void) { listeners.add(fn); return () => { listeners.delete(fn); }; }
 export function lockNativeWallet() { generation++; secret = null; if (state === 'unlocked') state = 'locked'; clearTimeout(timer); emit(); }
-export async function loadNativeVault() { state = await SecureStore.getItemAsync(vaultKey) ? 'locked' : 'absent'; emit(); }
+export async function loadNativeVault() {
+  state = await SecureStore.getItemAsync(vaultKey) ? 'locked' : 'absent';
+  const stored = state === 'locked' ? await SecureStore.getItemAsync(addressKey) : null;
+  balanceAddress = stored && /^0x[0-9a-f]{40}$/i.test(stored) ? stored : null;
+  emit();
+}
 export function nativeAddress() { return secret ? accountFromSecret(secret).address : null; }
+async function rememberAddress(value: WalletSecret) {
+  balanceAddress = accountFromSecret(value).address;
+  // Public, read-only metadata. Never use this cached address for signing.
+  try { await SecureStore.setItemAsync(addressKey, balanceAddress, options); } catch { /* A balance cache failure must not prevent wallet recovery. */ }
+}
 function accept(value: WalletSecret) { secret = value; state = 'unlocked'; touch(); emit(); }
 const hex = (bytes: Uint8Array) => Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
 export async function createNativeVault(value: WalletSecret, pin: string) {
@@ -28,6 +41,7 @@ export async function createNativeVault(value: WalletSecret, pin: string) {
   if (ticket !== generation) throw new Error('Setup interrupted. Try again.');
   await SecureStore.setItemAsync(pepperKey, pepper, options);
   await SecureStore.setItemAsync(vaultKey, JSON.stringify(envelope), options);
+  await rememberAddress(normalized);
   if (ticket === generation) accept(normalized); else { state = 'locked'; emit(); }
 }
 export async function readNativeSecret(pin: string) {
@@ -53,6 +67,7 @@ export async function readNativeSecret(pin: string) {
 export async function unlockNativeVault(pin: string) {
   const ticket = generation;
   const value = await readNativeSecret(pin);
+  await rememberAddress(value);
   if (ticket !== generation) throw new Error('Unlock interrupted. Try again.');
   accept(value);
 }
@@ -67,7 +82,12 @@ export async function unlockNativeBiometrics() {
   const raw = await SecureStore.getItemAsync(biometricKey, { ...options, keychainService: "citrus-wallet-biometric-v1", requireAuthentication: true, authenticationPrompt: 'Unlock Citrus Wallet' });
   if (!raw) throw new Error('Device unlock is unavailable or biometrics changed. Use your PIN.');
   if (AppState.currentState !== 'active') throw new Error('Return to Citrus to unlock.');
-  const parsed = JSON.parse(raw); accept(normalizeSecret(parsed.value, parsed.kind));
+  const parsed = JSON.parse(raw);
+  const value = normalizeSecret(parsed.value, parsed.kind);
+  const ticket = generation;
+  await rememberAddress(value);
+  if (ticket !== generation || AppState.currentState !== 'active') throw new Error('Unlock interrupted.');
+  accept(value);
 }
 AppState.addEventListener('change', state => { if (state !== 'active') lockNativeWallet(); });
 function confirm(message: string) { return new Promise<boolean>(resolve => Alert.alert('Confirm payment', message, [{ text: 'Cancel', style: 'cancel', onPress: () => resolve(false) }, { text: 'Send payment', onPress: () => resolve(true) }], { cancelable: true, onDismiss: () => resolve(false) })); }

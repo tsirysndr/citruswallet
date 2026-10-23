@@ -20,7 +20,7 @@ function walletFixture({ mobile = true, injected, connectError } = {}) {
     .replace(/^import .*;$/gm, '').replace(/export /g, '');
   const api = runInNewContext(source + '\n({ connectWallet, readBalances, checkWallet, walletAccount, provider })', {
     window: { ethereum: injected, dispatchEvent(event) { events.push(event); } }, Event, CustomEvent,
-    localWalletState: () => "absent", configureLocalNetwork() {},
+    localBalanceAddress: () => null, localWalletState: () => "absent", configureLocalNetwork() {},
     isMobileWalletBrowser: () => mobile, mobileWalletClient: async () => client,
   });
   return { api, wallet, calls, events, listeners };

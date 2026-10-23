@@ -20,6 +20,10 @@ test('native wallet encrypts storage with a separate device key and unlocks only
   expect(mockStorage.get('citrus-vault-v1')).not.toContain('abandon');
   expect(mockStorage.get('citrus-vault-device-key-v1')).toHaveLength(64);
   vault.lockNativeWallet();
+  expect(vault.nativeAddress()).toBeNull();
+  expect(vault.nativeBalanceAddress()).toBe("0x9858EfFD232B4033E47d90003D41EC34EcaEda94");
+  await vault.loadNativeVault();
+  expect(vault.nativeBalanceAddress()).toBe("0x9858EfFD232B4033E47d90003D41EC34EcaEda94");
   await vault.unlockNativeVault('793184');
   expect(vault.nativeAddress()).toBe('0x9858EfFD232B4033E47d90003D41EC34EcaEda94');
   await expect(vault.createNativeVault(secret, '793184')).rejects.toThrow('already exists');
