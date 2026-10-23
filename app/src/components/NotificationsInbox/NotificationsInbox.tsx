@@ -2,7 +2,7 @@ import { ContentSkeleton } from "../ContentSkeleton";
 import { useState } from "react";
 import { Modal, Pressable, ScrollView, View } from "react-native";
 import { Text } from "../Typography";
-import { Ionicons } from "@expo/vector-icons";
+import { BellIcon } from "../BellIcon";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSetAtom } from "jotai";
 import { request } from "../../api";
@@ -32,7 +32,7 @@ export function NotificationsInbox() {
         onPress={() => setOpen(true)}
         className="p-2"
       >
-        <Ionicons name="notifications-outline" size={24} />
+        <BellIcon size={24} />
         {!!data?.unread && (
           <View className="absolute right-1 top-1 h-2 w-2 rounded-full bg-blue" />
         )}

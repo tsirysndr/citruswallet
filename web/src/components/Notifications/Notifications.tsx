@@ -1,6 +1,7 @@
 import { ContentSkeleton } from "../ContentSkeleton";
 import { useEffect, useRef, useState } from "react";
-import { Bell, X } from "lucide-react";
+import { X } from "lucide-react";
+import { BellIcon } from "../BellIcon";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSetAtom } from "jotai";
 import { useNavigate } from "@tanstack/react-router";
@@ -104,7 +105,7 @@ export function Notifications() {
           setOpen(value => !value);
         }}
       >
-        <Bell size={21} />
+        <BellIcon size={21} />
         {!!data?.unread && (
           <span aria-hidden="true" className="notification-count">{data.unread > 99 ? '99+' : data.unread}</span>
         )}
