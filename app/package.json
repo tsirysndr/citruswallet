@@ -47,7 +47,9 @@
     "react-native-sse": "^1.2.1",
     "react-native-svg": "15.12.1",
     "react-native-worklets": "0.5.1",
-    "readable-stream": "^4.7.0"
+    "readable-stream": "^4.7.0",
+    "@citruswallet/wallet-core": "file:packages/wallet-core",
+    "viem": "^2.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

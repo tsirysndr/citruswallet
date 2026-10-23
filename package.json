@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Citrus Wallet — AT Protocol OAuth and MetaMask wallet linking, in Gleam on Node.js",
+  "description": "Citrus Wallet — self-custody EVM payments with AT Protocol identity",
   "engines": {
     "node": ">=24"
   },
@@ -47,7 +47,8 @@
     "react-hook-form": "^7.90.0",
     "viem": "^2.0.0",
     "web-push": "^3.6.7",
-    "zod": "^4.6.7"
+    "zod": "^4.6.7",
+    "@citruswallet/wallet-core": "file:app/packages/wallet-core"
   },
   "devDependencies": {
     "@atproto/lex-cli": "0.5.7",
