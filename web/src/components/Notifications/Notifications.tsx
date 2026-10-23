@@ -7,19 +7,49 @@ import { rpc } from "../../api";
 import { useSession } from "../../queries";
 import { reviewIdAtom } from "../../atoms";
 import { useRun } from "../../hooks";
+import { WebPushSettings } from "./WebPushSettings";
 export function Notifications() {
   const { data: session } = useSession(),
     queries = useQueryClient(),
     review = useSetAtom(reviewIdAtom),
     navigate = useNavigate(),
     run = useRun();
-  const dialog = useRef<HTMLDialogElement>(null),
+  const container = useRef<HTMLDivElement>(null),
+    trigger = useRef<HTMLButtonElement>(null),
+    [open, setOpen] = useState(false),
+    [marking, setMarking] = useState(false),
     [message, setMessage] = useState("");
   const { data, error, refetch } = useQuery({
     queryKey: ["notifications", session?.did],
     enabled: !!session?.did,
     queryFn: () => rpc.listNotifications(),
   });
+  useEffect(() => {
+    if (!session?.did) return;
+    const open = (paymentId: unknown, notificationId?: unknown) => {
+      if (typeof paymentId !== 'string' || !/^[A-Za-z0-9_-]{1,128}$/.test(paymentId)) return;
+      review(paymentId);
+      void navigate({ to: '/payments' });
+      if (typeof notificationId === 'string' && /^\d+$/.test(notificationId))
+        void rpc.markNotificationRead({ id: notificationId }).then(() => queries.invalidateQueries({ queryKey: ['notifications'] })).catch(() => {});
+    };
+    const params = new URLSearchParams(window.location.search);
+    try {
+      const target = JSON.parse(sessionStorage.getItem('citrus:notification-target') || 'null');
+      if (target && !params.has('notificationPayment')) open(target.paymentId, target.notificationId);
+      sessionStorage.removeItem('citrus:notification-target');
+    } catch {}
+    if (params.has('notificationPayment')) {
+      open(params.get('notificationPayment'), params.get('notificationId'));
+      params.delete('notificationPayment'); params.delete('notificationId');
+      history.replaceState(history.state, '', window.location.pathname + (params.size ? '?' + params : '') + window.location.hash);
+    }
+    const receive = (event: MessageEvent) => {
+      if (event.data?.type === 'citrus-open-payment') open(event.data.paymentId, event.data.notificationId);
+    };
+    navigator.serviceWorker?.addEventListener('message', receive);
+    return () => navigator.serviceWorker?.removeEventListener('message', receive);
+  }, [session?.did, review, navigate, queries]);
   useEffect(() => {
     if (!session?.did || typeof EventSource === "undefined") return;
     const key = `citrus:notifications:${session.did}:${session.network.chainId}`;
@@ -49,30 +79,41 @@ export function Notifications() {
     });
     return () => source.close();
   }, [session?.did, session?.network.chainId, queries]);
+  useEffect(() => {
+    if (!open) return;
+    const outside = (event: PointerEvent) => { if (!container.current?.contains(event.target as Node)) setOpen(false); };
+    const escape = (event: KeyboardEvent) => { if (event.key === 'Escape') { setOpen(false); trigger.current?.focus(); } };
+    document.addEventListener('pointerdown', outside);
+    document.addEventListener('keydown', escape);
+    return () => { document.removeEventListener('pointerdown', outside); document.removeEventListener('keydown', escape); };
+  }, [open]);
   if (!session?.did) return null;
   return (
-    <>
+    <div ref={container} className="relative inline-flex">
       <button
         type="button"
         className="activity-search-trigger relative"
         aria-label={`Notifications${data?.unread ? `, ${data.unread} unread` : ""}`}
+        ref={trigger}
+        aria-expanded={open}
+        aria-controls="notification-popover"
         title="Notifications"
         onClick={() => {
           setMessage("");
-          dialog.current?.showModal();
+          setOpen(value => !value);
         }}
       >
         <Bell size={21} />
         {!!data?.unread && (
-          <span className="absolute right-1 top-1 size-2 rounded-full bg-blue-600" />
+          <span aria-hidden="true" className="notification-count">{data.unread > 99 ? '99+' : data.unread}</span>
         )}
       </button>
       <span role="status" className="sr-only">
         {message}
       </span>
-      <dialog
-        ref={dialog}
-        className="notification-dialog"
+      {open && <section
+        id="notification-popover"
+        className="notification-popover"
         aria-label="Payment notifications"
       >
         <header className="flex items-center justify-between gap-4">
@@ -80,12 +121,22 @@ export function Notifications() {
           <button
             type="button"
             aria-label="Close notifications"
-            onClick={() => dialog.current?.close()}
+            onClick={() => setOpen(false)}
             className="p-2"
           >
             <X size={20} />
           </button>
         </header>
+        <button type="button" className="mt-2 text-sm font-semibold text-info disabled:opacity-40" disabled={!data?.unread || marking} onClick={() => {
+          run(async () => {
+            setMarking(true);
+            try {
+              await rpc.markAllNotificationsRead({});
+              await queries.invalidateQueries({ queryKey: ['notifications'] });
+            } finally { setMarking(false); }
+          });
+        }}>{marking ? 'Marking…' : 'Mark all as read'}</button>
+        <WebPushSettings did={session.did} />
         {error ? (
           <button type="button" onClick={() => void refetch()}>
             Could not load notifications. Retry
@@ -104,7 +155,7 @@ export function Notifications() {
                       queryKey: ["notifications"],
                     });
                     review(item.paymentId);
-                    dialog.current?.close();
+                    setOpen(false);
                     void navigate({ to: "/payments" });
                   })
                 }
@@ -124,7 +175,7 @@ export function Notifications() {
             Your confirmed incoming payments will appear here.
           </p>
         )}
-      </dialog>
-    </>
+      </section>}
+    </div>
   );
 }

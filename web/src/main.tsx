@@ -5,6 +5,13 @@ import { createRoot } from "react-dom/client";
 import { router } from "./router";
 import "./styles.css";
 
+// Preserve an opaque notification target across browser OAuth redirects.
+const notificationParams = new URLSearchParams(window.location.search);
+const notificationPayment = notificationParams.get('notificationPayment');
+if (notificationPayment && /^[A-Za-z0-9_-]{1,128}$/.test(notificationPayment)) {
+  try { sessionStorage.setItem('citrus:notification-target', JSON.stringify({ paymentId: notificationPayment, notificationId: notificationParams.get('notificationId') })); } catch {}
+}
+
 const queries = new QueryClient({
   defaultOptions: { queries: { retry: false, refetchOnWindowFocus: false } },
 });

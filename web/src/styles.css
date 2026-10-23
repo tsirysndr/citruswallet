@@ -388,7 +388,8 @@ textarea:focus-visible { outline: none; }
   .command-result { gap: 9px; padding: 10px; }
 }
 
-.notification-dialog { margin: auto; width: min(480px, calc(100vw - 32px)); max-height: 80dvh; overflow-y: auto; border: 1px solid var(--edge); border-radius: 20px; background: var(--surface); color: var(--ink); padding: 22px; }
-.notification-dialog::backdrop { background: #19191655; }
+.notification-popover { position: absolute; z-index: 60; top: calc(100% + 12px); right: 0; width: min(380px, calc(100vw - 32px)); max-height: min(560px, calc(100dvh - 110px)); overflow-y: auto; overscroll-behavior: contain; border: 1px solid var(--edge); border-radius: 12px; background: var(--surface); color: var(--ink); padding: 18px; box-shadow: 0 12px 36px #1919161a; }
+@media (max-width: 639px) { .notification-popover { position: fixed; top: 74px; right: 16px; } }
 .notification-item { display: flex; flex-direction: column; gap: 8px; padding: 16px; border: 1px solid var(--edge-soft); background: var(--panel); text-align: left; border-radius: 8px; cursor: pointer; }
 .notification-item:hover { border-color: var(--accent-strong); }
+.notification-count { position: absolute; top: -4px; right: -6px; display: flex; align-items: center; justify-content: center; min-width: 19px; height: 19px; padding: 0 5px; border: 2px solid #f2f1ed; border-radius: 999px; background: #dc2626; color: white; font-size: 11px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }

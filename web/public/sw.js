@@ -7,6 +7,31 @@ const SCREENS = new Set(['/', '/wallet', '/payments', '/activity', '/privacy', '
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(PUBLIC_ASSETS.map(path => new Request(path, { cache: 'reload', credentials: 'omit' })))));
 });
+
+self.addEventListener('push', event => {
+  let data = {};
+  try { data = event.data?.json() || {}; } catch {}
+  const valid = typeof data.paymentId === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(data.paymentId);
+  event.waitUntil(self.registration.showNotification('Payment received', {
+    body: 'Open Citrus Wallet to view your payment.',
+    icon: '/icons/icon-192.png',
+    badge: '/icons/icon-192.png',
+    tag: valid ? 'payment-' + data.paymentId : 'citrus-payment',
+    data: valid ? { paymentId: data.paymentId, notificationId: String(data.notificationId || '') } : {},
+  }));
+});
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  const { paymentId, notificationId } = event.notification.data || {};
+  const valid = typeof paymentId === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(paymentId);
+  const path = valid ? '/payments?notificationPayment=' + encodeURIComponent(paymentId) + '&notificationId=' + encodeURIComponent(notificationId || '') : '/activity';
+  event.waitUntil((async () => {
+    const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    const existing = windows.find(client => client.url === new URL(path, self.location.origin).href);
+    if (existing) await existing.focus();
+    else await self.clients.openWindow(path);
+  })());
+});
 self.addEventListener('activate', event => {
   event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key.startsWith('citrus-offline-') && key !== CACHE).map(key => caches.delete(key)))).then(() => self.clients.claim()));
 });
