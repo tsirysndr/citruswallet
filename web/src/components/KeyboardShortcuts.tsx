@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Keyboard, X } from "lucide-react";
-import { useLocation, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 
 const destinations = [
   { key: "a", to: "/", label: "Go to Account" },
@@ -13,30 +13,18 @@ const preferenceKey = "citrus-keyboard-shortcuts";
 
 export function KeyboardShortcuts() {
   const navigate = useNavigate();
-  const { pathname } = useLocation();
   const dialog = useRef<HTMLDialogElement>(null);
   const [desktop, setDesktop] = useState(false);
   const [enabled, setEnabled] = useState(() => {
     try { return localStorage.getItem(preferenceKey) !== "off"; } catch { return true; }
   });
-  const [focusSearch, setFocusSearch] = useState(false);
   const [open, setOpen] = useState(false);
   useEffect(() => {
     const media = window.matchMedia(desktopQuery);
-    const sync = () => { setDesktop(media.matches); if (!media.matches) { dialog.current?.close(); setFocusSearch(false); } };
+    const sync = () => { setDesktop(media.matches); if (!media.matches) { dialog.current?.close(); } };
     sync(); media.addEventListener("change", sync);
     return () => media.removeEventListener("change", sync);
   }, []);
-
-  useEffect(() => {
-    if (!desktop || !focusSearch || pathname !== "/activity") return;
-    // Router navigation resolves before the search field is mounted.
-    const frame = requestAnimationFrame(() => {
-      document.getElementById("activity-search")?.focus();
-      setFocusSearch(false);
-    });
-    return () => cancelAnimationFrame(frame);
-  }, [desktop, focusSearch, pathname]);
 
   useEffect(() => {
     if (!desktop || !enabled) return;
@@ -52,7 +40,7 @@ export function KeyboardShortcuts() {
       const key = event.key.toLowerCase();
       if (key === "?") { event.preventDefault(); clear(); dialog.current?.showModal(); setOpen(true); return; }
       if (key === "/" && !event.shiftKey) {
-        event.preventDefault(); clear(); setFocusSearch(true); void navigate({ to: "/activity" }); return;
+        event.preventDefault(); clear(); window.dispatchEvent(new Event("citrus:activity-search")); return;
       }
       if (event.shiftKey) { clear(); return; }
       if (prefixUntil > Date.now()) {
@@ -80,7 +68,7 @@ export function KeyboardShortcuts() {
         <dl className="keyboard-shortcuts-list">
           {destinations.map(item => <div key={item.key}><dt>{item.label}</dt><dd><kbd>G</kbd><span>then</span><kbd>{item.key.toUpperCase()}</kbd></dd></div>)}
           <div><dt>Quick activity search</dt><dd><kbd>⌘ / Ctrl</kbd><kbd>K</kbd></dd></div>
-          <div><dt>Search activity</dt><dd><kbd>/</kbd></dd></div>
+          <div><dt>Open activity search</dt><dd><kbd>/</kbd></dd></div>
           <div><dt>Show this guide</dt><dd><kbd>?</kbd></dd></div>
           <div><dt>Close the current dialog</dt><dd><kbd>Esc</kbd></dd></div>
           <div><dt>Move between calendar days</dt><dd><kbd>←</kbd><kbd>↑</kbd><kbd>↓</kbd><kbd>→</kbd></dd></div>

@@ -268,7 +268,7 @@ Profile-name activity searches use correlated, indexed DID lookups instead of sc
 
 ### Desktop keyboard shortcuts
 
-The floating keyboard button opens the shortcut guide. Press `G`, then `A`, `W`, `P`, or `H` to open Account, Wallet, Payments, or Activity. `/` opens Activity and focuses search; `?` opens the guide. Native Escape closes dialogs and calendar arrow keys continue to work. Navigation shortcuts ignore text fields, editable content, active dialogs, modifier combinations, and IME composition. They are disabled on mobile/touch layouts; desktop users can also turn them off in the guide.
+The floating keyboard button opens the shortcut guide. Press `G`, then `A`, `W`, `P`, or `H` to open Account, Wallet, Payments, or Activity. `/` or `Cmd/Ctrl+K` opens the quick activity search modal for signed-in users; `?` opens the guide. Native Escape closes dialogs and calendar arrow keys continue to work. Navigation shortcuts ignore text fields, editable content, active dialogs, modifier combinations, and IME composition. They are disabled on mobile/touch layouts; desktop users can also turn them off in the guide.
 
 ### MetaMask on mobile
 
