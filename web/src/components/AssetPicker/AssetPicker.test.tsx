@@ -27,8 +27,31 @@ it('keeps the current asset when token verification fails', async () => {
     http.get(xrpc('getAsset'), () => HttpResponse.json({ error: 'InvalidRequest', message: 'Invalid token decimals.' }, { status: 400 })));
   const { user } = await renderComponent(<AssetPicker session={{ ...session, links: [linkedAddress] }} value={nativeAsset(1)} onChange={selected} />);
   await user.click(screen.getByRole('button', { name: 'ETH · Choose asset' }));
-  await user.type(screen.getByRole('textbox', { name: 'Search assets or paste token contract' }), token.contractAddress!);
+  await user.type(screen.getByRole('searchbox', { name: 'Search assets or paste token contract' }), token.contractAddress!);
   await user.click(screen.getByRole('button', { name: 'Look up token' }));
   expect(await screen.findByRole('alert')).toHaveTextContent('Invalid token decimals');
   expect(selected).not.toHaveBeenCalled();
+});
+
+it('opens a focused modal, filters instantly and restores focus when closed', async () => {
+  server.use(http.get(xrpc('getAssets'), () => HttpResponse.json({ discoveryAvailable: true, assets: [
+    { asset: nativeAsset(1), address: linkedAddress.address, balanceAtomic: '1000000000000000000' },
+    { asset: token, address: linkedAddress.address, balanceAtomic: '1234567' },
+  ] })));
+  const { user } = await renderComponent(<AssetPicker session={{ ...session, links: [linkedAddress] }} value={nativeAsset(1)} onChange={() => {}} />);
+  const trigger = screen.getByRole('button', { name: 'ETH · Choose asset' });
+  await user.click(trigger);
+  expect(screen.getByRole('dialog', { name: 'Choose asset' })).toBeInTheDocument();
+  const search = screen.getByRole('searchbox');
+  expect(search).toHaveFocus();
+  await screen.findByText('USD Coin');
+  await user.type(search, 'usdc');
+  expect(screen.queryByText('Ether')).not.toBeInTheDocument();
+  expect(screen.getByText('USD Coin')).toBeInTheDocument();
+  await user.clear(search);
+  await user.type(search, 'unmatched');
+  expect(screen.getByText('No assets match your search.')).toBeInTheDocument();
+  await user.click(screen.getByRole('button', { name: 'Close asset picker' }));
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  expect(trigger).toHaveFocus();
 });

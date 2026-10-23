@@ -185,19 +185,20 @@ export function PaymentTools({ className }: { className?: string }) {
           </Mono>
           <div className="my-4">
             <Label htmlFor="payment-description">Description <span className="text-ink-faint">(optional)</span></Label>
-            <textarea
-              id="payment-description"
-              rows={3}
-              maxLength={500}
-              placeholder="What’s this payment for?"
-              aria-describedby="description-hint"
-              aria-invalid={Boolean(amount.formState.errors.description)}
-              className="w-full resize-y rounded-[6px] border border-edge bg-sunken p-3 text-[13px] text-ink"
-              {...amount.register("description")}
-            />
+            <KlipyPicker value={media} onChange={(value, query = "") => { setMedia(value); setMediaQuery(query); }}>
+              <textarea
+                id="payment-description"
+                rows={3}
+                maxLength={500}
+                placeholder="What’s this payment for?"
+                aria-describedby="description-hint"
+                aria-invalid={Boolean(amount.formState.errors.description)}
+                className="block min-h-32 w-full resize-y rounded-[6px] border border-edge bg-sunken p-3 pb-14 text-[13px] text-ink"
+                {...amount.register("description")}
+              />
+            </KlipyPicker>
             <p id="description-hint" className="mt-1 text-xs leading-relaxed text-ink-faint">Visible to you and the recipient in Citrus Wallet. Never published on-chain or to AT Protocol. Up to 500 characters.</p>
             <FieldError>{amount.formState.errors.description?.message}</FieldError>
-            <KlipyPicker value={media} onChange={(value, query = "") => { setMedia(value); setMediaQuery(query); }} />
           </div>
           <AssetPicker session={session} value={asset} onChange={value => { setSelectedAsset(value); amount.setValue("amount", ""); amount.clearErrors("amount"); }} />
           <Label htmlFor="amount">Amount in {asset.symbol}</Label>

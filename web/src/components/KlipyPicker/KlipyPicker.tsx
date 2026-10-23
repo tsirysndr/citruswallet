@@ -1,12 +1,12 @@
 import { ContentSkeleton } from "../ContentSkeleton";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ImagePlus, Search, X, Play } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { PaymentMedia as Media } from "../../lexicon/types/app/citruswallet/defs";
 import { fetchMedia, klipyEnabled, mediaKinds, type MediaKind } from "../../klipy";
 import { PaymentMedia } from "../PaymentMedia";
 
-export function KlipyPicker({ value, onChange }: { value: Media | null; onChange: (media: Media | null, query?: string) => void }) {
+export function KlipyPicker({ value, onChange, children }: { children?: ReactNode; value: Media | null; onChange: (media: Media | null, query?: string) => void }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const [open, setOpen] = useState(false);
   const [kind, setKind] = useState<MediaKind>("gifs");
@@ -18,7 +18,10 @@ export function KlipyPicker({ value, onChange }: { value: Media | null; onChange
   const close = () => { dialog.current?.close(); setOpen(false); };
   const waiting = search.trim() !== query;
   return <div className="klipy-attachment">
-    <button type="button" className="klipy-trigger" onClick={() => { setOpen(true); dialog.current?.showModal(); }}><ImagePlus size={17} />{value ? "Change media" : "Add GIF, sticker, meme or clip"}</button>
+    <div className={children ? "klipy-editor" : undefined}>
+      {children}
+      <button type="button" className="klipy-trigger" aria-label={value ? "Change media" : "Add GIF, sticker, meme or clip"} title={value ? "Change media" : "Add GIF"} onClick={() => { setOpen(true); dialog.current?.showModal(); }}><ImagePlus size={20} aria-hidden="true" /></button>
+    </div>
     {value && <div className="klipy-selected"><PaymentMedia key={value.url} media={value} /><button className="klipy-remove" type="button" aria-label="Remove attachment" onClick={() => onChange(null)}><X size={17} /></button></div>}
     <dialog ref={dialog} className="klipy-dialog" aria-labelledby="klipy-title" onClose={() => setOpen(false)} onClick={event => { if (event.target === event.currentTarget) { const r = event.currentTarget.getBoundingClientRect(); if (event.clientX < r.left || event.clientX > r.right || event.clientY < r.top || event.clientY > r.bottom) close(); } }}>
       <header><div><p className="eyebrow">A LITTLE MORE EXPRESSION</p><h2 id="klipy-title">Say it with KLIPY.</h2></div><button type="button" className="klipy-close" aria-label="Close media picker" onClick={close}><X size={21} /></button></header>

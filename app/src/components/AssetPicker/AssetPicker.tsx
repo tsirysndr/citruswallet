@@ -1,3 +1,6 @@
+import ChevronDown from "lucide-react-native/icons/chevron-down";
+import { useAtomValue } from "jotai";
+import { busyAtom } from "../../state";
 import { useRef, useState } from "react";
 import { Modal, Pressable, ScrollView, View } from "react-native";
 import { formatBalance } from "@citruswallet/amounts";
@@ -7,6 +10,7 @@ import { Text } from "../Typography";
 import { Button, Field } from "../ui";
 import { ContentSkeleton } from "../ContentSkeleton";
 export function AssetPicker({ session, value, onChange }: { session: Session; value: Asset; onChange: (asset: Asset) => void }) {
+  const busy = useAtomValue(busyAtom);
   const links = (session.links ?? []).filter(link => link.chain_id === session.network.chainId);
   const [wallet, setWallet] = useState("");
   const address = links.some(link => link.address === wallet) ? wallet : links[0]?.address ?? "";
@@ -21,7 +25,10 @@ export function AssetPicker({ session, value, onChange }: { session: Session; va
     finally { if (current === generation.current) setLoading(false); }
   }
   return <View className="gap-2">
-    <Button title={`${value.symbol} · Choose asset`} tone="plain" onPress={() => setOpen(true)} />
+    <Pressable accessibilityRole="button" accessibilityLabel={`${value.symbol} · Choose asset`} accessibilityState={{ expanded: open, disabled: busy }} disabled={busy} onPress={() => setOpen(true)} className="min-h-12 flex-row items-center justify-center gap-2 rounded-lg bg-white px-4 py-3">
+      <Text className="text-base font-semibold text-ink">{value.symbol}</Text>
+      <ChevronDown size={18} color="#191916" accessible={false} />
+    </Pressable>
     {value.contractAddress && <Text selectable className="font-mono text-xs text-muted">{value.contractAddress}</Text>}
     <Modal visible={open} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setOpen(false)}>
       <View className="flex-1 gap-3 bg-canvas px-5 pb-8 pt-14">

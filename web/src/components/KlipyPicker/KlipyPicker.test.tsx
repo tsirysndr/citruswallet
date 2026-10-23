@@ -5,11 +5,12 @@ import { vi } from "vitest";
 it("loads mocked media and returns the selected attachment", async () => {
   const change = vi.fn();
   const { user } = await renderComponent(
-    <KlipyPicker value={null} onChange={change} />,
+    <KlipyPicker value={null} onChange={change}><textarea aria-label="Description" defaultValue="Dinner" /></KlipyPicker>,
   );
-  await user.click(
-    screen.getByRole("button", { name: "Add GIF, sticker, meme or clip" }),
-  );
+  const trigger = screen.getByRole("button", { name: "Add GIF, sticker, meme or clip" });
+  expect(trigger).toHaveTextContent(/^$/);
+  expect(screen.getByRole("textbox", { name: "Description" })).toHaveValue("Dinner");
+  await user.click(trigger);
   await user.click(
     await screen.findByRole("button", { name: "Attach Thank you" }),
   );

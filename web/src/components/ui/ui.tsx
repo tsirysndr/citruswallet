@@ -3,6 +3,7 @@ import type {
   ButtonHTMLAttributes,
   InputHTMLAttributes,
   ReactNode,
+  RefAttributes,
   SelectHTMLAttributes,
 } from "react";
 import { busyAtom } from "../../atoms";
@@ -76,7 +77,7 @@ const variants = {
     "bg-highlight-bg px-3 py-2 text-[12px] text-highlight enabled:hover:brightness-[1.07]",
 };
 
-type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
+type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & RefAttributes<HTMLButtonElement> & {
   variant?: keyof typeof variants;
   keepEnabled?: boolean;
 };
@@ -137,7 +138,7 @@ export const Row = ({ children, className }: { children: ReactNode; className?: 
   <div className={cx("form-row flex gap-2", className)}>{children}</div>
 );
 
-export const Input = ({ className, ...rest }: InputHTMLAttributes<HTMLInputElement>) => (
+export const Input = ({ className, ...rest }: InputHTMLAttributes<HTMLInputElement> & RefAttributes<HTMLInputElement>) => (
   <input
     className={cx(
       "w-full min-w-0 rounded-[6px] border border-edge bg-sunken p-3 text-[13px] text-ink",

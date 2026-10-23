@@ -11,7 +11,7 @@ test('chooses a discovered asset only after checking its metadata on-chain', asy
   request.mockImplementation(async method => method === 'getAssets' ? { assets: [{ asset: token, balanceAtomic: '1234567', address }], discoveryAvailable: true } : { asset: { ...token, symbol: 'VERIFIED' }, balanceAtomic: '1234567', address });
   const selected = jest.fn();
   renderComponent(<AssetPicker session={{ did: 'did:plc:alice', network: { chainId: 1 }, links: [{ chain_id: 1, address }] }} value={nativeAsset(1)} onChange={selected} />);
-  fireEvent.press(screen.getByText('ETH · Choose asset'));
+  fireEvent.press(screen.getByRole('button', { name: 'ETH · Choose asset' }));
   fireEvent.press(await screen.findByText('USDC'));
   await waitFor(() => expect(selected).toHaveBeenCalledWith(expect.objectContaining({ decimals: 6, symbol: 'VERIFIED' })));
   expect(request).toHaveBeenCalledWith('getAsset', undefined, { address, assetId: token.id });
