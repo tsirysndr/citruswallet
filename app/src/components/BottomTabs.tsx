@@ -13,7 +13,7 @@ const tabs: { name: Screen; icon: LucideIcon }[] = [
 export function BottomTabs({ screen, onChange }: { screen: Screen; onChange: (screen: Screen) => void }) {
   return <View style={{ marginHorizontal: 16, marginBottom: 10, marginTop: 8, padding: 6, borderRadius: 40,
     backgroundColor: '#fff', borderWidth: 1, borderColor: '#e7e7df', flexDirection: 'row', gap: 4,
-    shadowColor: '#191916', shadowOffset: { width: 0, height: 5 }, shadowOpacity: 0.12, shadowRadius: 16, elevation: 8 }}>
+    shadowColor: '#191916', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.06, shadowRadius: 10, elevation: 3 }}>
     {tabs.map(({ name, icon: Icon }) => <Pressable key={name} accessibilityRole="tab" accessibilityLabel={name}
       accessibilityState={{ selected: screen === name }} onPress={() => onChange(name)}
       style={{ flex: 1, minWidth: 0, minHeight: 62, borderRadius: 32, alignItems: 'center', justifyContent: 'center', gap: 4,
