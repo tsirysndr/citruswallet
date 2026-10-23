@@ -1,3 +1,4 @@
+import { ContentSkeleton } from "../ContentSkeleton";
 import { PaymentMedia } from "../PaymentMedia";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
@@ -31,7 +32,7 @@ import {
 export function ReviewPanel({ className }: { className?: string }) {
   const { data: session } = useSession();
   const reviewId = useAtomValue(reviewIdAtom);
-  const { data: payment } = usePayment(reviewId, session);
+  const { data: payment, isPending, error } = usePayment(reviewId, session);
   const [acknowledged, setAcknowledged] = useAtom(acknowledgedAtom);
   const [invitationUrl, setInvitationUrl] = useAtom(invitationUrlAtom);
   const recover = useForm<
@@ -50,6 +51,8 @@ export function ReviewPanel({ className }: { className?: string }) {
     setAcknowledged(false);
   }, [pinned, setAcknowledged]);
 
+  if (reviewId && session?.did && isPending) return <Panel className={className}><ContentSkeleton variant="card" label="Loading payment" /></Panel>;
+  if (reviewId && session?.did && error) return <Panel className={className}><Hint>Could not load payment. Try refreshing.</Hint></Panel>;
   if (!payment || !session?.did) return null;
 
   const did = session.did;

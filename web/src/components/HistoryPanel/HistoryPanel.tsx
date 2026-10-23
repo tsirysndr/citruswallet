@@ -1,3 +1,4 @@
+import { ContentSkeleton } from "../ContentSkeleton";
 import { PaymentMedia } from "../PaymentMedia";
 import { useEffect, useRef, useState } from "react";
 import { useAtom } from "jotai";
@@ -98,7 +99,7 @@ export function HistoryPanel({ className, advanced = false }: { className?: stri
     <Panel className={className}>
       <PanelHeading>
         <Heading>{advanced ? "Payment history" : "Recent activity"}</Heading>
-        <button type="button" className="activity-refresh ml-auto" aria-label="Refresh activity" title="Refresh activity" disabled={isFetching} onClick={() => void refetch()}><RefreshCw size={18} className={isFetching ? "motion-safe:animate-spin" : ""} aria-hidden="true" /></button>
+        <button type="button" className="activity-refresh ml-auto" aria-label="Refresh activity" title="Refresh activity" disabled={isFetching} onClick={() => void refetch()}><RefreshCw size={18} aria-hidden="true" /></button>
       </PanelHeading>
       {advanced && (
         <div className="mb-5">
@@ -135,6 +136,7 @@ export function HistoryPanel({ className, advanced = false }: { className?: stri
         {invalidDates ? "Choose a valid date range to update results." : mobileHistory && infinite.isFetchingNextPage ? "Loading more payments…" : isFetching || searching ? "Searching payments…" : fatalError ? "Could not load payment history. Try refreshing." : `${data?.total ?? 0} payment${data?.total === 1 ? "" : "s"}${activeFilters ? " matching your filters" : ""}`}
       </p>
       <div aria-busy={isFetching || searching}>
+        {(isPending || (isFetching && !infinite.isFetchingNextPage)) && <ContentSkeleton label="Loading payments" rows={data?.payments.length ? 1 : 3} />}
         {!invalidDates && !fatalError && (data?.payments ?? []).map(payment => {
           const outgoing = payment.senderDid === session.did;
           const actor = (outgoing ? payment.recipient : payment.sender) ?? {
@@ -170,7 +172,7 @@ export function HistoryPanel({ className, advanced = false }: { className?: stri
       )}
       {mobileHistory && !invalidDates && <div className="mt-4 text-center">
         <div ref={loadMore} data-testid="activity-load-more" aria-hidden="true" className="h-px" />
-        {infinite.isFetchingNextPage && <Hint>Loading more payments…</Hint>}
+        {infinite.isFetchingNextPage && <ContentSkeleton label="Loading more payments" rows={1} />}
         {infinite.isFetchNextPageError && <Button variant="subtle" onClick={() => void infinite.fetchNextPage()}>Retry loading more</Button>}
         {!infinite.hasNextPage && !isFetching && !error && Boolean(data?.payments.length) && <Hint>You're all caught up.</Hint>}
       </div>}

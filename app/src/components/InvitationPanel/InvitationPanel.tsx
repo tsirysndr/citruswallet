@@ -1,3 +1,4 @@
+import { ContentSkeleton } from "../ContentSkeleton";
 import { useState } from "react";
 import { View, Pressable } from "react-native";
 import * as SecureStore from "expo-secure-store";
@@ -28,7 +29,7 @@ export function InvitationPanel() {
       <Text className="text-sm text-muted">Sign in with the Atmosphere account this invitation was sent to.</Text>
       <Button title="Sign in to view invitation" onPress={() => go("Account")} />
     </> : error ? <Text accessibilityRole="alert" className="text-sm text-red-700">{error.message}</Text> : isPending ?
-      <Text>Loading invitation…</Text> : payment ? <>
+      <ContentSkeleton variant="card" label="Loading invitation" /> : payment ? <>
       <Text className="text-lg font-semibold">{payment.amount} ETH from {payment.sender?.displayName || payment.sender?.handle || payment.senderDid}</Text>
       <Text className="text-sm text-muted">No funds have been deposited. Choose a wallet to share with the sender, who must still approve the transfer.</Text>
       {["waiting", "ready"].includes(payment.state) ? <>

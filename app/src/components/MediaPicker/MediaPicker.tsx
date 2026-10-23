@@ -1,3 +1,4 @@
+import { ContentSkeleton } from "../ContentSkeleton";
 import { useEffect, useState } from 'react';
 import { FlatList, Modal, Pressable, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -50,7 +51,8 @@ export function MediaPicker({ value, onChange }: { value: PaymentMedia | null; o
         </View>
         <FlatList data={items} numColumns={2} keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 20 }}
           keyExtractor={(item, index) => `${item.slug}-${index}`} onEndReached={() => { if (results.hasNextPage && !results.isFetching) void results.fetchNextPage(); }}
-          ListEmptyComponent={<Text className="p-5 text-center text-muted">{results.isFetching ? 'Loading media…' : 'No results yet.'}</Text>}
+          ListEmptyComponent={results.isFetching ? <ContentSkeleton variant="media" label="Loading media" /> : <Text className="p-5 text-center text-muted">No results yet.</Text>}
+          ListFooterComponent={results.isFetchingNextPage ? <ContentSkeleton variant="media" label="Loading more media" /> : null}
           renderItem={({ item }) => <Pressable accessibilityRole="button" accessibilityLabel={`Attach ${item.title}`} style={{ width: '50%', padding: 4 }}
             onPress={() => { onChange(item); setOpen(false); }}>
             <Image source={{ uri: item.preview }} style={{ height: 140, borderRadius: 8 }} contentFit="cover" />

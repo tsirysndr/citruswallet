@@ -1,3 +1,4 @@
+import { ContentSkeleton } from "../ContentSkeleton";
 import { rpc } from "../../api";
 import { balanceOf } from "../../balances";
 import { useRefresh, useRun, useStatus } from "../../hooks";
@@ -14,7 +15,7 @@ import {
 
 export function LinkedAddresses({ className }: { className?: string }) {
   const { data: session } = useSession();
-  const { data: balances } = useBalances(session);
+  const { data: balances, isFetching: balanceLoading } = useBalances(session);
   const run = useRun();
   const status = useStatus();
   const refresh = useRefresh();
@@ -70,8 +71,9 @@ export function LinkedAddresses({ className }: { className?: string }) {
                 {link.public ? "Public" : "Private"}
                 {link.is_default ? " · Receiving default" : ""}
               </Hint>
+              {here && balanceLoading && !balances && <ContentSkeleton variant="line" label="Loading balance" />}
               {balance && <p className="mt-1 font-mono text-[13px] text-info tabular-nums">{balance}</p>}
-              {here && !balance && !balances?.onNetwork && (
+              {here && !balanceLoading && !balance && !balances?.onNetwork && (
                 <Hint>Balance hidden · MetaMask is on another network.</Hint>
               )}
             </div>

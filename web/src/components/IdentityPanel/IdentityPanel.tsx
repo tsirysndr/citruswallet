@@ -1,3 +1,4 @@
+import { ContentSkeleton } from "../ContentSkeleton";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
@@ -33,8 +34,8 @@ type SignIn = z.input<typeof signInForm>;
 
 export function IdentityPanel({ className }: { className?: string }) {
   const { data: session } = useSession();
-  const { data: profile } = useProfile(session?.did);
-  const { data: balances } = useBalances(session);
+  const { data: profile, isFetching: profileLoading } = useProfile(session?.did);
+  const { data: balances, isFetching: balanceLoading } = useBalances(session);
   const run = useRun();
   const status = useStatus();
   const refresh = useRefresh();
@@ -117,7 +118,7 @@ export function IdentityPanel({ className }: { className?: string }) {
 
       {signedIn && actor && session && (
         <>
-          <div className="mb-4 flex items-center gap-3">
+          {profileLoading && !profile ? <ContentSkeleton rows={1} label="Loading profile" /> : <div className="mb-4 flex items-center gap-3">
             <Avatar actor={actor} size="size-[46px]" />
             <div className="flex min-w-0 flex-col gap-0.5">
               <p className="m-0 truncate text-[17px] font-[650]">
@@ -127,8 +128,8 @@ export function IdentityPanel({ className }: { className?: string }) {
                 {actor.handle ? `@${actor.handle}` : "Handle unavailable"}
               </p>
             </div>
-          </div>
-          {total && <Balance>{total}</Balance>}
+          </div>}
+          {balanceLoading && !balances ? <ContentSkeleton variant="line" label="Loading balance" /> : total && <Balance>{total}</Balance>}
           <p className="mt-4 mb-2.5 text-xs text-ink-muted">Authenticated DID</p>
           <Mono>{session.did}</Mono>
           <Button

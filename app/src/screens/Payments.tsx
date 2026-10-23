@@ -1,3 +1,4 @@
+import { ContentSkeleton } from "../components/ContentSkeleton";
 import { PaymentStatus } from "../components/PaymentStatus";
 import * as Clipboard from "expo-clipboard";
 import { ThemeSwitch } from "../components/ThemeSwitch";
@@ -169,9 +170,7 @@ export function Payments({ onStepChange }: { onStepChange?: (step: number) => vo
       ) : (
         <>
           {!payment ? (
-            <Empty
-              text={isFetching ? "Loading payment…" : "Could not load payment."}
-            />
+            isFetching ? <ContentSkeleton variant="card" label="Loading payment" /> : <Empty text="Could not load payment." />
           ) : (
             <>
               <View className="gap-4 rounded-3xl bg-white p-5">

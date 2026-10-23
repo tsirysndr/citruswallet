@@ -1,3 +1,4 @@
+import { ContentSkeleton } from "../ContentSkeleton";
 import { isMobileWalletBrowser } from "../../mobile-wallet";
 import { useState } from "react";
 import { metamaskStoreUrl, useMetaMask } from "../../metamask";
@@ -27,7 +28,7 @@ const hexOf = (message: string) =>
 
 export function WalletPanel({ className }: { className?: string }) {
   const { data: session } = useSession();
-  const { data: balances } = useBalances(session);
+  const { data: balances, isFetching: balanceLoading } = useBalances(session);
   const run = useRun();
   const status = useStatus();
   const refresh = useRefresh();
@@ -102,7 +103,7 @@ export function WalletPanel({ className }: { className?: string }) {
           {" "}<a href="https://metamask.io/download/" target="_blank" rel="noopener noreferrer" className="font-semibold underline">Get the MetaMask app</a>
         </Hint>
       )}
-      {signedIn && address && session && (
+      {signedIn && address && session && (balanceLoading && !balances ? <ContentSkeleton variant="line" label="Loading balance" /> :
         <Balance>
           {onNetwork
             ? `Balance of ${shortAddress(address)}: ${balanceOf(address, session, balances) ?? "unavailable"}`

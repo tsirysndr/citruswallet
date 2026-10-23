@@ -1,3 +1,4 @@
+import { ContentSkeleton } from "../ContentSkeleton";
 import { useEffect, useRef, useState, type InputHTMLAttributes } from "react";
 import { useActorSearch } from "../../queries";
 import type { Actor } from "../../types";
@@ -46,7 +47,7 @@ export function Typeahead({
   }, [typed, searchable, searchActive]);
 
   // Detach from outdated searches immediately so their fetches are aborted.
-  const { data } = useActorSearch(open && query === typed ? query : "");
+  const { data, isFetching } = useActorSearch(open && query === typed ? query : "");
   const actors = open && query === typed
     ? (data ?? []).filter((actor) => actor.did !== excludeDid)
     : [];
@@ -122,6 +123,7 @@ export function Typeahead({
         }}
         {...rest}
       />
+      {open && isFetching && <div className="absolute top-full z-30 w-full rounded-lg bg-raised p-3"><ContentSkeleton label="Finding handles" rows={2} /></div>}
       <ul
         ref={list}
         id={listId}

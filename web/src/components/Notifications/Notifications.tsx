@@ -1,3 +1,4 @@
+import { ContentSkeleton } from "../ContentSkeleton";
 import { useEffect, useRef, useState } from "react";
 import { Bell, X } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -19,7 +20,7 @@ export function Notifications() {
     [open, setOpen] = useState(false),
     [marking, setMarking] = useState(false),
     [message, setMessage] = useState("");
-  const { data, error, refetch } = useQuery({
+  const { data, error, refetch, isPending } = useQuery({
     queryKey: ["notifications", session?.did],
     enabled: !!session?.did,
     queryFn: () => rpc.listNotifications(),
@@ -141,7 +142,7 @@ export function Notifications() {
           <button type="button" onClick={() => void refetch()}>
             Could not load notifications. Retry
           </button>
-        ) : data?.notifications.length ? (
+        ) : isPending ? <ContentSkeleton label="Loading notifications" /> : data?.notifications.length ? (
           <div className="mt-4 grid gap-2">
             {data.notifications.map((item) => (
               <button

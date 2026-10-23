@@ -1,3 +1,4 @@
+import { ContentSkeleton } from "../ContentSkeleton";
 import { useState } from "react";
 import { Modal, Pressable, ScrollView, View } from "react-native";
 import { Text } from "../Typography";
@@ -17,7 +18,7 @@ export function NotificationsInbox() {
   const review = useSetAtom(reviewAtom),
     screen = useSetAtom(screenAtom),
     notice = useSetAtom(noticeAtom);
-  const { data } = useQuery({
+  const { data, isPending, error, refetch } = useQuery({
     queryKey: ["notifications", session?.did],
     enabled: !!session?.did,
     queryFn: () =>
@@ -48,6 +49,8 @@ export function NotificationsInbox() {
             <Button title="Close" tone="plain" onPress={() => setOpen(false)} />
           </View>
           <ScrollView contentContainerStyle={{ gap: 12, paddingTop: 20 }}>
+            {isPending && <ContentSkeleton label="Loading notifications" />}
+            {error && <Button title="Could not load notifications. Retry" onPress={() => void refetch()} />}
             {data?.notifications.map((item) => (
               <Pressable
                 key={item.id}
@@ -73,7 +76,7 @@ export function NotificationsInbox() {
                 <Text className="text-sm">View payment →</Text>
               </Pressable>
             ))}
-            {!data?.notifications.length && (
+            {!isPending && !error && !data?.notifications.length && (
               <Empty text="Your confirmed incoming payments will appear here." />
             )}
             <Button

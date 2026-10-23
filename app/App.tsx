@@ -1,3 +1,4 @@
+import { ContentSkeleton } from "./src/components/ContentSkeleton";
 import "./global.css";
 import * as SecureStore from "expo-secure-store";
 import type { Session } from "./src/types";
@@ -44,6 +45,7 @@ const client = new QueryClient({
 function Shell() {
   const scroll = useRef<ScrollView>(null);
   const [invite, setInvite] = useAtom(inviteTokenAtom);
+  const [refreshing, setRefreshing] = useState(false);
   const [paymentStep, setPaymentStep] = useState(1);
   const [screen, setScreen] = useAtom(screenAtom),
     [notice, setNotice] = useAtom(noticeAtom),
@@ -99,6 +101,7 @@ function Shell() {
     };
   }, []);
   const feedback = <>
+          {refreshing && <ContentSkeleton label="Refreshing content" rows={1} />}
           {(screen === "Account" || screen === "Wallet") && <InvitationPanel />}
           {notice ? (
             <Pressable
@@ -109,6 +112,7 @@ function Shell() {
               <Text className="text-sm">{notice}</Text>
             </Pressable>
           ) : null}
+          {busy && <ContentSkeleton variant="line" label="Working" />}
           {busy && (
             <Text
               accessibilityLiveRegion="polite"
@@ -152,14 +156,14 @@ function Shell() {
           keyboardShouldPersistTaps="handled"
           refreshControl={
             <RefreshControl
-              refreshing={false}
-              onRefresh={() => void query.invalidateQueries()}
+              refreshing={refreshing} colors={["transparent"]} tintColor="transparent" progressBackgroundColor="transparent"
+              onRefresh={() => { setRefreshing(true); void query.invalidateQueries().finally(() => setRefreshing(false)); }}
             />
           }
         >
           {feedback}
-          {!ready ? (
-            <Text>Opening Citrus…</Text>
+          {!ready || session.isPending ? (
+            <ContentSkeleton variant="card" label="Opening Citrus" />
           ) : screen === "Account" ? (
             <Account />
           ) : screen === "Wallet" ? (

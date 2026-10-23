@@ -1,3 +1,4 @@
+import { ContentSkeleton } from "../ContentSkeleton";
 import { useEffect, useRef, useState } from "react";
 import { ImagePlus, Search, X, Play } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -24,7 +25,7 @@ export function KlipyPicker({ value, onChange }: { value: Media | null; onChange
       <div className="klipy-tabs" aria-label="Media type">{mediaKinds.map(tab => <button type="button" aria-pressed={kind === tab.value} key={tab.value} onClick={() => { setKind(tab.value); setPage(1); }}>{tab.label}</button>)}</div>
       <label className="klipy-search"><Search size={18} /><span className="sr-only">Search KLIPY</span><input type="search" placeholder="Search KLIPY" value={search} maxLength={100} onChange={event => setSearch(event.target.value)} /></label>
       <div className="klipy-results" aria-live="polite" aria-busy={results.isFetching || waiting}>
-        {!klipyEnabled ? <p>Media search is currently unavailable. You can still add a description.</p> : results.isError ? <div className="klipy-empty"><p>{results.error.message}</p><button type="button" onClick={() => results.refetch()}>Try again</button></div> : results.isPending || waiting ? <p className="klipy-empty">Finding something good…</p> : !results.data?.items.length ? <p className="klipy-empty">No results. Try another search.</p> : <div className="klipy-grid">{results.data.items.map((item, i) => <button type="button" key={`${kind}-${page}-${i}`} disabled={!item.media} title={item.title} aria-label={`Attach ${item.title}`} onClick={() => { if (item.media) { onChange(item.media, query); close(); } }}>
+        {!klipyEnabled ? <p>Media search is currently unavailable. You can still add a description.</p> : results.isError ? <div className="klipy-empty"><p>{results.error.message}</p><button type="button" onClick={() => results.refetch()}>Try again</button></div> : results.isPending || waiting ? <ContentSkeleton variant="media" label="Loading media" /> : !results.data?.items.length ? <p className="klipy-empty">No results. Try another search.</p> : <div className="klipy-grid">{results.data.items.map((item, i) => <button type="button" key={`${kind}-${page}-${i}`} disabled={!item.media} title={item.title} aria-label={`Attach ${item.title}`} onClick={() => { if (item.media) { onChange(item.media, query); close(); } }}>
           {item.media ? <><img src={item.media.preview} alt={item.title} loading="lazy" referrerPolicy="no-referrer" />{kind === "clips" && <span className="klipy-play"><Play size={15} /> Clip</span>}</> : <span>Media unavailable</span>}
         </button>)}</div>}
       </div>

@@ -1,3 +1,4 @@
+import { ContentSkeleton } from "../components/ContentSkeleton";
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import { Linking, Pressable, View } from "react-native";
@@ -15,7 +16,7 @@ import { AtmosphereApps } from "../components/AtmosphereApps";
 import { WalletAction } from "../components/WalletAction";
 export function Account() {
   const { data: session } = useSession(),
-    { data: profile } = useProfile();
+    { data: profile, isFetching: profileLoading } = useProfile();
   const [handle, setHandle] = useState(""),
     [hidden, setHidden] = useState(false);
   const run = useAction(),
@@ -25,7 +26,7 @@ export function Account() {
     session?.links
       .filter((l) => l.chain_id === session.network.chainId)
       .map((l) => l.address) ?? [];
-  const { data: balance } = useQuery({
+  const { data: balance, isFetching: balanceLoading } = useQuery({
     queryKey: ["balance", session?.did, addresses],
     enabled:
       !!session?.did && addresses.length > 0 && session.network.chainId === 1,
@@ -122,13 +123,13 @@ export function Account() {
             <Ionicons name={hidden ? "eye-off-outline" : "eye-outline"} size={28} color="#ffffff" />
           </Pressable>
         </View>
-        <Text
+        {balanceLoading && balance === undefined && !hidden ? <ContentSkeleton variant="line" label="Loading balance" inverse /> : <Text
           numberOfLines={1}
           adjustsFontSizeToFit
           className="font-mono text-4xl font-semibold text-white"
         >
           {hidden ? "••••••" : (balance ?? "—")} ETH
-        </Text>
+        </Text>}
         <Text className="text-sm text-accent">● {session.network.name}</Text>
       </View>
       <View className="flex-row gap-3">
@@ -141,7 +142,7 @@ export function Account() {
       </View>
       <View className="gap-4 rounded-3xl bg-white p-5">
         <Text className="text-xl font-semibold">Your identity</Text>
-        <View className="flex-row items-center gap-3">
+        {profileLoading && !profile ? <ContentSkeleton rows={1} label="Loading profile" /> : <View className="flex-row items-center gap-3">
           <Avatar actor={profile} />
           <View className="flex-1">
             <Text className="text-lg font-semibold">
@@ -151,7 +152,7 @@ export function Account() {
               @{profile?.handle || "…"}
             </Text>
           </View>
-        </View>
+        </View>}
         <Text selectable className="text-xs text-muted">
           {session.did}
         </Text>

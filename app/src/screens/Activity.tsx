@@ -1,6 +1,8 @@
+import { ContentSkeleton } from "../components/ContentSkeleton";
+import Svg, { Circle, Path } from "react-native-svg";
 import { PaymentStatus } from "../components/PaymentStatus";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { ActivityIndicator, Alert, FlatList, Modal, Pressable, View } from "react-native";
+import { RefreshControl, Alert, FlatList, Modal, Pressable, View } from "react-native";
 import { Text } from "../components/Typography";
 import { Ionicons } from "@expo/vector-icons";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
@@ -52,11 +54,12 @@ export function Activity({ header }: { header?: ReactNode }) {
     <View className="flex-1">
       <FlatList ref={list} accessibilityLabel="Activity payments" data={payments} keyExtractor={payment => payment.id}
         contentContainerStyle={{ padding: 20, paddingBottom: 32 }} keyboardShouldPersistTaps="handled"
-        refreshing={isFetching && !isFetchingNextPage && !isPending} onRefresh={() => void refetch()}
+        refreshControl={<RefreshControl refreshing={isFetching && !isFetchingNextPage && !isPending} onRefresh={() => void refetch()} colors={["transparent"]} tintColor="transparent" progressBackgroundColor="transparent" />}
         onEndReachedThreshold={0.5} onEndReached={() => {
           if (hasNextPage && !isFetching && !error && q === text.trim()) void fetchNextPage();
         }}
         ListHeaderComponent={<View className="gap-5 pb-4">{header}
+          {isFetching && !isPending && !isFetchingNextPage && <ContentSkeleton label="Refreshing activity" rows={1} />}
       <View className="flex-row items-center justify-between">
         <Heading title="Activity" />
         <Pressable
@@ -83,7 +86,11 @@ export function Activity({ header }: { header?: ReactNode }) {
           className="items-center justify-center rounded-lg bg-white"
           style={{ width: 48, height: 48 }}
         >
-          <Ionicons name="options-outline" size={20} />
+          <Svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="#191916" strokeWidth={1.6} strokeLinecap="round" accessible={false}>
+            <Path d="M3 7h3m6 0h9M3 17h9m6 0h3" />
+            <Circle cx={9} cy={7} r={3} />
+            <Circle cx={15} cy={17} r={3} />
+          </Svg>
         </Pressable>
       </View>
       <Text className="text-sm text-muted">
@@ -91,9 +98,9 @@ export function Activity({ header }: { header?: ReactNode }) {
       </Text>
         </View>}
         ListEmptyComponent={error ? <Button title="Search failed. Retry" onPress={() => void refetch()} /> :
-          !isPending ? <Empty text="No payments found." /> : <ActivityIndicator accessibilityLabel="Loading payments" color="#191916" />}
+          !isPending ? <Empty text="No payments found." /> : <ContentSkeleton label="Loading payments" />}
         ListFooterComponent={<View className="py-4">
-          {isFetchingNextPage && <ActivityIndicator accessibilityLabel="Loading more payments" color="#191916" />}
+          {isFetchingNextPage && <ContentSkeleton label="Loading more payments" rows={1} />}
           {isFetchNextPageError && <Button title="Could not load more. Retry" onPress={() => void fetchNextPage()} />}
           {!hasNextPage && payments.length > 0 && !isFetching && <Text className="text-center text-sm text-muted">You're all caught up.</Text>}
         </View>}

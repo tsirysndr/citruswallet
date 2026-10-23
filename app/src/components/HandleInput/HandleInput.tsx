@@ -1,3 +1,4 @@
+import { ContentSkeleton } from "../ContentSkeleton";
 import { useEffect, useState } from 'react';
 import { Pressable, View } from "react-native";
 import { Text, TextInput } from "../Typography";
@@ -55,7 +56,7 @@ export function HandleInput({ value, onChange, onSelect, excludeDid, label = 'Ha
         <Avatar actor={actor} /><View className="flex-1"><Text numberOfLines={1} className="font-semibold text-ink">{actor.displayName || actor.handle}</Text><Text numberOfLines={1} className="text-sm text-muted">@{actor.handle}</Text></View>
       </Pressable>)}
     </View>}
-    {show && isFetching && <Text className="text-sm text-muted">Finding handles…</Text>}
+    {show && isFetching && <ContentSkeleton rows={2} label="Finding handles" />}
     {show && error && <Text className="text-sm text-muted">Suggestions are unavailable. You can still enter your full handle.</Text>}
   </View>;
 }

@@ -1,9 +1,10 @@
+import { ContentSkeleton } from "./components/ContentSkeleton";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAtomValue, useSetAtom } from "jotai";
 import { useEffect, useRef, useState } from "react";
 import { Link, Outlet, useNavigate } from "@tanstack/react-router";
 import { rpc } from "./api";
-import { inviteTokenAtom, reviewIdAtom, statusAtom } from "./atoms";
+import { busyAtom, inviteTokenAtom, reviewIdAtom, statusAtom } from "./atoms";
 import { BottomNav, SidebarNav } from "./components/Nav";
 import { CitrusMark } from "./components/CitrusMark";
 import { Notifications } from "./components/Notifications";
@@ -57,8 +58,9 @@ function useRecovery() {
 }
 
 export function App() {
-  const { data: session, error } = useSession();
+  const { data: session, error, isPending } = useSession();
   const { message, error: failed } = useAtomValue(statusAtom);
+  const busy = useAtomValue(busyAtom);
   const review = useAtomValue(reviewIdAtom);
   const invite = useAtomValue(inviteTokenAtom);
   const refresh = useRefresh();
@@ -96,7 +98,7 @@ export function App() {
 
       <main className="app-main">
         <MetaMaskConnection />
-        <Outlet />
+        {isPending ? <div className="page-content"><ContentSkeleton variant="card" label="Opening Citrus" /></div> : <Outlet />}
         {error && (
           <p className="mt-5 text-[13px] text-bad">
             Could not reach the server.{" "}
@@ -109,6 +111,7 @@ export function App() {
             </button>
           </p>
         )}
+        {busy && <ContentSkeleton variant="line" label="Working" />}
         <p
           role="status"
           aria-live="polite"

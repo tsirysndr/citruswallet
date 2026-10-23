@@ -1,3 +1,4 @@
+import { ContentSkeleton } from "../ContentSkeleton";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAtom } from "jotai";
@@ -61,7 +62,7 @@ export function InvitePanel({ className }: { className?: string }) {
           ? "Sign in with the AT Protocol account this invitation was intended for."
           : invitation
             ? `${invitation.amount} ETH from ${invitation.senderDid}`
-            : ((error as Error | null)?.message ?? "Checking invitation…")}
+            : ((error as Error | null)?.message ?? "")}
       </p>
       {invitation && session && (
         <Mono>
@@ -69,6 +70,7 @@ export function InvitePanel({ className }: { className?: string }) {
           {label(invitation.state)}
         </Mono>
       )}
+      {session?.did && !invitation && !error && <ContentSkeleton variant="card" label="Loading invitation" />}
       <a className="my-3 inline-block text-sm font-semibold underline md:hidden" href={`citruswallet://invite#invite=${token}`}>Open in Citrus Wallet app</a>
       <form
         noValidate
