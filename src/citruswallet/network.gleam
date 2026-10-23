@@ -1,6 +1,10 @@
+import citruswallet/chain
+import citruswallet/ffi/node
 import citruswallet/ffi/url
 import gleam/json.{type Json}
 import gleam/list
+import gleam/option.{Some}
+import gleam/result
 
 pub type Currency {
   Currency(name: String, symbol: String, decimals: Int)
@@ -21,9 +25,30 @@ pub const mainnet =
     chain_id: 1,
     chain_id_hex: "0x1",
     name: "Ethereum mainnet",
-    rpc_urls: [],
+    rpc_urls: ["https://ethereum-rpc.publicnode.com"],
     native_currency: Currency(name: "Ether", symbol: "ETH", decimals: 18),
   )
+
+pub const megaeth =
+  Network(
+    4326,
+    "0x10e6",
+    "MegaETH",
+    ["https://mainnet.megaeth.com/rpc"],
+    Currency("Ether", "ETH", 18),
+  )
+
+pub fn reader(network: Network) {
+  let variable = case network.chain_id {
+    4326 -> "MEGAETH_RPC_URL"
+    _ -> "ETH_RPC_URL"
+  }
+  case node.environment(variable), network.rpc_urls {
+    Some(rpc), _ -> result.map(chain.reader(rpc), Some)
+    _, [rpc, ..] -> result.map(chain.reader(rpc), Some)
+    _, _ -> Ok(option.None)
+  }
+}
 
 pub const anvil =
   Network(
@@ -37,10 +62,11 @@ pub const anvil =
 pub fn configured(origin: String, chain_id: String) -> Result(Network, String) {
   case chain_id, loopback(origin) {
     "1", _ -> Ok(mainnet)
+    "4326", _ -> Ok(megaeth)
     "31337", True -> Ok(anvil)
     _, _ ->
       Error(
-        "EVM_CHAIN_ID must be 1, or 31337 with a loopback APP_URL for Anvil development.",
+        "EVM_CHAIN_ID must be 4326, 1, or 31337 with a loopback APP_URL for Anvil development.",
       )
   }
 }

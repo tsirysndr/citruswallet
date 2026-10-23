@@ -251,8 +251,8 @@ fn content_security_policy(secure: Bool, image_sources: List(String)) -> Js {
       "connectSrc",
       js.list([
         js.string("'self'"),
-        js.string("https://api.klipy.com"),
-        js.string("https://ethereum-rpc.publicnode.com"),
+        // User-selected RPC endpoints are HTTPS, fetched directly by the device.
+        js.string("https:"),
         js.string("wss://mm-sdk-relay.api.cx.metamask.io"),
       ]),
     ),

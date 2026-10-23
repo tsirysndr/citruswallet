@@ -66,9 +66,14 @@ pub fn listing(
   use balance <- promise.try_await(assets.balance(chain, native, address))
   let native_balance = assets.balance_json(native, address, balance)
   use suffix <- context.attempt(cursor_query(hono.parameter(ctx, "cursor")))
-  let base =
-    node.environment("TOKEN_INDEXER_URL")
-    |> option.unwrap("https://eth.blockscout.com/api/v2")
+  let base = case chain_id {
+    4326 ->
+      node.environment("MEGAETH_TOKEN_INDEXER_URL")
+      |> option.unwrap("https://megaeth.blockscout.com/api/v2")
+    _ ->
+      node.environment("TOKEN_INDEXER_URL")
+      |> option.unwrap("https://eth.blockscout.com/api/v2")
+  }
 
   let base = case string.ends_with(base, "/") {
     True -> string.drop_end(base, 1)
@@ -79,7 +84,7 @@ pub fn listing(
     Ok(parsed) -> url.protocol(parsed) == "https:"
     Error(_) -> False
   }
-  case chain_id == 1 && valid {
+  case list.contains([1, 4326], chain_id) && valid {
     False -> context.done(Ok(Payload(200, page([native_balance], None, False))))
     True -> {
       use response <- promise.await(http.get_json(

@@ -116,7 +116,66 @@ pub fn is_secure(origin: String) -> Bool {
 }
 
 pub fn serve(server: Server, route: Route) -> hono.Handler {
-  fn(ctx) { promise.map(route(server, ctx), render(ctx, _)) }
+  fn(ctx) {
+    case selected_network(server, ctx) {
+      Ok(selected) -> promise.map(route(selected, ctx), render(ctx, _))
+      Error(reason) -> promise.resolve(refuse(ctx, reason))
+    }
+  }
+}
+
+// Only fixed, server-controlled networks/RPCs are selectable by clients.
+// Custom device RPC URLs never become server-side fetch targets.
+pub fn selected_network(
+  server: Server,
+  ctx: Context,
+) -> Result(Server, HttpError) {
+  let selected = case hono.header(ctx, "x-citrus-chain-id") {
+    None ->
+      case hono.path(ctx) {
+        "/xrpc/app.citruswallet.subscribeNotifications" ->
+          hono.parameter(ctx, "chainId")
+        _ -> None
+      }
+    value -> value
+  }
+  case selected {
+    None -> Ok(server)
+    Some(id) -> {
+      use selected <- result.try(
+        network.configured(server.settings.origin, id)
+        |> result.map_error(error.bad_request),
+      )
+      case selected.chain_id == server.settings.network.chain_id {
+        True -> Ok(server)
+        False -> {
+          use reader <- result.try(
+            network.reader(selected)
+            |> result.map_error(error.bad_request),
+          )
+          let settings =
+            Settings(..server.settings, network: selected, chain: reader)
+          let links =
+            linking.new(settings.store, settings.origin, selected.chain_id)
+          Ok(
+            Server(
+              ..server,
+              settings: settings,
+              links: links,
+              payments: payments.new(
+                settings.store,
+                links,
+                settings.identities,
+                settings.origin,
+                selected.chain_id,
+                reader,
+              ),
+            ),
+          )
+        }
+      }
+    }
+  }
 }
 
 pub fn render(ctx: Context, outcome: Result(Reply, HttpError)) -> Response {

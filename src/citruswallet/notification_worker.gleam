@@ -79,6 +79,7 @@ fn payload(job: Js) -> Js {
       js.string(int.to_string(number(job, "notification_id"))),
     ),
     #("paymentId", notifications.field(job, "payment_id")),
+    #("chainId", notifications.field(job, "chain_id")),
   ])
 }
 
@@ -97,7 +98,7 @@ pub fn deliver(
   let jobs =
     query(
       db,
-      "SELECT j.*,n.did,n.payment_id,d.platform,d.subscription FROM push_deliveries j JOIN notifications n ON n.id=j.notification_id JOIN push_devices d ON d.token=j.token AND d.did=n.did WHERE n.created_at>=d.created_at AND j.state IN ('pending','sending','receipt') AND j.next_at<=? ORDER BY j.next_at LIMIT 50",
+      "SELECT j.*,n.did,n.payment_id,n.chain_id,d.platform,d.subscription FROM push_deliveries j JOIN notifications n ON n.id=j.notification_id JOIN push_devices d ON d.token=j.token AND d.did=n.did WHERE n.created_at>=d.created_at AND j.state IN ('pending','sending','receipt') AND j.next_at<=? ORDER BY j.next_at LIMIT 50",
       [js.int(now)],
     )
   deliver_jobs(db, jobs, send, web_send, now)

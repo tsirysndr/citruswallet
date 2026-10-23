@@ -1,5 +1,4 @@
 import citruswallet/app
-import citruswallet/chain.{type Chain}
 import citruswallet/directory
 import citruswallet/ffi/hono
 import citruswallet/ffi/node
@@ -15,7 +14,8 @@ import citruswallet/xrpc/context
 import citruswallet/xrpc/notification
 import gleam/int
 import gleam/javascript/promise
-import gleam/option.{type Option, None, Some}
+import gleam/list
+import gleam/option.{Some}
 import gleam/result
 
 pub fn main() -> Nil {
@@ -41,9 +41,11 @@ fn start() -> Result(Nil, String) {
   use _ <- result.try(check_origin(origin))
   use network <- result.try(network.configured(
     origin,
-    option.unwrap(node.environment("EVM_CHAIN_ID"), "1"),
+    option.unwrap(node.environment("EVM_CHAIN_ID"), "4326"),
   ))
-  use chain <- result.try(reader(network))
+  use chain <- result.try(network.reader(network))
+  use _ <- result.try(network.reader(network.mainnet))
+  use _ <- result.try(network.reader(network.megaeth))
   use directory <- result.try(
     directory.appview(option.unwrap(
       node.environment("APPVIEW_URL"),
@@ -108,9 +110,32 @@ fn start() -> Result(Nil, String) {
       fn(id, did) { payments.get(notification_payments, did, Some(id)) },
       network.chain_id,
     )
+  let other_networks = case network.chain_id {
+    1 -> [network.megaeth]
+    4326 -> [network.mainnet]
+    _ -> []
+  }
+  let stop_other_notifications =
+    list.map(other_networks, fn(other) {
+      let other_payments =
+        payments.new(
+          store,
+          linking.new(store, origin, other.chain_id),
+          identity.resolver(),
+          origin,
+          other.chain_id,
+          result.unwrap(network.reader(other), option.None),
+        )
+      notification.start(
+        store.client,
+        fn(id, did) { payments.get(other_payments, did, Some(id)) },
+        other.chain_id,
+      )
+    })
   let cleanup = node.every(60_000, fn() { store.cleanup(store, node.now()) })
   let stop = fn() {
     stop_notifications()
+    list.each(stop_other_notifications, fn(stop) { stop() })
     node.cancel(cleanup)
     let _ =
       promise.map(jetstream.stop(listener), fn(_) {
@@ -138,14 +163,6 @@ fn check_origin(origin: String) -> Result(Nil, String) {
     True, "https:", _ -> Ok(Nil)
     True, "http:", "127.0.0.1" -> Ok(Nil)
     _, _, _ -> Error(refusal)
-  }
-}
-
-fn reader(network: Network) -> Result(Option(Chain), String) {
-  case node.environment("ETH_RPC_URL"), network.rpc_urls {
-    Some(rpc_url), _ -> result.map(chain.reader(rpc_url), Some)
-    None, [rpc_url, ..] -> result.map(chain.reader(rpc_url), Some)
-    None, [] -> Ok(None)
   }
 }
 

@@ -455,3 +455,18 @@ test('asset discovery is wallet-scoped, paginated, and rechecks metadata on-chai
   const unavailable = await f.query('getAssets', { address: account.address });
   assert.equal(unavailable.discoveryAvailable, false); assert.equal(unavailable.assets.length, 1);
 });
+
+test('network selection is explicit and cannot supply arbitrary server RPC targets', async t => {
+  const f = fixture(t);
+  await f.login();
+  const response = await f.raw('/xrpc/app.citruswallet.getSession', { headers: { 'x-citrus-chain-id': '4326' } });
+  assert.equal(response.status, 200);
+  const session = await response.json();
+  assert.equal(session.network.chainId, 4326);
+  assert.deepEqual(session.network.rpcUrls, ['https://mainnet.megaeth.com/rpc']);
+  assert.equal((await f.query('getSession')).network.chainId, 1);
+  for (const invalid of ['31337', '999999', 'https://127.0.0.1/rpc']) {
+    const rejected = await f.raw('/xrpc/app.citruswallet.getSession', { headers: { 'x-citrus-chain-id': invalid } });
+    assert.equal(rejected.status, 400);
+  }
+});

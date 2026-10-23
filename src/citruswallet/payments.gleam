@@ -1059,7 +1059,14 @@ fn fingerprint(link: Link) -> String {
 }
 
 fn invitation_url(payments: Payments, token: String) -> String {
-  payments.origin <> "/invite#invite=" <> token
+  payments.origin
+  <> "/invite"
+  <> case payments.chain_id {
+    1 -> ""
+    id -> "?chainId=" <> int.to_string(id)
+  }
+  <> "#invite="
+  <> token
 }
 
 pub fn to_json(

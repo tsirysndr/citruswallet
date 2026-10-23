@@ -65,16 +65,21 @@ pub fn remove_device(server: Server, ctx: Context) {
 }
 
 pub fn subscribe(server: Server, ctx: Context) -> Promise(Response) {
-  promise.resolve(case context.authenticated(server, ctx) {
-    Ok(#(key, did)) ->
-      notifications.stream(
-        server.settings.store.client,
-        ctx,
-        did,
-        key,
-        server.settings.network.chain_id,
-      )
+  let selected = context.selected_network(server, ctx)
+  promise.resolve(case selected {
     Error(reason) -> context.refuse(ctx, reason)
+    Ok(server) ->
+      case context.authenticated(server, ctx) {
+        Ok(#(key, did)) ->
+          notifications.stream(
+            server.settings.store.client,
+            ctx,
+            did,
+            key,
+            server.settings.network.chain_id,
+          )
+        Error(reason) -> context.refuse(ctx, reason)
+      }
   })
 }
 
