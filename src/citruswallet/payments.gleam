@@ -1,9 +1,10 @@
 import citruswallet/chain.{type Chain}
 import citruswallet/directory
 import citruswallet/drizzle/orm.{
-  all, all_of, any_of, ascending, columns_equal, contains, count_rows, delete,
-  descending, eq, exists, from as db_from, gt, in_list, insert, is_null, limit,
-  lte, offset, one, order_by, pick, run, select, set, update, where,
+  PaymentSearch, ProfileSearch, all, all_of, any_of, ascending, columns_equal,
+  contains, count_rows, delete, descending, eq, exists, from as db_from,
+  fts_matches, gt, in_list, insert, is_null, limit, lte, offset, one, order_by,
+  pick, run, select, set, update, where,
 }
 import citruswallet/drizzle/schema/payments as payments_schema
 import citruswallet/drizzle/schema/user_profiles
@@ -291,9 +292,18 @@ pub fn history(payments: Payments, did: String, filters: Filters) -> Page {
       }
     }
   }
-  let conditions = case string.trim(filters.query) {
-    "" -> conditions
-    query -> {
+  let query = string.trim(filters.query)
+  let conditions = case query, string.length(query) >= 3 {
+    "", _ -> conditions
+    query, True -> [
+      any_of([
+        fts_matches(table.id, PaymentSearch, query),
+        fts_matches(table.sender_did, ProfileSearch, query),
+        fts_matches(table.recipient_did, ProfileSearch, query),
+      ]),
+      ..conditions
+    ]
+    query, False -> {
       let profiles = user_profiles.define(decode.success(Nil))
       let matching_profiles = fn(participant) {
         select(profiles.table, pick("did", profiles.did))

@@ -40,14 +40,18 @@ test('actual activity queries use participant/chain indexes, indexed profile loo
   const { db, payments } = fixture(t);
   for (const direction of ['sent', 'received', 'all']) {
     for (const status of ['all', 'confirmed', 'ready', 'expired']) {
-      for (const search of ['', 'Person', "100%_ ' literal"]) {
+      for (const search of ['', 'Pe', 'Person', "100%_ ' literal"]) {
         for (const sort of ['newest', 'oldest']) {
           const plans = historyPlans(db, () => history(payments, 'did:plc:user1', new Filters(search, direction, status, 0, 9999999, 1, 20, sort)));
           assert.equal(plans.length, 2, 'count and page query');
           for (const { plan } of plans) {
             assert.doesNotMatch(plan, /SCAN payments\b|SCAN user_profiles\b/i, plan);
             assert.match(plan, /SEARCH payments USING (?:COVERING )?INDEX payments_by_/, plan);
-            if (search) {
+            if (search.length >= 3) {
+              assert.match(plan, /payments_fts VIRTUAL TABLE INDEX \d+:M/, plan);
+              assert.match(plan, /user_profiles_fts VIRTUAL TABLE INDEX \d+:M/, plan);
+              assert.doesNotMatch(plan, /CORRELATED SCALAR SUBQUERY/, plan);
+            } else if (search) {
               assert.match(plan, /CORRELATED SCALAR SUBQUERY/, plan);
               assert.match(plan, /SEARCH user_profiles USING INDEX .*\(did=\?\)/, plan);
             }
@@ -86,7 +90,7 @@ test('index migration preserves existing records and uniqueness constraints', ()
   const db = new Database(':memory:');
   try {
     const files = readdirSync('drizzle').filter(file => file.endsWith('.sql')).sort();
-    for (const file of files.filter(file => !file.startsWith('0006_'))) db.exec(readFileSync('drizzle/' + file, 'utf8'));
+    for (const file of files.filter(file => file < '0006_')) db.exec(readFileSync('drizzle/' + file, 'utf8'));
     db.exec(`INSERT INTO kv VALUES('session','key','private',123);
       INSERT INTO challenges VALUES('challenge','session','did','address','message',123,1);
       INSERT INTO links VALUES('did','address',1,'message','signature','2026-01-01',1,1);

@@ -608,6 +608,34 @@ pub fn contains(column: Column(a), value: String) -> Condition {
   )
 }
 
+pub type SearchIndex {
+  PaymentSearch
+  ProfileSearch
+}
+
+/// Match a literal phrase, never interpreting user input as FTS query syntax.
+/// Call only for queries of at least three characters (the trigram minimum).
+pub fn fts_matches(
+  column: Column(String),
+  index: SearchIndex,
+  value: String,
+) -> Condition {
+  let subquery = case index {
+    PaymentSearch ->
+      " IN (SELECT id FROM payments_fts WHERE payments_fts MATCH "
+    ProfileSearch ->
+      " IN (SELECT did FROM user_profiles_fts WHERE user_profiles_fts MATCH "
+  }
+  let phrase = "\"" <> string.replace(value, "\"", "\"\"") <> "\""
+  js.coerce(
+    js.apply(js.coerce(sql_tag), [
+      js.list(list.map(["", subquery, ")"], js.string)),
+      column.raw,
+      js.string(phrase),
+    ]),
+  )
+}
+
 pub fn in_query(
   column: Column(a),
   query: Query(a),
