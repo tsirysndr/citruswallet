@@ -82,7 +82,7 @@ export function ActivitySearch() {
               {payment.description && <span className="command-description">{payment.description}</span>}
               <span className="command-meta">{new Date(payment.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })} · <span className={`rounded-full px-2 py-1 payment-status-${payment.state}`}>{label(payment.state)}</span></span>
             </span>
-            <span className="command-amount">{payment.amount} ETH</span>
+            <span className="command-amount">{payment.amount} {payment.asset}</span>
           </button>;
         })}
       </div>

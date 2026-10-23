@@ -2,13 +2,17 @@ import { View } from 'react-native';
 import { AmountPad } from '../../components/AmountPad';
 import { Avatar, Button } from '../../components/ui';
 import { Text } from '../../components/Typography';
-import { amountWei } from '../../amount';
+import { parseAmount } from "@citruswallet/amounts";
+import type { ReactNode } from "react";
 import type { Actor } from '../../types';
 
-export function AmountStep({ actor, handle, amount, onAmount, onContinue }: {
+export function AmountStep({ actor, handle, amount, onAmount, onContinue, decimals = 18, symbol = "ETH", assetPicker }: {
+  decimals?: number; symbol?: string; assetPicker?: ReactNode;
   actor: Actor | null; handle: string; amount: string;
   onAmount: (value: string) => void; onContinue: () => void;
 }) {
+  let valid = false;
+  try { parseAmount(amount.replace(/\.$/, ""), decimals); valid = true; } catch {}
   return <View className="gap-4">
     <View className="flex-row items-center gap-3 rounded-2xl bg-white p-3">
       <Avatar actor={actor} size={64} /><View className="min-w-0 flex-1">
@@ -17,7 +21,8 @@ export function AmountStep({ actor, handle, amount, onAmount, onContinue }: {
         {actor?.displayName && <Text numberOfLines={1} className="font-mono text-sm text-muted">@{actor.handle || handle}</Text>}
       </View>
     </View>
-    <AmountPad value={amount} onChange={onAmount} />
-    <Button title="Continue" disabled={amountWei(amount) === 0n} onPress={onContinue} />
+    {assetPicker}
+    <AmountPad value={amount} onChange={onAmount} decimals={decimals} symbol={symbol} />
+    <Button title="Continue" disabled={!valid} onPress={onContinue} />
   </View>;
 }

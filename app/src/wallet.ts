@@ -1,3 +1,4 @@
+import { expectedTransfer } from "@citruswallet/amounts";
 import { Linking } from "react-native";
 import { createEVMClient } from "@metamask/connect-evm";
 import { Buffer } from "buffer";
@@ -131,13 +132,14 @@ export async function sendPayment(
     fromAddress: address,
   });
   const tx = attempt.transaction;
+  const expected = expectedTransfer(payment);
   if (
     attempt.payment.recipientDid !== payment.recipientDid ||
-    tx.to.toLowerCase() !== payment.address.toLowerCase() ||
-    BigInt(tx.value) !== BigInt(payment.amountWei) ||
+    tx.to.toLowerCase() !== expected.to.toLowerCase() ||
+    BigInt(tx.value) !== BigInt(expected.value) ||
     tx.chainId !== network.chainIdHex ||
     tx.from.toLowerCase() !== address.toLowerCase() ||
-    tx.data !== "0x"
+    tx.data.toLowerCase() !== expected.data.toLowerCase()
   )
     throw new Error("Payment changed. Review it again.");
   await check(wallet, address, network);

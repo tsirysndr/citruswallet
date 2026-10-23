@@ -5,15 +5,19 @@ import { editAmount } from "../../amount";
 export function AmountPad({
   value,
   onChange,
+  decimals = 18,
+  symbol = "ETH",
 }: {
   value: string;
+  decimals?: number;
+  symbol?: string;
   onChange: (value: string) => void;
 }) {
   return (
     <View className="gap-4">
       <View className="min-h-32 items-center justify-center gap-2 px-2">
         <Text
-          accessibilityLabel={`Amount ${value} ETH`}
+          accessibilityLabel={`Amount ${value} ${symbol}`}
           adjustsFontSizeToFit
           numberOfLines={1}
           style={{ fontVariant: ["tabular-nums"] }}
@@ -21,7 +25,7 @@ export function AmountPad({
         >
           {value}
         </Text>
-        <Text className="text-base text-muted">ETH</Text>
+        <Text className="text-base text-muted">{symbol}</Text>
       </View>
       <View className="flex-row flex-wrap">
         {[
@@ -48,7 +52,7 @@ export function AmountPad({
                   ? "Decimal separator"
                   : key
             }
-            onPress={() => onChange(editAmount(value, key))}
+            onPress={() => onChange(editAmount(value, key, decimals))}
             onLongPress={key === "backspace" ? () => onChange("0") : undefined}
             className="h-16 w-1/3 items-center justify-center rounded-xl active:bg-white"
           >

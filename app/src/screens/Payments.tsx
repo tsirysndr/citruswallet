@@ -1,3 +1,5 @@
+import { nativeAsset, type Asset } from "../assets";
+import { AssetPicker } from "../components/AssetPicker";
 import { ContentSkeleton } from "../components/ContentSkeleton";
 import { PaymentStatus } from "../components/PaymentStatus";
 import * as Clipboard from "expo-clipboard";
@@ -31,6 +33,8 @@ export function Payments({ onStepChange }: { onStepChange?: (step: number) => vo
     [ack, setAck] = useState(false),
     [hash, setHash] = useState(""),
     [hasPending, setPending] = useState(false);
+  const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
+  const asset = selectedAsset && selectedAsset.chainId === session?.network.chainId ? selectedAsset : nativeAsset(session?.network.chainId ?? 1);
   const [media, setMedia] = useState<PaymentMedia | null>(null);
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const busy = useAtomValue(busyAtom);
@@ -108,7 +112,7 @@ export function Payments({ onStepChange }: { onStepChange?: (step: number) => vo
         {currentStep > 1 ? <Pressable accessibilityRole="button" accessibilityLabel={`Back to ${id && !canEdit ? 'activity' : currentStep === 2 ? 'recipient' : currentStep === 3 ? 'amount' : 'description'}`}
           disabled={busy} onPress={() => id && !canEdit ? go('Activity') : navigateBack((currentStep - 1) as 1 | 2 | 3)} className="min-h-12 flex-row items-center gap-2 pr-4">
           <Ionicons name="arrow-back" size={24} color="#191916" /><Text className="text-base">Back</Text>
-        </Pressable> : <Text className="text-base font-medium">Send ETH</Text>}
+        </Pressable> : <Text className="text-base font-medium">Send assets</Text>}
         <Text accessibilityLabel={`Step ${currentStep} of 4`} className="text-sm text-muted">Step {currentStep} of 4</Text>
       </View>
       <View className="flex-row gap-2">
@@ -153,12 +157,13 @@ export function Payments({ onStepChange }: { onStepChange?: (step: number) => vo
           onChange={value => { setHandle(value); setActor(null); setRecipient(null); }}
           onSelect={setActor} onContinue={resolve} /> :
         step === 2 ? <AmountStep actor={actor} handle={recipient?.handle || handle} amount={amount}
+          decimals={asset.decimals} symbol={asset.symbol} assetPicker={<AssetPicker session={session} value={asset} onChange={value => { setSelectedAsset(value); setAmount("0"); }} />}
           onAmount={setAmount} onContinue={() => setStep(3)} /> :
         <DescriptionStep description={description} onDescription={setDescription} media={media} onMedia={setMedia}
           onReview={() => run(async () => {
             if (!recipient || recipient.did === session.did) throw new Error("Choose a different recipient.");
             const { payment } = await request<{ payment: Payment }>("createPayment", {
-              identifier: recipient.did, expectedDid: recipient.did,
+              assetId: asset.id, identifier: recipient.did, expectedDid: recipient.did,
               amount: amount.replace(/\.$/, ""), description: description.trim() || undefined, media: media || undefined,
             });
             Keyboard.dismiss();
@@ -184,7 +189,7 @@ export function Payments({ onStepChange }: { onStepChange?: (step: number) => vo
                   </View>
                 </View>
                 <Text className="text-3xl font-semibold">
-                  {payment.amount} ETH
+                  {payment.amount} {payment.asset}
                 </Text>
                 <Text className="text-sm">
                   {session.network.name} · plus network fee
@@ -195,6 +200,7 @@ export function Payments({ onStepChange }: { onStepChange?: (step: number) => vo
                 <Text selectable className="text-xs text-muted">
                   {payment.recipientDid}
                 </Text>
+                {payment.assetDetails?.contractAddress && <Text selectable className="font-mono text-xs text-muted">Token contract: {payment.assetDetails.contractAddress}</Text>}
                 {payment.description && <Text>{payment.description}</Text>}
                 {payment.media && <Image source={{ uri: payment.media.preview }} style={{ width: "100%", height: 160 }} contentFit="contain" accessibilityLabel={payment.media.title} />}
                 {payment.txHash && (

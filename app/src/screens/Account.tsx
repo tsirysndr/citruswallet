@@ -1,3 +1,4 @@
+import { AssetBalances } from "../components/AssetBalances";
 import { ContentSkeleton } from "../components/ContentSkeleton";
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
@@ -60,7 +61,7 @@ export function Account() {
       <View className="gap-6">
         <Heading
           title="Your handle. Your wallet."
-          subtitle="Send ETH to the people you know. Your keys stay in MetaMask."
+          subtitle="Send assets to the people you know. Your keys stay in MetaMask."
         />
         <View className="gap-5 rounded-3xl bg-white p-6">
           <Heading title="Welcome to Citrus" />
@@ -116,7 +117,7 @@ export function Account() {
       </View>
       <View className="gap-4 rounded-3xl bg-ink p-6">
         <View className="flex-row items-center justify-between">
-          <Text className="text-lg text-white">Your balance</Text>
+          <Text className="text-lg text-white">ETH balance</Text>
           <Pressable accessibilityRole="button" accessibilityLabel={hidden ? "Show balance" : "Hide balance"}
             onPress={() => setHidden(!hidden)} hitSlop={8}
             className="h-12 w-12 items-center justify-center rounded-full bg-white/15">
@@ -140,6 +141,7 @@ export function Account() {
           <WalletAction action="send" onPress={() => go("Payments")} />
         </View>
       </View>
+      <AssetBalances session={session} hidden={hidden} />
       <View className="gap-4 rounded-3xl bg-white p-5">
         <Text className="text-xl font-semibold">Your identity</Text>
         {profileLoading && !profile ? <ContentSkeleton rows={1} label="Loading profile" /> : <View className="flex-row items-center gap-3">

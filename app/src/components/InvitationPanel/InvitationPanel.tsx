@@ -30,7 +30,7 @@ export function InvitationPanel() {
       <Button title="Sign in to view invitation" onPress={() => go("Account")} />
     </> : error ? <Text accessibilityRole="alert" className="text-sm text-red-700">{error.message}</Text> : isPending ?
       <ContentSkeleton variant="card" label="Loading invitation" /> : payment ? <>
-      <Text className="text-lg font-semibold">{payment.amount} ETH from {payment.sender?.displayName || payment.sender?.handle || payment.senderDid}</Text>
+      <Text className="text-lg font-semibold">{payment.amount} {payment.asset} from {payment.sender?.displayName || payment.sender?.handle || payment.senderDid}</Text>
       <Text className="text-sm text-muted">No funds have been deposited. Choose a wallet to share with the sender, who must still approve the transfer.</Text>
       {["waiting", "ready"].includes(payment.state) ? <>
         {links.map(link => <Pressable key={link.address} accessibilityRole="radio" accessibilityLabel={link.address}

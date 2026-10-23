@@ -156,7 +156,7 @@ export function HistoryPanel({ className, advanced = false }: { className?: stri
                 <PaymentMedia key={payment.media?.url} media={payment.media} compact />
                 <p className="mt-1 text-[12px] text-ink-muted"><time dateTime={payment.createdAt}>{new Date(payment.createdAt).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}</time></p>
               </div>
-              <div className="activity-summary"><span className="whitespace-nowrap font-mono text-[15px] font-bold tabular-nums">{payment.amount} ETH</span><Badge status={payment.state}>{label(payment.state)}</Badge></div>
+              <div className="activity-summary"><span className="whitespace-nowrap font-mono text-[15px] font-bold tabular-nums">{payment.amount} {payment.asset}</span><Badge status={payment.state}>{label(payment.state)}</Badge></div>
               {outgoing && payment.state === "cancelled" && <button type="button" className="date-icon-button text-bad" aria-label={`Delete cancelled payment to ${name}`} onClick={() => { setDeleteError(""); setDeleting(payment); deleteDialog.current?.showModal(); }}><Trash2 size={16} /></button>}
               <Button variant="subtle" onClick={() => { setReviewId(payment.id); void navigate({ to: "/payments" }); status("Review the payment details."); }}>Details</Button>
             </div>
@@ -180,7 +180,7 @@ export function HistoryPanel({ className, advanced = false }: { className?: stri
       <dialog ref={deleteDialog} className="date-dialog max-w-md" aria-labelledby="delete-intent-title">
         <div className="date-dialog-inner">
           <h2 id="delete-intent-title" className="text-lg font-semibold">Delete cancelled intent?</h2>
-          <p className="mt-3 text-sm leading-relaxed text-ink-soft">This permanently removes the cancelled {deleting?.amount} ETH intent from payment history for you and the recipient. It cannot be undone. No funds will move.</p>
+          <p className="mt-3 text-sm leading-relaxed text-ink-soft">This permanently removes the cancelled {deleting?.amount} {deleting?.asset} intent from payment history for you and the recipient. It cannot be undone. No funds will move.</p>
           {deleteError && <p role="alert" className="mt-3 text-sm text-bad">{deleteError}</p>}
           <div className="mt-5 flex justify-end gap-2">
             <Button variant="subtle" onClick={() => deleteDialog.current?.close()}>Keep intent</Button>

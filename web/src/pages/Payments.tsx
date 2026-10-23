@@ -10,7 +10,7 @@ export function Payments() {
   if (!session?.did)
     return (
       <SignedOut>
-        Sending ETH by handle needs your AT Protocol identity, so the recipient’s DID
+        Sending assets by handle needs your AT Protocol identity, so the recipient’s DID
         can be pinned to the payment.
       </SignedOut>
     );

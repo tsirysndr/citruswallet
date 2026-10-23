@@ -1,3 +1,5 @@
+import { nativeAsset, type Asset } from "../../assets";
+import { AssetPicker } from "../AssetPicker";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSetAtom } from "jotai";
@@ -9,7 +11,7 @@ import { invitationUrlAtom, reviewIdAtom } from "../../atoms";
 import { useRefresh, useRun, useStatus } from "../../hooks";
 import { useSession } from "../../queries";
 import type { Actor, Recipient } from "../../types";
-import { amountForm, recipientForm } from "../../validation";
+import { amountForm, assetAmountForm, recipientForm } from "../../validation";
 import { Typeahead } from "../Typeahead";
 import { KlipyPicker } from "../KlipyPicker";
 import { recordShare } from "../../klipy";
@@ -40,6 +42,8 @@ export function PaymentTools({ className }: { className?: string }) {
   const refresh = useRefresh();
   const setReviewId = useSetAtom(reviewIdAtom);
   const setInvitationUrl = useSetAtom(invitationUrlAtom);
+  const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
+  const asset = selectedAsset && selectedAsset.chainId === session?.network.chainId ? selectedAsset : nativeAsset(session?.network.chainId ?? 1);
   const [media, setMedia] = useState<PaymentMedia | null>(null);
   const [mediaQuery, setMediaQuery] = useState("");
   const [resolved, setResolved] = useState<Resolved | null>(null);
@@ -54,7 +58,7 @@ export function PaymentTools({ className }: { className?: string }) {
     z.input<typeof amountForm>,
     unknown,
     z.output<typeof amountForm>
-  >({ resolver: zodResolver(amountForm), defaultValues: { amount: "", description: "" } });
+  >({ resolver: zodResolver(assetAmountForm(asset.decimals, asset.symbol)), defaultValues: { amount: "", description: "" } });
 
   if (!session?.did) return null;
 
@@ -95,6 +99,7 @@ export function PaymentTools({ className }: { className?: string }) {
           identifier: resolved.identifier,
           expectedDid: resolved.recipient.did,
           amount: value,
+          assetId: asset.id,
           ...(description ? { description } : {}),
           ...(media ? { media } : {}),
         },
@@ -116,7 +121,7 @@ export function PaymentTools({ className }: { className?: string }) {
     <Panel className={className}>
       <PanelHeading>
         <Step>03</Step>
-        <Heading>Send ETH by handle</Heading>
+        <Heading>Send assets by handle</Heading>
         <Badge className="ml-auto">{session.network.name}</Badge>
       </PanelHeading>
       <form
@@ -194,7 +199,8 @@ export function PaymentTools({ className }: { className?: string }) {
             <FieldError>{amount.formState.errors.description?.message}</FieldError>
             <KlipyPicker value={media} onChange={(value, query = "") => { setMedia(value); setMediaQuery(query); }} />
           </div>
-          <Label htmlFor="amount">Amount in ETH</Label>
+          <AssetPicker session={session} value={asset} onChange={value => { setSelectedAsset(value); amount.setValue("amount", ""); amount.clearErrors("amount"); }} />
+          <Label htmlFor="amount">Amount in {asset.symbol}</Label>
           <Row className="payment-form-row">
             <Controller
               control={amount.control}
@@ -228,7 +234,7 @@ export function PaymentTools({ className }: { className?: string }) {
 
       <Hint className="mt-2.5">
         {session.paymentsEnabled
-          ? "Direct ETH transfers · funds leave only after MetaMask approval."
+          ? "Direct ETH and ERC-20 transfers · funds leave only after MetaMask approval."
           : "Recipient setup and invitations are available. Set ETH_RPC_URL on the server to enable sending and receipt verification."}
       </Hint>
     </Panel>

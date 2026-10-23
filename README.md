@@ -15,7 +15,7 @@ If the person you want to pay has not set up a receiving address yet, you create
 
 Identity is pinned when the payment is created, so a handle that later changes hands cannot redirect it, and a receiving address that changes forces you to review the payment again before it can be sent.
 
-The server holds no keys, signs nothing, and never takes custody: there is no escrow, no deployed contract, and no automatic payout. It records the signed proofs linking accounts to addresses, keeps track of payment intents, and checks a broadcast transaction against what you reviewed. Native ETH to ordinary wallet accounts, on Ethereum mainnet or a local Anvil chain.
+The server holds no keys, signs nothing, and never takes custody: there is no escrow, no deployed contract, and no automatic payout. It records the signed proofs linking accounts to addresses, keeps track of payment intents, and checks a broadcast transaction against what you reviewed. ETH and standard ERC-20 transfers on Ethereum mainnet or a local Anvil chain. Native Bitcoin is deferred.
 
 ## Local development
 
@@ -45,7 +45,7 @@ AT Protocol login still uses your actual account provider over the internet. The
 
 1. Both users sign in with their AT Protocol accounts and link a wallet on the same network.
 2. The recipient checks **Allow public payments to this address** when linking. Their first public wallet on that chain becomes the receiving default. They can change it with **Make default**.
-3. The sender resolves the recipient's handle, reviews the returned DID, enters an ETH amount, and creates a payment intent.
+3. The sender resolves the recipient's handle, reviews the returned DID, chooses an asset, enters its amount, and creates a payment intent.
 4. The sender reviews the full address, pinned DID, network, and amount, then checks the acknowledgement and selects **Review in MetaMask & send**.
 5. MetaMask displays the actual transaction and fee. After approval, use **Refresh status** to check the transaction against the server's RPC and the required confirmations.
 
@@ -79,6 +79,16 @@ Only the DID is authoritative — it comes from the OAuth login. The name and av
 ### Account balances
 
 The linked-addresses panel shows each address's balance on the active chain, and the identity panel totals them, read through MetaMask's own provider with `eth_getBalance`. No server RPC is involved, and no connection prompt is triggered: balances simply stay hidden until MetaMask is connected and on the configured network. **Refresh balances** re-reads them.
+
+### ERC-20 assets
+
+Web and Expo discover ERC-20 holdings for each linked wallet, with pagination and direct contract lookup in the payment asset picker. Ethereum mainnet discovery uses Blockscout's public API; `TOKEN_INDEXER_URL` can override its HTTPS `/api/v2` base URL. Discovery can lag the chain or be unavailable, and heavily used wallets may time out. The UI reports unavailable discovery and still supports direct contract lookup. Local Anvil uses contract lookup without a public indexer.
+
+A token is identified by its chain and contract, never its symbol. Selection reads metadata and balances from the configured Ethereum RPC. Creating an intent snapshots the token metadata; preparing it rechecks decimals, available balance, and transfer simulation. A successful receipt must contain the exact matching ERC-20 `Transfer` event before Citrus marks it confirmed. No token approval or allowance is requested. ETH is still required for gas. Fee-on-transfer, rebasing, and other nonstandard tokens may not satisfy exact-transfer verification.
+
+The shared `@citruswallet/amounts` package in `app/packages/amounts` uses an isolated BigNumber.js configuration. Amounts remain decimal strings, atomic units remain integer strings, and excess precision is rejected instead of rounded. The clients construct the expected transfer locally and compare it with the prepared wallet request. Account balances list assets separately; amounts in different assets are never added together.
+
+Payments store `amount_atomic`, token contract, symbol, name, and decimals. Migration `0011` preserves existing ETH amounts and assigns ETH metadata. XRPC returns `assetId`, `assetDetails`, and `amountAtomic`; `amountWei` remains a deprecated compatibility alias for atomic units. Lexicons originate in PKL; run `bun run lex:generate` after changing them.
 
 ## Database and migrations
 

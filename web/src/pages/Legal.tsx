@@ -82,14 +82,14 @@ export function Privacy() {
 
 export function Terms() {
   return (
-    <LegalPage title="Terms and Conditions" summary="The terms for connecting your identity, linking a wallet, and sending ETH with Citrus.">
+    <LegalPage title="Terms and Conditions" summary="The terms for connecting your identity, linking a wallet, and sending Ethereum assets with Citrus.">
       <section>
         <h2>1. Using Citrus Wallet</h2>
         <p>These terms apply to your use of Citrus Wallet at citruswallet.app. By using the service, you agree to these terms. If you do not agree, do not use the service. You must be legally able to enter into these terms and use the service in accordance with laws that apply to you. Questions can be sent to {contact}.</p>
       </section>
       <section>
         <h2>2. Your wallet stays in your control</h2>
-        <p>Citrus Wallet connects AT Protocol identities to verified Ethereum addresses and helps you prepare and track native ETH payments. We do not hold your funds or private keys, act as an escrow service, or execute automatic payouts. You approve and sign transfers in your own wallet.</p>
+        <p>Citrus Wallet connects AT Protocol identities to verified Ethereum addresses and helps you prepare and track ETH and ERC-20 payments. We do not hold your funds or private keys, act as an escrow service, or execute automatic payouts. You approve and sign transfers in your own wallet.</p>
         <p>A payment intent or invitation does not reserve funds, create a deposit, or guarantee a payment. A recipient must not treat an invitation or pending intent as proof of receipt.</p>
       </section>
       <section>

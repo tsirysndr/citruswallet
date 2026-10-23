@@ -1,3 +1,4 @@
+import { expectedTransfer } from "@citruswallet/amounts";
 import { ContentSkeleton } from "../ContentSkeleton";
 import { PaymentMedia } from "../PaymentMedia";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -64,10 +65,11 @@ export function ReviewPanel({ className }: { className?: string }) {
     ["Recipient", `${payment.recipientLabel} (name at creation)`],
     ["Pinned DID", payment.recipientDid],
     ["Network", `${session.network.name} · ${payment.chainId}`],
-    ["Amount", `${payment.amount} ETH + network fee`],
+    ["Amount", `${payment.amount} {payment.asset} + network fee`],
     ["Address", payment.address ?? "Recipient has not selected an address"],
     ["Expires", new Date(payment.expiresAt).toLocaleString()],
   ];
+  if (payment.assetDetails?.contractAddress) details.push(["Token contract", payment.assetDetails.contractAddress]);
   if (!isSender) details.unshift(["Sender", payment.sender?.handle ? `@${payment.sender.handle}` : payment.senderDid]);
   if (payment.fromAddress) details.push(["From", payment.fromAddress]);
   if (payment.txHash)
@@ -99,15 +101,16 @@ export function ReviewPanel({ className }: { className?: string }) {
         fromAddress,
       });
       const tx = prepared.transaction;
+  const expected = expectedTransfer(shown);
       /* Check the response against the sender's reviewed values before
          invoking the wallet. */
       if (
         prepared.payment.recipientDid !== shown.recipientDid ||
-        tx.to.toLowerCase() !== shown.address?.toLowerCase() ||
-        BigInt(tx.value) !== BigInt(shown.amountWei) ||
+        tx.to.toLowerCase() !== expected.to.toLowerCase() ||
+        BigInt(tx.value) !== BigInt(expected.value) ||
         tx.chainId !== session.network.chainIdHex ||
         tx.from.toLowerCase() !== fromAddress.toLowerCase() ||
-        tx.data !== "0x"
+        tx.data.toLowerCase() !== expected.data.toLowerCase()
       )
         throw new Error("Prepared transaction differs from your review. Refresh before sending.");
       await checkWallet(wallet, fromAddress, session.network);

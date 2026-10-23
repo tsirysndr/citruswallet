@@ -61,7 +61,7 @@ export function InvitePanel({ className }: { className?: string }) {
         {!session?.did
           ? "Sign in with the AT Protocol account this invitation was intended for."
           : invitation
-            ? `${invitation.amount} ETH from ${invitation.senderDid}`
+            ? `${invitation.amount} {invitation.asset} from ${invitation.senderDid}`
             : ((error as Error | null)?.message ?? "")}
       </p>
       {invitation && session && (

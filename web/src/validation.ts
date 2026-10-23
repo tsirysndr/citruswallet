@@ -1,3 +1,4 @@
+import { parseAmount } from "@citruswallet/amounts";
 import { z } from "zod";
 
 /* These mirror the server's own rules so a typo is caught before a request is
@@ -18,17 +19,11 @@ export const identifier = z
     "Enter a handle like alice.bsky.social, or a did:plc / did:web DID.",
   );
 
-export const etherAmount = z
-  .string()
-  .transform((value) => {
-    const decimal = value.trim().replace(",", ".");
-    return decimal.startsWith(".") ? `0${decimal}` : decimal;
-  })
-  .refine(
-    (value) => /^(0|[1-9][0-9]{0,17})(\.[0-9]{1,18})?$/.test(value),
-    "Enter a positive ETH amount with at most 18 decimal places.",
-  )
-  .refine((value) => Number(value) > 0, "ETH amount must be greater than zero.");
+export const assetAmount = (decimals = 18, symbol = "ETH") => z.string()
+  .transform(value => { const normalized = value.trim().replace(",", "."); return normalized.startsWith(".") ? `0${normalized}` : normalized; })
+  .refine(value => { try { parseAmount(value, decimals); return true; } catch { return false; } },
+    `Enter a positive ${symbol} amount with at most ${decimals} decimal places.`);
+export const etherAmount = assetAmount();
 
 export const transactionHash = z
   .string()
@@ -40,7 +35,8 @@ export const transactionHash = z
 
 export const signInForm = z.object({ identifier });
 export const recipientForm = z.object({ recipient: identifier });
-export const amountForm = z.object({ amount: etherAmount, description: z.string().trim().max(500, "Use 500 characters or fewer.").optional() });
+export const assetAmountForm = (decimals = 18, symbol = "ETH") => z.object({ amount: assetAmount(decimals, symbol), description: z.string().trim().max(500, "Use 500 characters or fewer.").optional() });
+export const amountForm = assetAmountForm();
 export const recoverForm = z.object({ txHash: transactionHash });
 export const inviteForm = z.object({
   address: z.string().min(1, "Choose a linked address."),

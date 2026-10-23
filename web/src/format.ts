@@ -1,3 +1,4 @@
+import { formatBalance } from "@citruswallet/amounts";
 import type { Actor, Currency, PaymentState } from "./types";
 
 export const stateLabels: Record<PaymentState, string> = {
@@ -15,14 +16,7 @@ export const stateLabels: Record<PaymentState, string> = {
 export const label = (state: PaymentState) => stateLabels[state] ?? state;
 
 export function formatUnits(wei: string, decimals: number, places = 6) {
-  const unit = 10n ** BigInt(decimals);
-  const value = BigInt(wei);
-  const fraction = (value % unit)
-    .toString()
-    .padStart(decimals, "0")
-    .slice(0, places)
-    .replace(/0+$/, "");
-  return fraction ? `${value / unit}.${fraction}` : `${value / unit}`;
+  return formatBalance(BigInt(wei).toString(), decimals, places).replaceAll(",", "");
 }
 
 export function formatAmount(wei: string, currency: Currency) {

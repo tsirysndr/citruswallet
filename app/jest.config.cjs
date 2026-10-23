@@ -5,5 +5,5 @@ module.exports = {
   transform: { '^.+\\.mjs$': 'babel-jest', '^.+\\.[jt]sx?$': 'babel-jest' },
   testMatch: ['**/tests/**/*.test.jsx', '**/src/**/*.test.jsx'],
   setupFilesAfterEnv: ['<rootDir>/tests/setup.cjs'],
-  transformIgnorePatterns: ['node_modules/(?!((jest-)?react-native|@react-native(-community)?|expo[^/]*|@expo(nent)?/.*|react-native-svg|@unimodules/.*|unimodules|native-base|react-native-css-interop)/)'],
+  transformIgnorePatterns: ['node_modules/(?!(@citruswallet/.*|bignumber.js|(jest-)?react-native|@react-native(-community)?|expo[^/]*|@expo(nent)?/.*|react-native-svg|@unimodules/.*|unimodules|native-base|react-native-css-interop)/)'],
 };

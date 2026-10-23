@@ -124,7 +124,7 @@ export function Activity({ header }: { header?: ReactNode }) {
               </View>
             </View>
             <View className="flex-row items-center justify-between">
-              <Text className="text-xl font-bold">{payment.amount} ETH</Text>
+              <Text className="text-xl font-bold">{payment.amount} {payment.asset}</Text>
               <PaymentStatus state={payment.state} />
             </View>
             {payment.description && (
