@@ -9,3 +9,9 @@ export function invitationToken(url: string): string | null {
     return values.length === 1 && /^[a-f0-9]{64}$/.test(values[0]!) ? values[0]! : null;
   } catch { return null; }
 }
+
+export function invitationChain(url: string): string | null {
+  if (!invitationToken(url)) return null;
+  const chain = new URL(url).searchParams.get("chainId") || "1";
+  return ["1", "4326"].includes(chain) ? chain : null;
+}

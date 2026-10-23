@@ -6,11 +6,13 @@ export function Button({
   title,
   onPress,
   disabled = false,
+  keepEnabled = false,
   tone = "lime",
 }: {
   title: string;
   onPress: () => void;
   disabled?: boolean;
+  keepEnabled?: boolean;
   tone?: "lime" | "plain" | "dark" | "black";
 }) {
   const busy = useAtomValue(busyAtom);
@@ -19,9 +21,9 @@ export function Button({
       accessibilityRole="button"
       accessibilityLabel={title}
       style={{ alignSelf: "stretch", minHeight: 48 }}
-      disabled={disabled || busy}
+      disabled={disabled || (!keepEnabled && busy)}
       onPress={onPress}
-      className={`min-h-12 items-center justify-center rounded-lg px-4 py-3 ${tone === "black" ? "bg-black" : tone === "dark" ? "bg-ink" : tone === "plain" ? "bg-white" : "bg-accent"} ${(disabled || busy) && tone !== "black" ? "opacity-40" : ""}`}
+      className={`min-h-12 items-center justify-center rounded-lg px-4 py-3 ${tone === "black" ? "bg-black" : tone === "dark" ? "bg-ink" : tone === "plain" ? "bg-white" : "bg-accent"} ${(disabled || (!keepEnabled && busy)) && tone !== "black" ? "opacity-40" : ""}`}
     >
       <Text
         numberOfLines={1}

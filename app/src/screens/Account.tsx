@@ -1,3 +1,4 @@
+import { deviceNetwork } from "../network";
 import { AssetBalances } from "../components/AssetBalances";
 import { ContentSkeleton } from "../components/ContentSkeleton";
 import { Ionicons } from "@expo/vector-icons";
@@ -28,14 +29,14 @@ export function Account() {
       .filter((l) => l.chain_id === session.network.chainId)
       .map((l) => l.address) ?? [];
   const { data: balance, isFetching: balanceLoading } = useQuery({
-    queryKey: ["balance", session?.did, addresses],
+    queryKey: ["balance", session?.did, session?.network.chainId, addresses],
     enabled:
-      !!session?.did && addresses.length > 0 && session.network.chainId === 1,
+      !!session?.did && addresses.length > 0,
     queryFn: async () => {
       let total = 0n;
       for (const address of addresses) {
         const response = await fetch(
-          process.env.EXPO_PUBLIC_ETH_RPC_URL || "https://ethereum-rpc.publicnode.com",
+          deviceNetwork(session!.network).rpcUrls?.[0] || "https://ethereum-rpc.publicnode.com",
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -61,7 +62,7 @@ export function Account() {
       <View className="gap-6">
         <Heading
           title="Your handle. Your wallet."
-          subtitle="Send assets to the people you know. Your keys stay in MetaMask."
+          subtitle="Send assets to the people you know. Your keys stay with you."
         />
         <View className="gap-5 rounded-3xl bg-white p-6">
           <Heading title="Welcome to Citrus" />

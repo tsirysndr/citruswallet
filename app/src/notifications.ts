@@ -1,3 +1,4 @@
+import { selectedChain, saveNetwork } from "./network";
 import { useEffect } from "react";
 import { AppState, Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -61,7 +62,7 @@ export function useNotifications(did?: string | null) {
         | undefined,
       disposed = false,
       opening = false;
-    const key = "notification-cursor:" + did;
+    const key = "notification-cursor:" + did + ":" + (selectedChain() || "default");
     const connect = async () => {
       if (
         disposed ||
@@ -76,7 +77,7 @@ export function useNotifications(did?: string | null) {
         const cursor = (await AsyncStorage.getItem(key)) || "0";
         if (disposed) return;
         source = new EventSource(
-          `${origin}/xrpc/app.citruswallet.subscribeNotifications?cursor=${cursor}`,
+          `${origin}/xrpc/app.citruswallet.subscribeNotifications?cursor=${cursor}${selectedChain() ? `&chainId=${selectedChain()}` : ""}`,
           {
             headers: { Authorization: `Bearer ${currentToken()}` },
             pollingInterval: 5000,
@@ -110,9 +111,14 @@ export function useNotifications(did?: string | null) {
         source = undefined;
       }
     });
-    const open = (response: Notifications.NotificationResponse) => {
+    const open = async (response: Notifications.NotificationResponse) => {
       const data = response.notification.request.content.data;
       if (typeof data.paymentId === "string") {
+        const chain = String(data.chainId || 1);
+        if (["1", "4326"].includes(chain) && selectedChain() !== chain) {
+          await saveNetwork(chain, "");
+          await query.cancelQueries(); query.clear();
+        }
         review(data.paymentId);
         screen("Payments");
         if (typeof data.notificationId === "string")

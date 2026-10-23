@@ -31,7 +31,7 @@ module.exports = {
   },
   plugins: [
     "expo-font",
-    "expo-secure-store",
+    ["expo-secure-store", { faceIDPermission: "Use Face ID to unlock your Citrus wallet." }],
     "expo-web-browser",
     ["expo-notifications", { color: "#c5f277" }],
   ],

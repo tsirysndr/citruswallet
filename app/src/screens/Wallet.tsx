@@ -1,5 +1,10 @@
+import { NetworkSettings } from "../components/NetworkSettings";
+import { LocalWallet } from "../components/LocalWallet";
+import { nativeVaultState, subscribeNativeVault } from "../local-wallet";
+import { useSyncExternalStore } from "react";
+import * as SecureStore from "expo-secure-store";
 import { ThemeSwitch } from "../components/ThemeSwitch";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Alert, Linking, View } from "react-native";
 import { Text } from "../components/Typography";
 import * as Clipboard from "expo-clipboard";
@@ -14,13 +19,19 @@ export function Wallet() {
     run = useAction();
   const [isPublic, setPublic] = useState(true);
   const [connecting, setConnecting] = useState(false);
+  const vault = useSyncExternalStore(subscribeNativeVault, nativeVaultState);
+  const [external, setExternal] = useState(false);
+  useEffect(() => { void SecureStore.getItemAsync("citrus-wallet-mode").then(mode => setExternal(mode === "metamask")); }, []);
+  const builtIn = ["locked", "unlocked"].includes(vault) && !external;
   if (!session?.did)
-    return <Empty text="Sign in from Account to link a wallet." />;
+    return <View className="gap-5"><LocalWallet /><Empty text="Sign in from Account to link a wallet." /></View>;
   return (
     <View className="gap-5">
+      <LocalWallet />
+      {["locked", "unlocked"].includes(vault) && <Button title={external ? "Use Citrus wallet" : "Use MetaMask instead (optional)"} tone="plain" onPress={() => run(async () => { await SecureStore.setItemAsync("citrus-wallet-mode", external ? "citrus" : "metamask"); setExternal(!external); })} />}
       <Heading
         title="Your wallets"
-        subtitle="Connect with the MetaMask app. Signing proves ownership; it does not move funds."
+        subtitle="Link your wallet to your Atmosphere account. Linking does not move funds."
       />
       <View className="flex-row items-center gap-3">
         <ThemeSwitch
@@ -33,7 +44,8 @@ export function Wallet() {
         </Text>
       </View>
       <Button
-        title={connecting ? "Connecting to MetaMask…" : "Connect & link MetaMask"}
+        title={connecting ? "Linking…" : builtIn ? "Link Citrus wallet" : "Connect & link MetaMask"}
+        disabled={builtIn && vault !== "unlocked"}
         onPress={() =>
           run(async () => {
             setConnecting(true);
@@ -46,11 +58,12 @@ export function Wallet() {
           })
         }
       />
-      <Button
+      {!builtIn && <Button
         title="Get the MetaMask app"
         tone="plain"
         onPress={() => void Linking.openURL("https://metamask.io/download/")}
-      />
+      />}
+      <NetworkSettings />
       {session.links.length === 0 && <Empty text="No linked wallets yet." />}
       {session.links.map((link) => (
         <View

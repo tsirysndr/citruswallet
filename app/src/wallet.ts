@@ -1,3 +1,5 @@
+import { requestUnlock } from "./wallet-unlock";
+import { nativeProvider, nativeVaultState } from "./local-wallet";
 import { expectedTransfer } from "@citruswallet/amounts";
 import { Linking } from "react-native";
 import { createEVMClient } from "@metamask/connect-evm";
@@ -17,6 +19,7 @@ export function getClient() {
     },
     api: {
       supportedNetworks: {
+        "0x10e6": "https://mainnet.megaeth.com/rpc",
         "0x1": process.env.EXPO_PUBLIC_ETH_RPC_URL || "https://ethereum-rpc.publicnode.com",
       },
     },
@@ -36,6 +39,12 @@ export function getClient() {
   }));
 }
 export async function connect(network: Network) {
+  if (["locked", "unlocked"].includes(nativeVaultState()) && await SecureStore.getItemAsync("citrus-wallet-mode") !== "metamask") {
+    if (nativeVaultState() === "locked") await requestUnlock();
+    const wallet = nativeProvider(network);
+    const addresses = await wallet.request({ method: "eth_requestAccounts" });
+    return { wallet, address: addresses[0] as string };
+  }
   const sdk = await withWalletDeadline(getClient(), 20_000,
     "MetaMask could not initialize. Close and reopen Citrus Wallet, then try again.");
   if (sdk.status !== "connected") {
@@ -50,11 +59,14 @@ export async function connect(network: Network) {
     }
   }
   const wallet = sdk.getProvider();
-  if ((await wallet.request({ method: "eth_chainId" })) !== network.chainIdHex)
-    await wallet.request({
-      method: "wallet_switchEthereumChain",
-      params: [{ chainId: network.chainIdHex }],
-    });
+  if ((await wallet.request({ method: "eth_chainId" })) !== network.chainIdHex) {
+    try { await wallet.request({ method: "wallet_switchEthereumChain", params: [{ chainId: network.chainIdHex }] }); }
+    catch (error: any) {
+      if (error?.code !== 4902 || !network.rpcUrls?.length) throw error;
+      await wallet.request({ method: "wallet_addEthereumChain", params: [{ chainId: network.chainIdHex, chainName: network.name, nativeCurrency: network.nativeCurrency, rpcUrls: network.rpcUrls }] });
+      await wallet.request({ method: "wallet_switchEthereumChain", params: [{ chainId: network.chainIdHex }] });
+    }
+  }
   const addresses = (await wallet.request({
     method: "eth_requestAccounts",
   })) as string[];
@@ -81,6 +93,7 @@ export async function linkWallet(network: Network, publicAddress: boolean) {
     address,
     public: publicAddress,
   });
+  if (challenge.chainId !== network.chainId) throw new Error("Network changed. Review and try again.");
   await check(wallet, address, network);
   const signature = await wallet.request({
     method: "personal_sign",
@@ -105,7 +118,7 @@ export async function recover(did: string, hash?: string) {
   const txHash = hash || item.txHash;
   if (!/^0x[0-9a-fA-F]{64}$/.test(txHash || ""))
     throw new Error(
-      "Check MetaMask and paste the original transaction hash. Do not send again.",
+      "Check your wallet and paste the original transaction hash. Do not send again.",
     );
   await request("submitPayment", {
     id: item.id,
@@ -157,7 +170,7 @@ export async function sendPayment(
     throw error;
   }
   if (typeof hash !== "string" || !/^0x[0-9a-fA-F]{64}$/.test(hash))
-    throw new Error("Check MetaMask for the original transaction hash.");
+    throw new Error("Check your wallet for the original transaction hash.");
   await SecureStore.setItemAsync(
     pendingKey(did),
     JSON.stringify({ ...item, txHash: hash }),

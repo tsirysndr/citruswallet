@@ -128,11 +128,11 @@ export function Payments({ onStepChange }: { onStepChange?: (step: number) => vo
         })}
       </View>
       <Heading title={id ? "Review payment" : step === 1 ? "Who are you paying?" : step === 2 ? "How much?" : "Add a note"}
-        subtitle={id ? "Check every detail before opening MetaMask." : step === 1 ? "Find someone by their Atmosphere account." : step === 2 ? "Enter the amount you want to send." : "Make it personal with a message or GIF. You can leave this blank."} />
+        subtitle={id ? "Check every detail before approving payment." : step === 1 ? "Find someone by their Atmosphere account." : step === 2 ? "Enter the amount you want to send." : "Make it personal with a message or GIF. You can leave this blank."} />
       {hasPending && (
         <View className="gap-3 rounded-2xl bg-peach p-4">
           <Text className="text-base">
-            A previous wallet request needs recovery. Check MetaMask before
+            A previous wallet request needs recovery. Check your wallet before
             sending again.
           </Text>
           <Field
@@ -226,7 +226,7 @@ export function Payments({ onStepChange }: { onStepChange?: (step: number) => vo
                       </Text>
                     </View>
                     <Button
-                      title="Approve in MetaMask"
+                      title="Review & send"
                       disabled={!ack || hasPending || !session.paymentsEnabled}
                       onPress={() =>
                         run(async () => {

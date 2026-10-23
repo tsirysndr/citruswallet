@@ -1,3 +1,5 @@
+import { selectedChain } from "./network";
+import { lockNativeWallet } from "./local-wallet";
 import * as SecureStore from "expo-secure-store";
 export const origin = (
   process.env.EXPO_PUBLIC_API_URL || "https://citruswallet.app"
@@ -14,7 +16,7 @@ export async function loadToken() {
 }
 export async function saveToken(value: string | null) {
   if (value) await SecureStore.setItemAsync("citrus-session", value);
-  else await SecureStore.deleteItemAsync("citrus-session");
+  else { lockNativeWallet(); await SecureStore.deleteItemAsync("citrus-session"); }
   token = value;
 }
 export class ApiError extends Error {
@@ -37,6 +39,7 @@ export async function request<T>(
     method: body === undefined ? "GET" : "POST",
     credentials: "omit",
     headers: {
+      ...(selectedChain() ? { "x-citrus-chain-id": selectedChain()! } : {}),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(body === undefined ? {} : { "Content-Type": "application/json" }),
     },

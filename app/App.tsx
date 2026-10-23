@@ -1,8 +1,11 @@
+import { WalletUnlock } from "./src/components/WalletUnlock";
+import { loadNetwork, saveNetwork } from "./src/network";
+import { loadNativeVault } from "./src/local-wallet";
 import { ContentSkeleton } from "./src/components/ContentSkeleton";
 import "./global.css";
 import * as SecureStore from "expo-secure-store";
 import type { Session } from "./src/types";
-import { invitationToken } from "./src/invitation-link";
+import { invitationToken, invitationChain } from "./src/invitation-link";
 import { InvitationPanel } from "./src/components/InvitationPanel";
 import { useNoticeTimeout } from "./src/useNoticeTimeout";
 import { useNotifications } from "./src/notifications";
@@ -58,7 +61,7 @@ function Shell() {
   useNoticeTimeout();
   useEffect(() => { if (invite && session.data?.did) setScreen("Wallet"); }, [invite, session.data?.did]);
   useEffect(() => {
-    void loadToken()
+    void Promise.all([loadToken(), loadNativeVault(), loadNetwork()])
       .then(() => setReady(true))
       .catch(() =>
         setNotice("Could not access secure storage. Restart the app."),
@@ -67,6 +70,8 @@ function Shell() {
       try {
         const token = invitationToken(url);
         if (token) {
+          const chain = invitationChain(url);
+          if (chain) { await saveNetwork(chain, ""); await query.cancelQueries(); query.clear(); }
           await SecureStore.setItemAsync("citrus-invitation", token);
           setInvite(token);
           setScreen(query.getQueryData<Session>(["session"])?.did ? "Wallet" : "Account");
@@ -131,7 +136,7 @@ function Shell() {
   </>;
   return (
     <SafeAreaView className="flex-1 bg-canvas" edges={["top", "bottom"]}>
-      <StatusBar style="dark" />
+      <WalletUnlock /><StatusBar style="dark" />
       <View className="flex-row items-center justify-between px-5 py-4">
         <View className="min-w-0 flex-1 flex-row items-center gap-3">
           <Image source={require('./assets/icon.png')} accessibilityLabel="Citrus Wallet logo" style={{ width: 42, height: 42 }} />
