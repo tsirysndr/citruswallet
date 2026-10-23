@@ -81,6 +81,17 @@ textarea:focus-visible { outline: none; }
 .sidebar-nav { display: flex; flex-direction: column; gap: 8px; }
 .sidebar-link { display: flex; align-items: center; gap: 14px; min-height: 48px; padding: 12px 14px; border-radius: 8px; text-decoration: none; font-size: 15px; font-weight: 550; }
 .sidebar-link:not(.nav-active):hover { background: var(--surface); color: var(--ink); }
+.sidebar-bottom { margin-top: auto; }
+.sidebar-account { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--edge); }
+.sidebar-profile { display: flex; align-items: center; gap: 10px; min-width: 0; text-decoration: none; color: var(--ink); border-radius: 6px; }
+.sidebar-profile-text { display: flex; flex-direction: column; min-width: 0; gap: 4px; }
+.sidebar-display-name { font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sidebar-handle { font-family: var(--font-mono); font-size: 12px; color: var(--ink-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sidebar-signout { display: flex; align-items: center; gap: 10px; margin-top: 12px; padding: 10px; border: 0; border-radius: 6px; background: transparent; color: var(--ink-muted); cursor: pointer; font-size: 13px; }
+.sidebar-signout:hover { background: var(--surface); color: var(--ink); }
+.sidebar-signout:disabled { opacity: .5; cursor: wait; }
+.sidebar-collapsed .sidebar-profile, .sidebar-collapsed .sidebar-signout { justify-content: center; }
+.sidebar-collapsed .sidebar-signout { width: 100%; }
 .sidebar-network { display: flex; align-items: center; gap: 10px; margin-top: auto; padding: 24px 12px 0; font-size: 12px; color: var(--ink-muted); }
 .sidebar-network-dot { width: 7px; height: 7px; flex-shrink: 0; border-radius: 50%; background: #7f9c49; }
 .sidebar-collapsed .app-sidebar { padding-inline: 16px; }
