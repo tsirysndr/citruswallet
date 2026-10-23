@@ -329,3 +329,44 @@ textarea:focus-visible { outline: none; }
 .keyboard-shortcuts-toggle { display: flex; gap: 9px; align-items: center; margin-top: 18px; font-size: 12px; cursor: pointer; }
 .keyboard-shortcuts-toggle input { width: 16px; height: 16px; accent-color: var(--accent-strong); }
 @media (max-width: 767px), (hover: none), (pointer: coarse) { .keyboard-shortcuts-trigger { display: none; } }
+
+/* Quick activity search: a compact command palette with a plain dimmed backdrop. */
+.activity-search-trigger { display: grid; place-items: center; flex-shrink: 0; width: 42px; height: 42px; border-radius: 6px; color: var(--ink); cursor: pointer; }
+.activity-search-trigger:hover { background: var(--edge-soft); }
+.activity-command { position: fixed; inset: 12dvh 0 auto; margin: 0 auto; width: min(680px, calc(100vw - 24px)); max-height: 76dvh; padding: 0; border: 1px solid var(--edge); border-radius: 14px; background: var(--raised); color: var(--ink); box-shadow: 0 24px 90px #19191630; overflow: hidden; }
+.activity-command[open] { display: flex; flex-direction: column; }
+.activity-command::backdrop { background: #19191665; backdrop-filter: none; -webkit-backdrop-filter: none; }
+.command-search-field { display: flex; align-items: center; gap: 14px; padding: 18px 20px; border-bottom: 1px solid var(--edge-soft); }
+.command-search-field > svg { flex-shrink: 0; color: var(--ink-muted); }
+.command-search-field input { width: 100%; min-width: 0; padding: 0; border: 0; border-radius: 0; outline: none; box-shadow: none; background: transparent; color: var(--ink); font-size: 17px; }
+.command-search-field button { display: grid; place-items: center; flex-shrink: 0; width: 32px; height: 32px; border-radius: 6px; cursor: pointer; color: var(--ink-muted); }
+.command-search-field button:hover { background: var(--edge-soft); }
+.command-section-label { padding: 14px 22px 8px; font-size: 12px; font-weight: 600; color: var(--ink-muted); }
+.command-results { min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0 8px 8px; }
+.command-result { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px; border-radius: 7px; text-align: left; cursor: pointer; }
+.command-result[aria-selected=true], .command-result:hover { background: var(--sunken); }
+.command-result:focus-visible { outline: 2px solid var(--ink-muted); outline-offset: -2px; }
+.command-person { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; }
+.command-name { display: flex; align-items: center; gap: 4px; min-width: 0; font-size: 14px; font-weight: 600; }
+.command-name svg { flex-shrink: 0; }
+.command-name > span, .command-handle, .command-description { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.command-handle { font: 12px var(--font-mono); color: var(--ink-muted); }
+.command-description { font-size: 13px; color: var(--ink-soft); }
+.command-meta { font-size: 12px; color: var(--ink-muted); }
+.command-amount { max-width: 40%; overflow-wrap: anywhere; text-align: right; font: 700 14px var(--font-mono); }
+.command-empty { padding: 28px 24px 40px; text-align: center; font-size: 14px; color: var(--ink-muted); }
+.command-empty button { text-decoration: underline; cursor: pointer; }
+.command-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; padding: 12px 20px; border-top: 1px solid var(--edge-soft); font-size: 12px; color: var(--ink-muted); }
+.command-footer > span, .command-footer > div { display: flex; align-items: center; gap: 6px; }
+.command-footer kbd { border: 1px solid var(--edge); border-radius: 4px; padding: 0 4px; font-size: 11px; }
+.command-footer button { padding: 4px; cursor: pointer; color: var(--ink); }
+.command-footer button:disabled { opacity: .4; cursor: default; }
+@media (max-width: 767px) {
+  .activity-command { inset: 12px 0 auto; max-height: calc(100dvh - 24px); }
+  .command-search-field { gap: 10px; padding: 14px; }
+  .command-footer > span { display: none; }
+  .command-footer:has(>span:only-child) { display: none; }
+  .command-footer { justify-content: flex-end; }
+  .command-amount { font-size: 13px; max-width: 32%; }
+  .command-result { gap: 9px; padding: 10px; }
+}

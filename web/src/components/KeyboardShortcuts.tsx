@@ -43,6 +43,9 @@ export function KeyboardShortcuts() {
     let prefixUntil = 0;
     const clear = () => { prefixUntil = 0; };
     const onKey = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && !event.altKey && !event.shiftKey && event.key.toLowerCase() === "k" && !event.repeat && !event.isComposing && !event.defaultPrevented && !document.querySelector("dialog[open]")) {
+        event.preventDefault(); clear(); window.dispatchEvent(new Event("citrus:activity-search")); return;
+      }
       if (event.defaultPrevented || event.repeat || event.isComposing || event.ctrlKey || event.metaKey || event.altKey || document.querySelector("dialog[open]")) { clear(); return; }
       const editing = event.composedPath().some(node => node instanceof HTMLElement && (node.isContentEditable || node.matches('input, textarea, select, [role="textbox"], [role="combobox"], [role="slider"], video, audio')));
       if (editing) { clear(); return; }
@@ -76,6 +79,7 @@ export function KeyboardShortcuts() {
         <p className="keyboard-shortcuts-hint">Press G, then the next key. Shortcuts pause while you type or use a dialog.</p>
         <dl className="keyboard-shortcuts-list">
           {destinations.map(item => <div key={item.key}><dt>{item.label}</dt><dd><kbd>G</kbd><span>then</span><kbd>{item.key.toUpperCase()}</kbd></dd></div>)}
+          <div><dt>Quick activity search</dt><dd><kbd>⌘ / Ctrl</kbd><kbd>K</kbd></dd></div>
           <div><dt>Search activity</dt><dd><kbd>/</kbd></dd></div>
           <div><dt>Show this guide</dt><dd><kbd>?</kbd></dd></div>
           <div><dt>Close the current dialog</dt><dd><kbd>Esc</kbd></dd></div>

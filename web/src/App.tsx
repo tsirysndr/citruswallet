@@ -6,6 +6,7 @@ import { rpc } from "./api";
 import { inviteTokenAtom, reviewIdAtom, statusAtom } from "./atoms";
 import { BottomNav, HeaderNav } from "./components/Nav";
 import { CitrusMark } from "./components/CitrusMark";
+import { ActivitySearch } from "./components/ActivitySearch";
 import { InstallApp } from "./components/InstallApp";
 import { KeyboardShortcuts } from "./components/KeyboardShortcuts";
 import { MetaMaskConnection } from "./components/MetaMaskConnection";
@@ -79,6 +80,7 @@ export function App() {
           <span className="hidden rounded-full border border-edge px-2.5 py-1.5 text-[12px] tracking-[0.04em] text-ink-muted xl:inline">
             {session?.network.name ?? "AT Protocol × Ethereum"}
           </span>
+          <ActivitySearch />
           <InstallMetaMask />
         </div>
       </header>
