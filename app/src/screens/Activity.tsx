@@ -1,21 +1,21 @@
-import { useEffect, useState } from "react";
-import { Alert, Modal, Pressable, View } from "react-native";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { ActivityIndicator, Alert, FlatList, Modal, Pressable, View } from "react-native";
 import { Text } from "../components/Typography";
 import { Ionicons } from "@expo/vector-icons";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { useSetAtom } from "jotai";
 import { request } from "../api";
 import { useAction, useSession } from "../hooks";
 import { reviewAtom, screenAtom } from "../state";
 import type { Payment } from "../types";
 import { Avatar, Button, Empty, Field, Heading } from "../components/ui";
-export function Activity() {
+export function Activity({ header }: { header?: ReactNode }) {
+  const list = useRef<FlatList<Payment>>(null);
   const { data: session } = useSession(),
     run = useAction(),
     client = useQueryClient();
   const [text, setText] = useState(""),
     [q, setQ] = useState(""),
-    [page, setPage] = useState(1),
     [filters, setFilters] = useState(false);
   const [direction, setDirection] = useState("all"),
     [status, setStatus] = useState("all"),
@@ -25,33 +25,37 @@ export function Activity() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setQ(text.trim());
-      setPage(1);
     }, 150);
     return () => clearTimeout(timer);
   }, [text]);
   const [now] = useState(() => Date.now());
   const params = {
     q: q || undefined,
-    page,
     pageSize: 20,
     direction,
     status,
     after: days ? String(now - days * 86400000) : undefined,
   };
-  const { data, isFetching, error, refetch } = useQuery({
-    queryKey: ["activity", session?.did, params],
+  const { data, isFetching, isPending, isFetchingNextPage, isFetchNextPageError, hasNextPage, fetchNextPage, error, refetch } = useInfiniteQuery({
+    queryKey: ["activity", session?.did, session?.network.chainId, params],
     enabled: !!session?.did,
-    queryFn: () =>
-      request<{ payments: Payment[]; total: number }>(
-        "listPayments",
-        undefined,
-        params,
-      ),
+    initialPageParam: 1,
+    queryFn: ({ pageParam }) => request<{ payments: Payment[]; total: number }>("listPayments", undefined, { ...params, page: pageParam }),
+    getNextPageParam: (last, _pages, page) => last.payments.length > 0 && page * 20 < last.total ? page + 1 : undefined,
   });
+  const payments = data?.pages.flatMap(page => page.payments).filter((payment, index, items) => items.findIndex(item => item.id === payment.id) === index) || [];
+  useEffect(() => { list.current?.scrollToOffset({ offset: 0, animated: false }); }, [q, direction, status, days]);
   if (!session?.did)
     return <Empty text="Sign in from Account to see your activity." />;
   return (
-    <View className="gap-5">
+    <View className="flex-1">
+      <FlatList ref={list} accessibilityLabel="Activity payments" data={payments} keyExtractor={payment => payment.id}
+        contentContainerStyle={{ padding: 20, paddingBottom: 32 }} keyboardShouldPersistTaps="handled"
+        refreshing={isFetching && !isFetchingNextPage && !isPending} onRefresh={() => void refetch()}
+        onEndReachedThreshold={0.5} onEndReached={() => {
+          if (hasNextPage && !isFetching && !error && q === text.trim()) void fetchNextPage();
+        }}
+        ListHeaderComponent={<View className="gap-5 pb-4">{header}
       <View className="flex-row items-center justify-between">
         <Heading title="Activity" />
         <Pressable
@@ -66,6 +70,7 @@ export function Activity() {
         <View className="flex-1">
           <Field
             label="Search payments"
+            style={{ height: 48 }}
             value={text}
             onChangeText={setText}
             placeholder="Name, handle, description…"
@@ -74,24 +79,28 @@ export function Activity() {
         <Pressable
           accessibilityLabel="Activity filters"
           onPress={() => setFilters(true)}
-          className="rounded-lg bg-white p-4"
+          className="items-center justify-center rounded-lg bg-white"
+          style={{ width: 48, height: 48 }}
         >
-          <Ionicons name="options-outline" size={24} />
+          <Ionicons name="options-outline" size={20} />
         </Pressable>
       </View>
       <Text className="text-sm text-muted">
-        {isFetching ? "Searching…" : `${data?.total ?? 0} payments`}
+        {isPending ? "Searching…" : `${data?.pages[0]?.total ?? 0} payments`}
       </Text>
-      {error ? (
-        <Button title="Search failed. Retry" onPress={() => void refetch()} />
-      ) : !isFetching && !data?.payments.length ? (
-        <Empty text="No payments found." />
-      ) : null}
-      {data?.payments.map((payment) => {
+        </View>}
+        ListEmptyComponent={error ? <Button title="Search failed. Retry" onPress={() => void refetch()} /> :
+          !isPending ? <Empty text="No payments found." /> : <ActivityIndicator accessibilityLabel="Loading payments" color="#191916" />}
+        ListFooterComponent={<View className="py-4">
+          {isFetchingNextPage && <ActivityIndicator accessibilityLabel="Loading more payments" color="#191916" />}
+          {isFetchNextPageError && <Button title="Could not load more. Retry" onPress={() => void fetchNextPage()} />}
+          {!hasNextPage && payments.length > 0 && !isFetching && <Text className="text-center text-sm text-muted">You're all caught up.</Text>}
+        </View>}
+        renderItem={({ item: payment }) => {
         const outgoing = payment.senderDid === session.did,
           actor = outgoing ? payment.recipient : payment.sender;
         return (
-          <View key={payment.id} className="gap-3 rounded-2xl bg-white p-4">
+          <View className="mb-3 gap-3 rounded-2xl bg-white p-4">
             <View className="flex-row items-center gap-3">
               <Avatar actor={actor} />
               <View className="flex-1">
@@ -152,24 +161,7 @@ export function Activity() {
             )}
           </View>
         );
-      })}
-      <View className="flex-row items-center justify-between">
-        <Button
-          title="Previous"
-          disabled={page === 1 || isFetching}
-          tone="plain"
-          onPress={() => setPage((p) => p - 1)}
-        />
-        <Text>
-          {page} / {Math.max(1, Math.ceil((data?.total ?? 0) / 20))}
-        </Text>
-        <Button
-          title="Next"
-          disabled={page * 20 >= (data?.total ?? 0) || isFetching}
-          tone="plain"
-          onPress={() => setPage((p) => p + 1)}
-        />
-      </View>
+      }} />
       <Modal
         visible={filters}
         transparent
@@ -188,8 +180,7 @@ export function Activity() {
                   tone={direction === value ? "lime" : "plain"}
                   onPress={() => {
                     setDirection(value);
-                    setPage(1);
-                  }}
+                                }}
                 />
               ))}
             </View>
@@ -213,8 +204,7 @@ export function Activity() {
                   tone={status === value ? "lime" : "plain"}
                   onPress={() => {
                     setStatus(value);
-                    setPage(1);
-                  }}
+                                }}
                 />
               ))}
             </View>
@@ -227,8 +217,7 @@ export function Activity() {
                   tone={days === value ? "lime" : "plain"}
                   onPress={() => {
                     setDays(value);
-                    setPage(1);
-                  }}
+                                }}
                 />
               ))}
             </View>

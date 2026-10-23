@@ -2,11 +2,11 @@ import { ThemeSwitch } from "../components/ThemeSwitch";
 import { useEffect, useState } from "react";
 import { Alert, BackHandler, Keyboard, Pressable, Share, View } from "react-native";
 import { Text } from "../components/Typography";
-import { useAtom, useAtomValue } from "jotai";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { request } from "../api";
 import { useAction, useSession } from "../hooks";
-import { busyAtom, reviewAtom } from "../state";
+import { busyAtom, reviewAtom, screenAtom } from "../state";
 import { Ionicons } from "@expo/vector-icons";
 import { pending, recover, sendPayment } from "../wallet";
 import type { Actor, Payment, PaymentMedia, Recipient } from "../types";
@@ -16,7 +16,7 @@ import { recordShare } from "../klipy";
 import { RecipientStep } from "./payment/RecipientStep";
 import { DescriptionStep } from "./payment/DescriptionStep";
 import { AmountStep } from "./payment/AmountStep";
-export function Payments({ onStepChange }: { onStepChange?: () => void }) {
+export function Payments({ onStepChange }: { onStepChange?: (step: number) => void }) {
   const { data: session } = useSession(),
     query = useQueryClient(),
     run = useAction();
@@ -31,8 +31,9 @@ export function Payments({ onStepChange }: { onStepChange?: () => void }) {
   const [media, setMedia] = useState<PaymentMedia | null>(null);
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const busy = useAtomValue(busyAtom);
+  const go = useSetAtom(screenAtom);
   const [actor, setActor] = useState<Actor | null>(null);
-  useEffect(() => { onStepChange?.(); }, [step, id]);
+  useEffect(() => { onStepChange?.(id ? 4 : step); }, [step, id]);
   const { data: detail, isFetching } = useQuery({
     queryKey: ["payment", session?.did, id],
     enabled: !!id && !!session?.did,
@@ -64,8 +65,11 @@ export function Payments({ onStepChange }: { onStepChange?: () => void }) {
   };
   useEffect(() => {
     const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
-      if (currentStep <= 1 || (id && !canEdit)) return false;
-      if (!busy) navigateBack((currentStep - 1) as 1 | 2 | 3);
+      if (currentStep <= 1) return false;
+      if (!busy) {
+        if (id && !canEdit) go('Activity');
+        else navigateBack((currentStep - 1) as 1 | 2 | 3);
+      }
       return true;
     });
     return () => subscription.remove();
@@ -90,8 +94,8 @@ export function Payments({ onStepChange }: { onStepChange?: () => void }) {
   return (
     <View className="gap-5">
       <View className="flex-row items-center justify-between">
-        {currentStep > 1 && (!id || canEdit) ? <Pressable accessibilityRole="button" accessibilityLabel={`Back to ${currentStep === 2 ? 'recipient' : currentStep === 3 ? 'amount' : 'description'}`}
-          disabled={busy} onPress={() => navigateBack((currentStep - 1) as 1 | 2 | 3)} className="min-h-12 flex-row items-center gap-2 pr-4">
+        {currentStep > 1 ? <Pressable accessibilityRole="button" accessibilityLabel={`Back to ${id && !canEdit ? 'activity' : currentStep === 2 ? 'recipient' : currentStep === 3 ? 'amount' : 'description'}`}
+          disabled={busy} onPress={() => id && !canEdit ? go('Activity') : navigateBack((currentStep - 1) as 1 | 2 | 3)} className="min-h-12 flex-row items-center gap-2 pr-4">
           <Ionicons name="arrow-back" size={24} color="#191916" /><Text className="text-base">Back</Text>
         </Pressable> : <Text className="text-base font-medium">Send ETH</Text>}
         <Text accessibilityLabel={`Step ${currentStep} of 4`} className="text-sm text-muted">Step {currentStep} of 4</Text>
@@ -109,7 +113,7 @@ export function Payments({ onStepChange }: { onStepChange?: () => void }) {
         })}
       </View>
       <Heading title={id ? "Review payment" : step === 1 ? "Who are you paying?" : step === 2 ? "How much?" : "Add a note"}
-        subtitle={id ? "Check every detail before opening MetaMask." : step === 1 ? "Find someone by their AT Protocol handle." : step === 2 ? "Enter the amount you want to send." : "Make it personal with a message or GIF. You can leave this blank."} />
+        subtitle={id ? "Check every detail before opening MetaMask." : step === 1 ? "Find someone by their Atmosphere account." : step === 2 ? "Enter the amount you want to send." : "Make it personal with a message or GIF. You can leave this blank."} />
       {hasPending && (
         <View className="gap-3 rounded-2xl bg-peach p-4">
           <Text className="text-base">
@@ -137,7 +141,7 @@ export function Payments({ onStepChange }: { onStepChange?: () => void }) {
         step === 1 ? <RecipientStep handle={handle} actor={actor} ownDid={session.did}
           onChange={value => { setHandle(value); setActor(null); setRecipient(null); }}
           onSelect={setActor} onContinue={resolve} /> :
-        step === 2 ? <AmountStep actor={actor} handle={handle} amount={amount}
+        step === 2 ? <AmountStep actor={actor} handle={recipient?.handle || handle} amount={amount}
           onAmount={setAmount} onContinue={() => setStep(3)} /> :
         <DescriptionStep description={description} onDescription={setDescription} media={media} onMedia={setMedia}
           onReview={() => run(async () => {

@@ -1,7 +1,8 @@
 import "./global.css";
+import { useNoticeTimeout } from "./src/useNoticeTimeout";
 import { useNotifications } from "./src/notifications";
 import { NotificationsInbox } from "./src/components/NotificationsInbox";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AppState, Image, KeyboardAvoidingView, Platform, Pressable, RefreshControl, ScrollView, View } from "react-native";
 import { Text } from "./src/components/Typography";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
@@ -37,6 +38,7 @@ const client = new QueryClient({
 });
 function Shell() {
   const scroll = useRef<ScrollView>(null);
+  const [paymentStep, setPaymentStep] = useState(1);
   const [screen, setScreen] = useAtom(screenAtom),
     [notice, setNotice] = useAtom(noticeAtom),
     busy = useAtomValue(busyAtom),
@@ -45,6 +47,7 @@ function Shell() {
   const query = useQueryClient(),
     session = useSession();
   useNotifications(session.data?.did);
+  useNoticeTimeout();
   useEffect(() => {
     void loadToken()
       .then(() => setReady(true))
@@ -76,38 +79,7 @@ function Shell() {
       state.remove();
     };
   }, []);
-  return (
-    <SafeAreaView className="flex-1 bg-canvas" edges={["top", "bottom"]}>
-      <StatusBar style="dark" />
-      <View className="flex-row items-center justify-between px-5 py-4">
-        <View className="min-w-0 flex-1 flex-row items-center gap-3">
-          <Image source={require('./assets/icon.png')} accessibilityLabel="Citrus Wallet logo" style={{ width: 42, height: 42 }} />
-          <Text numberOfLines={1} adjustsFontSizeToFit className="flex-shrink text-xl font-bold text-ink">Citrus Wallet</Text>
-        </View>
-        <View className="items-end pl-2">
-          <NotificationsInbox />
-          <Text className="text-xs text-muted">
-            <Text style={{ color: "#39e75f" }}>● </Text>
-            {session.data?.network.name || "Ethereum"}
-          </Text>
-        </View>
-      </View>
-      <KeyboardAvoidingView
-        className="flex-1"
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-      >
-        <ScrollView
-          ref={scroll}
-          key={screen}
-          contentContainerStyle={{ padding: 20, paddingBottom: 32 }}
-          keyboardShouldPersistTaps="handled"
-          refreshControl={
-            <RefreshControl
-              refreshing={false}
-              onRefresh={() => void query.invalidateQueries()}
-            />
-          }
-        >
+  const feedback = <>
           {notice ? (
             <Pressable
               accessibilityLabel="Dismiss notice"
@@ -132,6 +104,40 @@ function Shell() {
               </Text>
             </Pressable>
           )}
+  </>;
+  return (
+    <SafeAreaView className="flex-1 bg-canvas" edges={["top", "bottom"]}>
+      <StatusBar style="dark" />
+      <View className="flex-row items-center justify-between px-5 py-4">
+        <View className="min-w-0 flex-1 flex-row items-center gap-3">
+          <Image source={require('./assets/icon.png')} accessibilityLabel="Citrus Wallet logo" style={{ width: 42, height: 42 }} />
+          <Text numberOfLines={1} adjustsFontSizeToFit className="flex-shrink text-xl font-bold text-ink">Citrus Wallet</Text>
+        </View>
+        <View className="items-end pl-2">
+          <NotificationsInbox />
+          <Text className="text-xs text-muted">
+            <Text style={{ color: "#39e75f" }}>● </Text>
+            {session.data?.network.name || "Ethereum"}
+          </Text>
+        </View>
+      </View>
+      <KeyboardAvoidingView
+        className="flex-1"
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
+        {ready && screen === "Activity" ? <Activity header={feedback} /> : <ScrollView
+          ref={scroll}
+          key={screen}
+          contentContainerStyle={{ padding: 20, paddingBottom: 32 }}
+          keyboardShouldPersistTaps="handled"
+          refreshControl={
+            <RefreshControl
+              refreshing={false}
+              onRefresh={() => void query.invalidateQueries()}
+            />
+          }
+        >
+          {feedback}
           {!ready ? (
             <Text>Opening Citrus…</Text>
           ) : screen === "Account" ? (
@@ -139,13 +145,11 @@ function Shell() {
           ) : screen === "Wallet" ? (
             <Wallet />
           ) : screen === "Payments" ? (
-            <Payments onStepChange={() => scroll.current?.scrollTo({ y: 0, animated: false })} />
-          ) : (
-            <Activity />
-          )}
-        </ScrollView>
+            <Payments onStepChange={step => { setPaymentStep(step); scroll.current?.scrollTo({ y: 0, animated: false }); }} />
+          ) : null}
+        </ScrollView>}
       </KeyboardAvoidingView>
-      <BottomTabs screen={screen} onChange={setScreen} />
+      {(screen !== "Payments" || paymentStep === 1) && <BottomTabs screen={screen} onChange={setScreen} />}
     </SafeAreaView>
   );
 }

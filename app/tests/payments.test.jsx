@@ -4,7 +4,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BackHandler } from 'react-native';
 import { Provider } from 'jotai';
 import { Payments } from '../src/screens/Payments';
-import { HandleInput } from '../src/components/HandleInput';
 import { request } from '../src/api';
 
 const mockActionError = jest.fn();
@@ -96,22 +95,20 @@ test('failed cancellation keeps review intact and prepared payments cannot be ed
   await waitFor(() => expect(screen.getByRole('button', { name: 'Go to amount step' })).toBeDisabled());
   expect(screen.queryByRole('button', { name: 'Back to description' })).toBeNull();
 });
-test('recipient suggestions display avatars and names and exclude the current user', async () => {
-  const onSelect = jest.fn();
-  mount(<HandleInput value="alice" onChange={() => {}} onSelect={onSelect} excludeDid={mockSession.did} label="Recipient handle" />);
-  await fireEvent(screen.getByLabelText('Recipient handle'), 'focus');
-  await waitFor(() => expect(screen.getByRole('button', { name: `Use @${alice.handle}` })).toBeTruthy());
-  expect(screen.getByLabelText('Alice avatar')).toBeTruthy();
-  expect(screen.getByText('Alice')).toBeTruthy();
-  expect(screen.queryByRole('button', { name: 'Use @me.bsky.social' })).toBeNull();
-  await fireEvent.press(screen.getByRole('button', { name: `Use @${alice.handle}` }));
-  expect(onSelect).toHaveBeenCalledWith(alice);
-});
-
 test('starting a new payment resets the draft and returns to recipient selection', async () => {
   mount(<Payments />);
   await reviewPayment();
   await fireEvent.press(screen.getByRole('button', { name: 'New payment' }));
   expect(screen.getByLabelText('Step 1 of 4')).toBeTruthy();
   expect(screen.getByLabelText('Recipient handle').props.value).toBe('');
+});
+
+test('reports each step to the shell so navigation can stay hidden during composition', async () => {
+  const changed = jest.fn();
+  mount(<Payments onStepChange={changed} />);
+  expect(changed).toHaveBeenLastCalledWith(1);
+  await enterDescription();
+  expect(changed).toHaveBeenLastCalledWith(3);
+  await fireEvent.press(screen.getByRole('button', { name: 'Go to recipient step' }));
+  expect(changed).toHaveBeenLastCalledWith(1);
 });

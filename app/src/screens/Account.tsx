@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
-import { Image, Linking, Pressable, View } from "react-native";
+import { Linking, Pressable, View } from "react-native";
 import { Text } from "../components/Typography";
 import { useSetAtom } from "jotai";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -56,10 +56,6 @@ export function Account() {
   if (!session?.did)
     return (
       <View className="gap-6">
-        <Image
-          source={require("../../assets/icon.png")}
-          className="h-20 w-20 rounded-full"
-        />
         <Heading
           title="Your handle. Your wallet."
           subtitle="Send ETH to the people you know. Your keys stay in MetaMask."
