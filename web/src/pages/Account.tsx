@@ -1,3 +1,4 @@
+import { BalanceAccess } from "../components/BalanceAccess";
 import { AssetBalances } from "../components/AssetBalances";
 import { ContentSkeleton } from "../components/ContentSkeleton";
 import { Link } from "@tanstack/react-router";
@@ -13,7 +14,7 @@ import { useBalances, useProfile, useSession } from "../queries";
 export function Account() {
   const { data: session } = useSession();
   const { data: profile } = useProfile(session?.did);
-  const { data: balances, isFetching: balanceLoading } = useBalances(session);
+  const { data: balances, isFetching: balanceLoading, refetch: refreshBalance } = useBalances(session);
   const [hidden, setHidden] = useState(false);
   const total = session?.did ? accountBalance(session, balances) : null;
   const [amount, detail] = total ? total.split(" across ") : [null, null];
@@ -28,7 +29,8 @@ export function Account() {
         <div className="balance-label">ETH balance <button type="button" onClick={() => setHidden(!hidden)} aria-label={hidden ? "Show balance" : "Hide balance"}>{hidden ? <EyeOff size={17} /> : <Eye size={17} />}</button></div>
         {balanceLoading && !balances && !hidden ? <ContentSkeleton variant="line" label="Loading balance" inverse /> : <p className="balance-amount">{hidden ? "••••••" : amount ?? (session?.did ? "Balance unavailable" : "—")}</p>}
         <div className="balance-bottom"><span className="network-pill"><i />{session?.network.name ?? "Ethereum"}</span><CitrusMark className="balance-seal" /></div>
-        <p className="balance-note">{session?.did ? detail ? `Across ${detail}` : "Unlock or connect your wallet, then refresh its balance" : "Sign in to see your balance"}</p>
+        <p className="balance-note">{session?.did ? detail ? `Across ${detail}` : balanceLoading ? "Loading your balance…" : "Your balance could not be loaded." : "Sign in to see your balance"}</p>
+        {session?.did && <BalanceAccess session={session} balances={balances} available={total !== null} loading={balanceLoading} refresh={refreshBalance} />}
       </div></div>
       <div className="quick-actions">
         <Link to="/wallet" search={{ setup: true }} className="action-tile action-link"><Plus /><span>Link wallet</span></Link>
