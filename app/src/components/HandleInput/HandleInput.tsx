@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Pressable, View } from "react-native";
-import { Text, TextInput } from "./Typography";
+import { Text, TextInput } from "../Typography";
 import { useQuery } from '@tanstack/react-query';
-import type { Actor } from '../types';
+import type { Actor } from '../../types';
 import { useAtomValue } from 'jotai';
-import { busyAtom } from '../state';
-import { Avatar } from './ui';
+import { busyAtom } from '../../state';
+import { Avatar } from '../ui';
 
 export function HandleInput({ value, onChange, onSelect, excludeDid, label = 'Handle' }: {
   value: string; onChange: (value: string) => void;

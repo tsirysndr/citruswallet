@@ -4,10 +4,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { Text, TextInput } from './Typography';
-import { Button } from './ui';
-import { fetchMedia, klipyEnabled, mediaKinds, type MediaKind } from '../klipy';
-import type { PaymentMedia } from '../types';
+import { Text, TextInput } from '../Typography';
+import { Button } from '../ui';
+import { fetchMedia, klipyEnabled, mediaKinds, type MediaKind } from '../../klipy';
+import type { PaymentMedia } from '../../types';
 
 export function MediaPicker({ value, onChange }: { value: PaymentMedia | null; onChange: (media: PaymentMedia | null) => void }) {
   const [open, setOpen] = useState(false), [kind, setKind] = useState<MediaKind>('gifs');
@@ -25,7 +25,7 @@ export function MediaPicker({ value, onChange }: { value: PaymentMedia | null; o
       <Button title="Remove attachment" tone="plain" onPress={() => onChange(null)} />
     </View>}
     <Pressable accessibilityRole="button" accessibilityLabel="Add GIF, sticker, meme or clip" onPress={() => setOpen(true)}
-      className="h-12 w-12 items-center justify-center rounded-lg border border-edge bg-white">
+      className="h-12 w-12 items-center justify-center rounded-lg">
       <Ionicons name="images-outline" size={25} color="#191916" /><Text className="text-xs font-bold">GIF</Text>
     </Pressable>
     <Modal visible={open} animationType="slide" onRequestClose={() => setOpen(false)}>

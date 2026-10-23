@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { Modal, Pressable, ScrollView, View } from "react-native";
-import { Text } from "./Typography";
+import { Text } from "../Typography";
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSetAtom } from "jotai";
-import { request } from "../api";
-import { useAction, useSession } from "../hooks";
-import { type Notice, enablePush, disablePush } from "../notifications";
-import { noticeAtom, reviewAtom, screenAtom } from "../state";
-import { Button, Empty, Heading } from "./ui";
+import { request } from "../../api";
+import { useAction, useSession } from "../../hooks";
+import { type Notice, enablePush, disablePush } from "../../notifications";
+import { noticeAtom, reviewAtom, screenAtom } from "../../state";
+import { Button, Empty, Heading } from "../ui";
 export function NotificationsInbox() {
   const [open, setOpen] = useState(false),
     { data: session } = useSession(),

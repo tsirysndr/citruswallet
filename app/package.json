@@ -8,9 +8,11 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "typecheck": "tsc --noEmit",
-    "test": "node --experimental-strip-types --test tests/*.test.mjs",
+    "test": "bun run test:unit && bun run test:ui",
     "export": "expo export --platform android --platform ios",
-    "test:ui": "jest --runInBand"
+    "test:ui": "jest --runInBand",
+    "test:unit": "node --experimental-strip-types --test tests/*.test.mjs",
+    "test:ui:watch": "jest --watch"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

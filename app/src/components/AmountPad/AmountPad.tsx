@@ -1,7 +1,7 @@
 import { Pressable, View } from "react-native";
-import { Text } from "./Typography";
+import { Text } from "../Typography";
 import { Ionicons } from "@expo/vector-icons";
-import { editAmount } from "../amount";
+import { editAmount } from "../../amount";
 export function AmountPad({
   value,
   onChange,

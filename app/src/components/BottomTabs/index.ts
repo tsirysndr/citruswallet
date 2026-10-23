@@ -1,0 +1,1 @@
+export { BottomTabs } from "./BottomTabs";

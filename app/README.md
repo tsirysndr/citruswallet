@@ -22,6 +22,12 @@ bun run test
 bun run export
 ```
 
+## Component tests
+
+Run `bun run test` from `app/` for all native checks: Node's test runner covers pure amount and wallet-connection logic, and Jest with `jest-expo` and React Native Testing Library covers components. Bun launches these scripts; `bun test` is not the native-component test runner. The web app keeps its existing Vitest setup.
+
+Each component lives in `src/components/ComponentName/` with its implementation, public `index.ts`, and colocated `ComponentName.test.jsx`. The `ui/index.ts` barrel re-exports the shared form and display primitives. Payment-flow integration tests live in `tests/payments.test.jsx`. Use `bun run test:ui:watch` while editing a component, and `tests/render.jsx` for isolated Jotai and TanStack Query providers.
+
 ## Local Android build
 
 ```sh

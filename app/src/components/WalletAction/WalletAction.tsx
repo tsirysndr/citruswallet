@@ -1,5 +1,5 @@
 import { Pressable } from "react-native";
-import { Text } from "./Typography";
+import { Text } from "../Typography";
 import { Feather } from '@expo/vector-icons';
 
 export function WalletAction({ action, onPress }: { action: 'link' | 'send'; onPress: () => void }) {

@@ -1,0 +1,1 @@
+export { NotificationsInbox } from "./NotificationsInbox";
