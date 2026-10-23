@@ -1,0 +1,14 @@
+node_modules/
+.expo/
+dist/
+android/
+ios/
+.env*
+!.env.example
+*.tsbuildinfo
+
+google-services.json
+*service-account*.json
+credentials.json
+*.jks
+*.keystore

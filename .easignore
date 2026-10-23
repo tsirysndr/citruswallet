@@ -1,0 +1,24 @@
+node_modules/
+build/
+web/dist/
+data/
+.env*
+*.sqlite*
+contracts/out/
+contracts/cache/
+contracts/lib/
+broadcast/
+.anvil/
+.DS_Store
+app/.expo/
+app/dist/
+app/android/
+app/ios/
+*.tsbuildinfo
+*service-account*.json
+credentials.json
+*.jks
+*.keystore
+# Include Firebase's Android client configuration in EAS archives only.
+# Service-account private keys must never be placed in this file.
+!app/google-services.json

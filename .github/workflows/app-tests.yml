@@ -1,0 +1,32 @@
+name: Native app checks
+on:
+  push:
+    branches: [main]
+    paths:
+      - "app/**"
+      - "web/src/types.ts"
+      - "web/src/lexicon/**"
+      - ".github/workflows/app-tests.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: app-tests-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.4.3"
+      - run: bun install --frozen-lockfile
+      - run: bun install --frozen-lockfile
+        working-directory: app
+      - run: bun run typecheck && bun run test && bun run export
+        working-directory: app
