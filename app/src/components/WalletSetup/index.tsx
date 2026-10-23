@@ -1,4 +1,7 @@
 import { OnboardingSignIn } from '../OnboardingSignIn';
+import { useAtomValue } from 'jotai';
+import { busyAtom } from '../../state';
+import { requestUnlock } from '../../wallet-unlock';
 import { useState, useSyncExternalStore } from 'react';
 import { Linking, Pressable, View } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
@@ -20,6 +23,7 @@ export function WalletSetup({ onFinished, restart = false }: { onFinished?: () =
   const { data: session } = useSession();
   const vault = useSyncExternalStore(subscribeNativeVault, nativeVaultState);
   const run = useAction(), query = useQueryClient();
+  const busy = useAtomValue(busyAtom);
   const existing = vault !== 'absent' || Boolean(configuredAddress());
   const [kind, setKind] = useState(walletMode());
   const [stage, setStage] = useState<'choice' | 'create' | 'import' | 'link' | 'signin' | 'done'>(() => !restart && existing ? session?.did ? 'link' : 'signin' : 'choice');
@@ -30,6 +34,20 @@ export function WalletSetup({ onFinished, restart = false }: { onFinished?: () =
   const [address, setAddress] = useState(current || linked?.address || '');
   const ready = Boolean(session?.did) && (stage === 'done' || (!editing && Boolean(linked)));
   const signingIn = !session?.did && stage === 'signin';
+  const switchWallet = (value: 'citrus' | 'metamask') => {
+    if (busy || value === kind) return;
+    return run(async () => {
+      await selectWallet(value);
+      setKind(value);
+      const nextAddress = value === 'citrus' ? nativeBalanceAddress() : configuredAddress();
+      setAddress(nextAddress || '');
+      const alreadyLinked = links.some(link => nextAddress && link.address.toLowerCase() === nextAddress.toLowerCase());
+      setEditing(!alreadyLinked);
+      setStage(alreadyLinked ? 'done' : value === 'citrus' && vault === 'absent' ? 'choice' : 'link');
+      await query.invalidateQueries();
+      if (value === 'citrus' && vault === 'locked') await requestUnlock();
+    });
+  };
   const choose = (value: 'citrus' | 'metamask', restore = false) => run(async () => {
     await selectWallet(value); setKind(value); setEditing(true);
     setStage(value === 'metamask' || vault !== 'absent' ? 'link' : restore ? 'import' : 'create');
@@ -47,6 +65,17 @@ export function WalletSetup({ onFinished, restart = false }: { onFinished?: () =
     setStage(session.did ? 'done' : 'signin');
   });
   return <View className="gap-6">
+    {session?.did && !onFinished && <View className="gap-2">
+      <Text className="text-sm font-semibold">Wallet to use</Text>
+      <View accessibilityRole="radiogroup" accessibilityLabel="Wallet to use" className="flex-row gap-1 rounded-xl bg-canvas p-1">
+        {(['citrus', 'metamask'] as const).map(value => <Pressable key={value} accessibilityRole="radio" accessibilityLabel={value === 'citrus' ? 'Citrus Wallet' : 'MetaMask'} accessibilityState={{ checked: kind === value, disabled: busy }} disabled={busy} onPress={() => switchWallet(value)}
+          className={`min-h-12 flex-1 flex-row items-center justify-center gap-2 rounded-lg px-3 py-3 ${kind === value ? 'bg-accent' : ''} ${busy ? 'opacity-60' : ''}`}>
+          {value === 'citrus' ? <WalletIcon size={18} color="#292d26" /> : <Link2 size={18} color="#292d26" />}
+          <Text className={`text-sm font-semibold ${kind === value ? 'text-ink' : 'text-muted'}`}>{value === 'citrus' ? 'Citrus Wallet' : 'MetaMask'}</Text>
+        </Pressable>)}
+      </View>
+      <Text className="text-xs leading-5 text-muted">Choose which wallet to pay with. Switching does not move funds or change your receiving address.</Text>
+    </View>}
     {!ready && <View className="flex-row justify-between"><Text className="text-xs text-muted">WALLET SETUP</Text><Text className="text-xs text-muted">{signingIn ? 'Final step · Sign in' : stage === 'choice' ? '1 · Choose' : stage === 'link' ? 'Connect your account' : '2 · Secure'}</Text></View>}
     {signingIn ? <OnboardingSignIn /> : ready ? <View className="gap-5 rounded-3xl bg-white p-6"><View className="items-center"><WalletIllustration variant="ready" /></View>
       <Text className="text-center text-3xl font-semibold">{session?.did ? 'Your wallet is ready.' : 'A wallet of your own.'}</Text>
