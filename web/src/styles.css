@@ -93,7 +93,7 @@ textarea:focus-visible { outline: none; }
 .sidebar-collapsed .sidebar-profile, .sidebar-collapsed .sidebar-signout { justify-content: center; }
 .sidebar-collapsed .sidebar-signout { width: 100%; }
 .sidebar-network { display: flex; align-items: center; gap: 10px; margin-top: auto; padding: 24px 12px 0; font-size: 12px; color: var(--ink-muted); }
-.sidebar-network-dot { width: 7px; height: 7px; flex-shrink: 0; border-radius: 50%; background: #7f9c49; }
+.sidebar-network-dot { width: 7px; height: 7px; flex-shrink: 0; border-radius: 50%; background: #39e75f; }
 .sidebar-collapsed .app-sidebar { padding-inline: 16px; }
 .sidebar-collapsed .sidebar-brand, .sidebar-collapsed .sidebar-toggle, .sidebar-collapsed .sidebar-link, .sidebar-collapsed .sidebar-network { justify-content: center; }
 .sidebar-collapsed .sidebar-link { padding-inline: 0; }
