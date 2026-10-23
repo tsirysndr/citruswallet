@@ -15,6 +15,7 @@
     "test:ui:watch": "jest --watch"
   },
   "dependencies": {
+    "@citruswallet/amounts": "file:packages/amounts",
     "@expo/vector-icons": "^15.0.3",
     "@metamask/connect-evm": "2.1.1",
     "@react-native-async-storage/async-storage": "2.2.0",
