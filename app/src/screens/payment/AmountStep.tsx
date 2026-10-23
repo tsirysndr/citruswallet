@@ -1,15 +1,13 @@
 import { View } from 'react-native';
 import { AmountPad } from '../../components/AmountPad';
-import { Avatar, Button, Field } from '../../components/ui';
+import { Avatar, Button } from '../../components/ui';
 import { Text } from '../../components/Typography';
 import { amountWei } from '../../amount';
-import { MediaPicker } from '../../components/MediaPicker';
-import type { PaymentMedia, Actor } from '../../types';
+import type { Actor } from '../../types';
 
-export function AmountStep({ actor, handle, amount, description, media, onMedia, onAmount, onDescription, onReview }: {
-  actor: Actor | null; handle: string; amount: string; description: string;
-  media: PaymentMedia | null; onMedia: (media: PaymentMedia | null) => void;
-  onAmount: (value: string) => void; onDescription: (value: string) => void; onReview: () => void;
+export function AmountStep({ actor, handle, amount, onAmount, onContinue }: {
+  actor: Actor | null; handle: string; amount: string;
+  onAmount: (value: string) => void; onContinue: () => void;
 }) {
   return <View className="gap-4">
     <View className="flex-row items-center gap-3 rounded-2xl bg-white p-3">
@@ -19,9 +17,6 @@ export function AmountStep({ actor, handle, amount, description, media, onMedia,
       </View>
     </View>
     <AmountPad value={amount} onChange={onAmount} />
-    <Field label="Description (optional)" value={description} onChangeText={onDescription}
-      maxLength={500} multiline textAlignVertical="top" style={{ minHeight: 104 }} placeholder="What's this payment for?" />
-    <MediaPicker value={media} onChange={onMedia} />
-    <Button title="Review payment" disabled={amountWei(amount) === 0n} onPress={onReview} />
+    <Button title="Continue" disabled={amountWei(amount) === 0n} onPress={onContinue} />
   </View>;
 }

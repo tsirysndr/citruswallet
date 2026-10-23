@@ -2,11 +2,11 @@ import { ThemeSwitch } from "../components/ThemeSwitch";
 import { useEffect, useState } from "react";
 import { Alert, BackHandler, Keyboard, Pressable, Share, View } from "react-native";
 import { Text } from "../components/Typography";
-import { useAtom } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { request } from "../api";
 import { useAction, useSession } from "../hooks";
-import { reviewAtom } from "../state";
+import { busyAtom, reviewAtom } from "../state";
 import { Ionicons } from "@expo/vector-icons";
 import { pending, recover, sendPayment } from "../wallet";
 import type { Actor, Payment, PaymentMedia, Recipient } from "../types";
@@ -14,6 +14,7 @@ import { Avatar, Button, Empty, Field, Heading } from "../components/ui";
 import { Image } from "expo-image";
 import { recordShare } from "../klipy";
 import { RecipientStep } from "./payment/RecipientStep";
+import { DescriptionStep } from "./payment/DescriptionStep";
 import { AmountStep } from "./payment/AmountStep";
 export function Payments({ onStepChange }: { onStepChange?: () => void }) {
   const { data: session } = useSession(),
@@ -28,16 +29,10 @@ export function Payments({ onStepChange }: { onStepChange?: () => void }) {
     [hash, setHash] = useState(""),
     [hasPending, setPending] = useState(false);
   const [media, setMedia] = useState<PaymentMedia | null>(null);
-  const [step, setStep] = useState<1 | 2>(1);
+  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const busy = useAtomValue(busyAtom);
   const [actor, setActor] = useState<Actor | null>(null);
   useEffect(() => { onStepChange?.(); }, [step, id]);
-  useEffect(() => {
-    const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
-      if (!id && step === 2) { setStep(1); return true; }
-      return false;
-    });
-    return () => subscription.remove();
-  }, [step, id]);
   const { data: detail, isFetching } = useQuery({
     queryKey: ["payment", session?.did, id],
     enabled: !!id && !!session?.did,
@@ -53,6 +48,28 @@ export function Payments({ onStepChange }: { onStepChange?: () => void }) {
     if (session?.did)
       void pending(session.did).then((value) => setPending(!!value));
   }, [session?.did, payment]);
+  const currentStep = id ? 4 : step;
+  const canEdit = !!recipient && payment?.senderDid === session?.did &&
+    ["waiting", "ready"].includes(payment?.state || "") && !hasPending;
+  const navigateBack = (target: 1 | 2 | 3) => {
+    if (busy || target >= currentStep || (id && !canEdit)) return;
+    Keyboard.dismiss();
+    if (!id) { setStep(target); return; }
+    void run(async () => {
+      // Invalidate the old intent before editing; never reuse its approved details.
+      await request("cancelPayment", { id });
+      setAck(false); setId(null); setStep(target);
+      await query.invalidateQueries();
+    });
+  };
+  useEffect(() => {
+    const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (currentStep <= 1 || (id && !canEdit)) return false;
+      if (!busy) navigateBack((currentStep - 1) as 1 | 2 | 3);
+      return true;
+    });
+    return () => subscription.remove();
+  }, [currentStep, id, canEdit, busy]);
   if (!session?.did)
     return <Empty text="Sign in from Account to send a payment." />;
   const reload = async () => {
@@ -73,17 +90,26 @@ export function Payments({ onStepChange }: { onStepChange?: () => void }) {
   return (
     <View className="gap-5">
       <View className="flex-row items-center justify-between">
-        {!id && step === 2 ? <Pressable accessibilityRole="button" accessibilityLabel="Back to recipient"
-          onPress={() => setStep(1)} className="min-h-12 flex-row items-center gap-2 pr-4">
+        {currentStep > 1 && (!id || canEdit) ? <Pressable accessibilityRole="button" accessibilityLabel={`Back to ${currentStep === 2 ? 'recipient' : currentStep === 3 ? 'amount' : 'description'}`}
+          disabled={busy} onPress={() => navigateBack((currentStep - 1) as 1 | 2 | 3)} className="min-h-12 flex-row items-center gap-2 pr-4">
           <Ionicons name="arrow-back" size={24} color="#191916" /><Text className="text-base">Back</Text>
         </Pressable> : <Text className="text-base font-medium">Send ETH</Text>}
-        <Text accessibilityLabel={`Step ${id ? 3 : step} of 3`} className="text-sm text-muted">Step {id ? 3 : step} of 3</Text>
+        <Text accessibilityLabel={`Step ${currentStep} of 4`} className="text-sm text-muted">Step {currentStep} of 4</Text>
       </View>
       <View className="flex-row gap-2">
-        {[1, 2, 3].map(value => <View key={value} className={`h-1 flex-1 rounded-full ${value <= (id ? 3 : step) ? 'bg-ink' : 'bg-edge'}`} />)}
+        {['Recipient', 'Amount', 'Description', 'Review'].map((label, index) => {
+          const value = index + 1;
+          const enabled = value < currentStep && (!id || canEdit) && !busy;
+          return <Pressable key={label} accessibilityRole="button" accessibilityLabel={`Go to ${label.toLowerCase()} step`}
+            accessibilityState={{ disabled: !enabled, selected: value === currentStep }} disabled={!enabled}
+            onPress={() => navigateBack(value as 1 | 2 | 3)} className="min-h-12 flex-1 justify-center gap-2">
+            <View className={`h-1 rounded-full ${value <= currentStep ? 'bg-ink' : 'bg-edge'}`} />
+            <Text numberOfLines={1} adjustsFontSizeToFit className={`text-xs ${value === currentStep ? 'font-bold text-ink' : 'text-muted'}`}>{label}</Text>
+          </Pressable>;
+        })}
       </View>
-      <Heading title={id ? "Review payment" : step === 1 ? "Who are you paying?" : "How much?"}
-        subtitle={id ? "Check every detail before opening MetaMask." : step === 1 ? "Find someone by their AT Protocol handle." : "Enter an amount and add an optional note."} />
+      <Heading title={id ? "Review payment" : step === 1 ? "Who are you paying?" : step === 2 ? "How much?" : "Add a note"}
+        subtitle={id ? "Check every detail before opening MetaMask." : step === 1 ? "Find someone by their AT Protocol handle." : step === 2 ? "Enter the amount you want to send." : "Make it personal with a message or GIF. You can leave this blank."} />
       {hasPending && (
         <View className="gap-3 rounded-2xl bg-peach p-4">
           <Text className="text-base">
@@ -111,8 +137,9 @@ export function Payments({ onStepChange }: { onStepChange?: () => void }) {
         step === 1 ? <RecipientStep handle={handle} actor={actor} ownDid={session.did}
           onChange={value => { setHandle(value); setActor(null); setRecipient(null); }}
           onSelect={setActor} onContinue={resolve} /> :
-        <AmountStep actor={actor} handle={handle} amount={amount} description={description}
-          onAmount={setAmount} onDescription={setDescription} media={media} onMedia={setMedia}
+        step === 2 ? <AmountStep actor={actor} handle={handle} amount={amount}
+          onAmount={setAmount} onContinue={() => setStep(3)} /> :
+        <DescriptionStep description={description} onDescription={setDescription} media={media} onMedia={setMedia}
           onReview={() => run(async () => {
             if (!recipient || recipient.did === session.did) throw new Error("Choose a different recipient.");
             const { payment } = await request<{ payment: Payment }>("createPayment", {
@@ -239,12 +266,7 @@ export function Payments({ onStepChange }: { onStepChange?: () => void }) {
                     />
                   </>
                 )}
-              {recipient && payment.senderDid === session.did && ["waiting", "ready"].includes(payment.state) && (
-                <Button title="Edit details" tone="plain" onPress={() => run(async () => {
-                  await request("cancelPayment", { id: payment.id });
-                  setId(null); setStep(2); await query.invalidateQueries();
-                })} />
-              )}
+              {canEdit && <Button title="Edit details" tone="plain" onPress={() => navigateBack(3)} />}
               <Button
                 title="Refresh status"
                 tone="plain"
