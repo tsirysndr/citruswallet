@@ -8,9 +8,9 @@ import { useAtomValue } from 'jotai';
 import { busyAtom } from '../../state';
 import { Avatar } from '../ui';
 
-export function HandleInput({ value, onChange, onSelect, excludeDid, label = 'Handle' }: {
+export function HandleInput({ value, onChange, onSelect, excludeDid, label = 'Handle', onSubmit, hideLabel = false }: {
   value: string; onChange: (value: string) => void;
-  onSelect?: (actor: Actor) => void; excludeDid?: string; label?: string;
+  onSelect?: (actor: Actor) => void; excludeDid?: string; label?: string; onSubmit?: () => void; hideLabel?: boolean;
 }) {
   const busy = useAtomValue(busyAtom);
   const [focused, setFocused] = useState(false);
@@ -40,13 +40,13 @@ export function HandleInput({ value, onChange, onSelect, excludeDid, label = 'Ha
   const actors = data?.filter(actor => actor.did !== excludeDid) || [];
   const show = focused && normalized === search && normalized !== selected && normalized.length >= 2 && !normalized.startsWith('did:');
   return <View className="gap-2">
-    <Text className="text-sm text-muted">{label}</Text>
+    {!hideLabel && <Text className="text-sm text-muted">{label}</Text>}
     <View className="flex-row items-center rounded-lg border border-edge bg-white px-3">
       <Text accessible={false} className="mr-2 text-2xl text-muted">@</Text>
       <TextInput accessibilityLabel={label} placeholder="you.bsky.social" placeholderTextColor="#696b63"
         editable={!busy} value={value} onChangeText={text => { setSelected(''); onChange(text.replace(/^@+/, '')); }}
         autoCapitalize="none" autoCorrect={false} autoComplete="username" textContentType="username"
-        keyboardType="email-address" returnKeyType="done" maxLength={253}
+        onSubmitEditing={onSubmit} blurOnSubmit={!onSubmit} keyboardType="email-address" returnKeyType="done" maxLength={253}
         onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
         className="min-h-12 flex-1 py-3 text-base text-ink" />
     </View>

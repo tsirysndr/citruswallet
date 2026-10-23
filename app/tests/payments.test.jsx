@@ -26,7 +26,7 @@ beforeEach(() => {
 });
 async function enterAmount() {
   await fireEvent.changeText(screen.getByLabelText('Recipient handle'), alice.handle);
-  await fireEvent.press(screen.getByRole('button', { name: 'Continue' }));
+  await fireEvent(screen.getByLabelText('Recipient handle'), 'submitEditing');
   await waitFor(() => expect(screen.getByLabelText('Step 2 of 4')).toBeTruthy());
   await fireEvent.press(screen.getByRole('button', { name: '1' }));
 }
@@ -54,7 +54,7 @@ test('amount and description have separate screens and tapping earlier steps pre
   await fireEvent.press(screen.getByRole('button', { name: 'Go to amount step' }));
   expect(screen.getByLabelText('Amount 1 ETH')).toBeTruthy();
   await fireEvent.press(screen.getByRole('button', { name: 'Back to recipient' }));
-  await fireEvent.press(screen.getByRole('button', { name: 'Continue' }));
+  await fireEvent(screen.getByLabelText('Recipient handle'), 'submitEditing');
   await waitFor(() => expect(screen.getByLabelText('Step 2 of 4')).toBeTruthy());
   await fireEvent.press(screen.getByRole('button', { name: 'Continue' }));
   expect(screen.getByLabelText('Description (optional)').props.value).toBe('Lunch');
@@ -129,4 +129,30 @@ test('copy and share use the invitationUrl response without rotating the same li
   expect(share).toHaveBeenCalledWith({ message: url });
   expect(request.mock.calls.filter(([method]) => method === 'createInvitation')).toHaveLength(1);
   copy.mockRestore(); share.mockRestore();
+});
+
+test('selecting a recipient advances immediately using their DID without a continue button', async () => {
+  mount(<Payments />);
+  expect(screen.queryByRole('button', { name: 'Continue' })).toBeNull();
+  await fireEvent(screen.getByLabelText('Recipient handle'), 'focus');
+  await fireEvent.changeText(screen.getByLabelText('Recipient handle'), 'alice');
+  await waitFor(() => expect(screen.getByRole('button', { name: `Use @${alice.handle}` })).toBeTruthy());
+  await fireEvent.press(screen.getByRole('button', { name: `Use @${alice.handle}` }));
+  await waitFor(() => expect(screen.getByLabelText('Step 2 of 4')).toBeTruthy());
+  expect(request).toHaveBeenCalledWith('resolveRecipient', { identifier: alice.did });
+});
+test('keyboard mode hides recipient headings and step navigation', () => {
+  mount(<Payments keyboardVisible />);
+  expect(screen.getByLabelText('Recipient handle')).toBeTruthy();
+  expect(screen.queryByText('Who are you paying?')).toBeNull();
+  expect(screen.queryByLabelText('Step 1 of 4')).toBeNull();
+  expect(screen.queryByRole('button', { name: 'Go to amount step' })).toBeNull();
+});
+test('failed recipient resolution stays on recipient selection', async () => {
+  request.mockRejectedValue(new Error('Recipient unavailable'));
+  mount(<Payments />);
+  await fireEvent.changeText(screen.getByLabelText('Recipient handle'), alice.handle);
+  await fireEvent(screen.getByLabelText('Recipient handle'), 'submitEditing');
+  expect(mockActionError).toHaveBeenCalled();
+  expect(screen.getByLabelText('Step 1 of 4')).toBeTruthy();
 });

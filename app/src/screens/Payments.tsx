@@ -21,7 +21,7 @@ import { recordShare } from "../klipy";
 import { RecipientStep } from "./payment/RecipientStep";
 import { DescriptionStep } from "./payment/DescriptionStep";
 import { AmountStep } from "./payment/AmountStep";
-export function Payments({ onStepChange }: { onStepChange?: (step: number) => void }) {
+export function Payments({ onStepChange, keyboardVisible = false }: { onStepChange?: (step: number) => void; keyboardVisible?: boolean }) {
   const { data: session } = useSession(),
     query = useQueryClient(),
     run = useAction();
@@ -95,19 +95,22 @@ export function Payments({ onStepChange }: { onStepChange?: (step: number) => vo
     await query.invalidateQueries();
     setPending(!!(await pending(session.did!)));
   };
-  const resolve = () =>
+  const resolve = (selected?: Actor) =>
     run(async () => {
       const result = await request<Recipient>("resolveRecipient", {
-        identifier: actor?.did || handle,
+        identifier: selected?.did || actor?.did || handle,
       });
       if (result.did === session.did)
         throw new Error("You cannot send ETH to yourself.");
+      if (selected) { setActor(selected); setHandle(selected.handle); }
       setRecipient(result);
       Keyboard.dismiss();
       setStep(2);
     });
+  const compact = keyboardVisible && currentStep === 1;
   return (
     <View className="gap-5">
+      {!compact && <>
       <View className="flex-row items-center justify-between">
         {currentStep > 1 ? <Pressable accessibilityRole="button" accessibilityLabel={`Back to ${id && !canEdit ? 'activity' : currentStep === 2 ? 'recipient' : currentStep === 3 ? 'amount' : 'description'}`}
           disabled={busy} onPress={() => id && !canEdit ? go('Activity') : navigateBack((currentStep - 1) as 1 | 2 | 3)} className="min-h-12 flex-row items-center gap-2 pr-4">
@@ -129,7 +132,8 @@ export function Payments({ onStepChange }: { onStepChange?: (step: number) => vo
       </View>
       <Heading title={id ? "Review payment" : step === 1 ? "Who are you paying?" : step === 2 ? "How much?" : "Add a note"}
         subtitle={id ? "Check every detail before approving payment." : step === 1 ? "Find someone by their Atmosphere account." : step === 2 ? "Enter the amount you want to send." : "Make it personal with a message or GIF. You can leave this blank."} />
-      {hasPending && (
+      </>}
+      {hasPending && !compact && (
         <View className="gap-3 rounded-2xl bg-peach p-4">
           <Text className="text-base">
             A previous wallet request needs recovery. Check your wallet before
@@ -153,9 +157,9 @@ export function Payments({ onStepChange }: { onStepChange?: (step: number) => vo
         </View>
       )}
       {!id ? (
-        step === 1 ? <RecipientStep handle={handle} actor={actor} ownDid={session.did}
+        step === 1 ? <RecipientStep handle={handle} ownDid={session.did} compact={compact}
           onChange={value => { setHandle(value); setActor(null); setRecipient(null); }}
-          onSelect={setActor} onContinue={resolve} /> :
+          onSelect={selected => { if (!busy) void resolve(selected); }} onSubmit={() => { if (!busy && handle.trim()) void resolve(); }} /> :
         step === 2 ? <AmountStep actor={actor} handle={recipient?.handle || handle} amount={amount}
           decimals={asset.decimals} symbol={asset.symbol} assetPicker={<AssetPicker session={session} value={asset} onChange={value => { setSelectedAsset(value); setAmount("0"); }} />}
           onAmount={setAmount} onContinue={() => setStep(3)} /> :
