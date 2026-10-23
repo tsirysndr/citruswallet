@@ -1,7 +1,7 @@
 /* Offline support is deliberately limited to public, static fallback assets.
  * Never cache API responses, OAuth, navigations, payment data, or avatar images.
  * Updates wait for existing windows to close; never reload an active payment. */
-const CACHE = 'citrus-offline-v1';
+const CACHE = 'citrus-offline-v2';
 const PUBLIC_ASSETS = ['/offline.html', '/offline.css', '/favicon.svg', '/icons/icon-192.png', '/icons/icon-512.png', '/fonts/roboto-mono-latin.woff2'];
 const SCREENS = new Set(['/', '/wallet', '/payments', '/activity', '/privacy', '/terms']);
 self.addEventListener('install', event => {
