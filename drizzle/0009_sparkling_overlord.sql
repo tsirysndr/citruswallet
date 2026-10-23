@@ -1,0 +1,2 @@
+CREATE INDEX `notifications_recent` ON `notifications` (`created_at`);--> statement-breakpoint
+CREATE INDEX `payments_pending_verification` ON `payments` (`chain_id`,`created_at`) WHERE "state" IN ('submitted','confirming');

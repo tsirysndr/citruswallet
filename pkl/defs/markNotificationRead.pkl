@@ -1,0 +1,32 @@
+lexicon = 1
+id = "app.citruswallet.markNotificationRead"
+defs = new Dynamic {
+  `main` = new Dynamic {
+    `type` = "procedure"
+    `input` = new Dynamic {
+      `encoding` = "application/json"
+      `schema` = new Dynamic {
+        `type` = "object"
+        `required` = List("id")
+        `properties` = new Dynamic {
+          `id` = new Dynamic {
+            `type` = "string"
+            `maxLength` = 256
+          }
+        }
+      }
+    }
+    `output` = new Dynamic {
+      `encoding` = "application/json"
+      `schema` = new Dynamic {
+        `type` = "object"
+        `required` = List("ok")
+        `properties` = new Dynamic {
+          `ok` = new Dynamic {
+            `type` = "boolean"
+          }
+        }
+      }
+    }
+  }
+}

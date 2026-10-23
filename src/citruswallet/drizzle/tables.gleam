@@ -3,6 +3,7 @@ import citruswallet/drizzle/schema/address_repository_records
 import citruswallet/drizzle/schema/challenges
 import citruswallet/drizzle/schema/kv
 import citruswallet/drizzle/schema/links
+import citruswallet/drizzle/schema/notifications as notification_schema
 import citruswallet/drizzle/schema/payments
 import citruswallet/drizzle/schema/user_profiles
 import citruswallet/ffi/js.{type Js}
@@ -30,4 +31,16 @@ pub fn user_profiles() -> Js {
 
 pub fn address_repository_records() -> Js {
   underlying(address_repository_records.define(decode.success(Nil)))
+}
+
+pub fn notifications() -> Js {
+  underlying(notification_schema.notifications())
+}
+
+pub fn push_devices() -> Js {
+  underlying(notification_schema.push_devices())
+}
+
+pub fn push_deliveries() -> Js {
+  underlying(notification_schema.push_deliveries())
 }

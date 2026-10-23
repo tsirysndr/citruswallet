@@ -11,6 +11,7 @@ import citruswallet/network
 import citruswallet/oauth
 import citruswallet/profiles
 import citruswallet/store
+import citruswallet/xrpc/native
 import gleam/dynamic/decode
 import gleam/javascript/promise.{type Promise}
 import gleam/json
@@ -181,7 +182,15 @@ pub fn finish_login(
     server.settings.oauth,
     callback.did,
   ))
-  context.done(Ok(Elsewhere("/")))
+  context.done(
+    Ok(
+      Elsewhere(native.complete(
+        server.settings.store.client,
+        state,
+        callback.did,
+      )),
+    ),
+  )
 }
 
 pub fn expired_login() -> HttpError {
@@ -209,6 +218,8 @@ pub fn logout(
       None -> Nil
     }
     store.delete(server.settings.store, namespace: "browser", key: key)
+    store.delete(server.settings.store, namespace: "native-session", key: key)
+    native.revoke_devices(server.settings.store.client, key)
     store.forget_challenges(server.settings.store, key)
     hono.clear(ctx, server.cookie_name, server.cookie)
     Payload(200, json.object([#("ok", json.bool(True))]))

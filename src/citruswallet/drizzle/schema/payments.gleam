@@ -94,6 +94,11 @@ pub fn define(decoder: Decoder(row)) -> Payments(row) {
           desc("created_at"),
           desc("id"),
         ]),
+        index("payments_pending_verification", [
+          asc("chain_id"),
+          asc("created_at"),
+        ])
+          |> only_where("\"state\" IN ('submitted','confirming')"),
         index("payments_prepared_expiry", [asc("expires_at")])
           |> only_where("\"state\" = 'prepared'"),
         unique_index("reserved_payment_nonce", [

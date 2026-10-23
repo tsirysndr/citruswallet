@@ -5,6 +5,9 @@ import {
   address_repository_records,
   challenges,
   kv,
+  notifications,
+  push_devices,
+  push_deliveries,
   links,
   payments,
   user_profiles,
@@ -18,3 +21,7 @@ export const paymentsTable = payments();
 export const userProfilesTable = user_profiles();
 
 export const addressRepositoryRecordsTable = address_repository_records();
+
+export const notificationsTable = notifications();
+export const pushDevicesTable = push_devices();
+export const pushDeliveriesTable = push_deliveries();

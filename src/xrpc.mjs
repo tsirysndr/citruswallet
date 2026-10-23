@@ -37,7 +37,7 @@ export function registerXrpc(app, nsid, handler) {
     }
     ctx.set('xrpcValues', values);
     const response = await handler(ctx);
-    if (response.ok) {
+    if (response.ok && def.output?.encoding === 'application/json') {
       lexicons.assertValidXrpcOutput(nsid, await response.clone().json());
     }
     return response;

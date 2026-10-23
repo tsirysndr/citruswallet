@@ -668,6 +668,44 @@ export const schemaDict = {
       },
     },
   },
+  AppCitruswalletExchangeNativeSession: {
+    lexicon: 1,
+    id: 'app.citruswallet.exchangeNativeSession',
+    defs: {
+      main: {
+        type: 'procedure',
+        input: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['code', 'verifier'],
+            properties: {
+              code: {
+                type: 'string',
+                maxLength: 64,
+              },
+              verifier: {
+                type: 'string',
+                maxLength: 64,
+              },
+            },
+          },
+        },
+        output: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['token'],
+            properties: {
+              token: {
+                type: 'string',
+              },
+            },
+          },
+        },
+      },
+    },
+  },
   AppCitruswalletGetAddresses: {
     lexicon: 1,
     id: 'app.citruswallet.getAddresses',
@@ -796,6 +834,55 @@ export const schemaDict = {
       },
     },
   },
+  AppCitruswalletListNotifications: {
+    lexicon: 1,
+    id: 'app.citruswallet.listNotifications',
+    defs: {
+      main: {
+        type: 'query',
+        output: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['notifications', 'unread'],
+            properties: {
+              notifications: {
+                type: 'array',
+                items: {
+                  type: 'ref',
+                  ref: 'lex:app.citruswallet.listNotifications#notification',
+                },
+              },
+              unread: {
+                type: 'integer',
+              },
+            },
+          },
+        },
+      },
+      notification: {
+        type: 'object',
+        required: ['id', 'paymentId', 'createdAt', 'read'],
+        properties: {
+          id: {
+            type: 'string',
+            maxLength: 256,
+          },
+          paymentId: {
+            type: 'string',
+            maxLength: 256,
+          },
+          createdAt: {
+            type: 'string',
+            maxLength: 256,
+          },
+          read: {
+            type: 'boolean',
+          },
+        },
+      },
+    },
+  },
   AppCitruswalletListPayments: {
     lexicon: 1,
     id: 'app.citruswallet.listPayments',
@@ -913,6 +1000,40 @@ export const schemaDict = {
       },
     },
   },
+  AppCitruswalletMarkNotificationRead: {
+    lexicon: 1,
+    id: 'app.citruswallet.markNotificationRead',
+    defs: {
+      main: {
+        type: 'procedure',
+        input: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['id'],
+            properties: {
+              id: {
+                type: 'string',
+                maxLength: 256,
+              },
+            },
+          },
+        },
+        output: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['ok'],
+            properties: {
+              ok: {
+                type: 'boolean',
+              },
+            },
+          },
+        },
+      },
+    },
+  },
   AppCitruswalletPreparePayment: {
     lexicon: 1,
     id: 'app.citruswallet.preparePayment',
@@ -949,6 +1070,44 @@ export const schemaDict = {
           schema: {
             type: 'ref',
             ref: 'lex:app.citruswallet.defs#attempt',
+          },
+        },
+      },
+    },
+  },
+  AppCitruswalletRegisterPushToken: {
+    lexicon: 1,
+    id: 'app.citruswallet.registerPushToken',
+    defs: {
+      main: {
+        type: 'procedure',
+        input: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['token', 'platform'],
+            properties: {
+              token: {
+                type: 'string',
+                maxLength: 256,
+              },
+              platform: {
+                type: 'string',
+                enum: ['android', 'ios'],
+              },
+            },
+          },
+        },
+        output: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['ok'],
+            properties: {
+              ok: {
+                type: 'boolean',
+              },
+            },
           },
         },
       },
@@ -1122,6 +1281,27 @@ export const schemaDict = {
       },
     },
   },
+  AppCitruswalletSubscribeNotifications: {
+    lexicon: 1,
+    id: 'app.citruswallet.subscribeNotifications',
+    defs: {
+      main: {
+        type: 'query',
+        parameters: {
+          type: 'params',
+          properties: {
+            cursor: {
+              type: 'string',
+              maxLength: 256,
+            },
+          },
+        },
+        output: {
+          encoding: 'text/event-stream',
+        },
+      },
+    },
+  },
   AppCitruswalletSyncAddresses: {
     lexicon: 1,
     id: 'app.citruswallet.syncAddresses',
@@ -1181,6 +1361,40 @@ export const schemaDict = {
       },
     },
   },
+  AppCitruswalletUnregisterPushToken: {
+    lexicon: 1,
+    id: 'app.citruswallet.unregisterPushToken',
+    defs: {
+      main: {
+        type: 'procedure',
+        input: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['token'],
+            properties: {
+              token: {
+                type: 'string',
+                maxLength: 256,
+              },
+            },
+          },
+        },
+        output: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['ok'],
+            properties: {
+              ok: {
+                type: 'boolean',
+              },
+            },
+          },
+        },
+      },
+    },
+  },
   AppCitruswalletVerifyChallenge: {
     lexicon: 1,
     id: 'app.citruswallet.verifyChallenge',
@@ -1227,20 +1441,28 @@ export const ids = {
   AppCitruswalletCreatePayment: 'app.citruswallet.createPayment',
   AppCitruswalletDefs: 'app.citruswallet.defs',
   AppCitruswalletDeletePayment: 'app.citruswallet.deletePayment',
+  AppCitruswalletExchangeNativeSession:
+    'app.citruswallet.exchangeNativeSession',
   AppCitruswalletGetAddresses: 'app.citruswallet.getAddresses',
   AppCitruswalletGetInvitation: 'app.citruswallet.getInvitation',
   AppCitruswalletGetPayment: 'app.citruswallet.getPayment',
   AppCitruswalletGetProfile: 'app.citruswallet.getProfile',
   AppCitruswalletGetSession: 'app.citruswallet.getSession',
+  AppCitruswalletListNotifications: 'app.citruswallet.listNotifications',
   AppCitruswalletListPayments: 'app.citruswallet.listPayments',
   AppCitruswalletLogout: 'app.citruswallet.logout',
+  AppCitruswalletMarkNotificationRead: 'app.citruswallet.markNotificationRead',
   AppCitruswalletPreparePayment: 'app.citruswallet.preparePayment',
+  AppCitruswalletRegisterPushToken: 'app.citruswallet.registerPushToken',
   AppCitruswalletResolveRecipient: 'app.citruswallet.resolveRecipient',
   AppCitruswalletSearchActors: 'app.citruswallet.searchActors',
   AppCitruswalletSetDefaultAddress: 'app.citruswallet.setDefaultAddress',
   AppCitruswalletStartLogin: 'app.citruswallet.startLogin',
   AppCitruswalletSubmitPayment: 'app.citruswallet.submitPayment',
+  AppCitruswalletSubscribeNotifications:
+    'app.citruswallet.subscribeNotifications',
   AppCitruswalletSyncAddresses: 'app.citruswallet.syncAddresses',
   AppCitruswalletUnlinkAddress: 'app.citruswallet.unlinkAddress',
+  AppCitruswalletUnregisterPushToken: 'app.citruswallet.unregisterPushToken',
   AppCitruswalletVerifyChallenge: 'app.citruswallet.verifyChallenge',
 }

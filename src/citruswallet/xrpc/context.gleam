@@ -218,7 +218,10 @@ pub fn same_origin(server: Server) -> hono.Middleware {
 pub fn csrf(server: Server) -> hono.Middleware {
   hono.gate(fn(ctx) {
     promise.resolve(
-      case list.contains(["GET", "HEAD", "OPTIONS"], hono.method(ctx)) {
+      case
+        list.contains(["GET", "HEAD", "OPTIONS"], hono.method(ctx))
+        || hono.path(ctx) == "/xrpc/app.citruswallet.exchangeNativeSession"
+      {
         True -> None
         False ->
           case verified(server, ctx) {
@@ -231,6 +234,11 @@ pub fn csrf(server: Server) -> hono.Middleware {
 }
 
 pub fn verified(server: Server, ctx: Context) -> Result(Nil, HttpError) {
+  use <- bool.guard(
+    when: hono.header(ctx, "authorization") != None,
+    return: browser(server, ctx, create: False) |> result.map(fn(_) { Nil }),
+  )
+
   use <- bool.guard(
     when: hono.header(ctx, "origin") != Some(server.settings.origin),
     return: Error(error.forbidden("Invalid request origin.")),
@@ -251,8 +259,20 @@ pub fn browser(
   ctx: Context,
   create create: Bool,
 ) -> Result(#(String, Session), HttpError) {
+  let bearer = hono.header(ctx, "authorization")
+  let token = case bearer {
+    Some(header) -> string.drop_start(header, 7) |> Some
+    None -> hono.cookie(ctx, server.cookie_name)
+  }
+  use <- bool.guard(
+    when: case bearer {
+      Some(header) -> !string.starts_with(header, "Bearer ")
+      None -> False
+    },
+    return: Error(error.unauthorized("Invalid app session.")),
+  )
   let existing =
-    hono.cookie(ctx, server.cookie_name)
+    token
     |> option.then(fn(token) {
       case validate.is_hex(token, length: 64) {
         True -> Some(node.sha256(token))
@@ -264,14 +284,17 @@ pub fn browser(
     |> option.then(fn(key) {
       store.get(
         server.settings.store,
-        namespace: "browser",
+        namespace: case bearer {
+          Some(_) -> "native-session"
+          None -> "browser"
+        },
         key: key,
         now: node.now(),
       )
       |> option.then(decode_session)
       |> option.map(fn(session) { #(key, session) })
     })
-  case found, create {
+  case found, create && bearer == None {
     Some(session), _ -> Ok(session)
     None, True -> Ok(open_session(server, ctx, None))
     None, False ->

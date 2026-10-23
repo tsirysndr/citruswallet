@@ -57,6 +57,20 @@
       "when": 1792747816086,
       "tag": "0007_activity_fts",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1792754344705,
+      "tag": "0008_open_micromacro",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1792755455920,
+      "tag": "0009_sparkling_overlord",
+      "breakpoints": true
     }
   ]
 }

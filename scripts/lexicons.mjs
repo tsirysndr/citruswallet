@@ -1,3 +1,4 @@
+import { Lexicons } from '@atproto/lexicon';
 import { normalize } from './normalize-lexicon.mjs';
 import { readdirSync, mkdirSync, writeFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
@@ -11,6 +12,8 @@ const docs = files.map(file => {
   writeFileSync(`lexicons/${doc.id}.json`, JSON.stringify(doc, null, 2) + '\n');
   return doc;
 });
+// Validate definitions before invoking lex-cli, which may skip invalid files.
+new Lexicons(docs);
 execFileSync('node_modules/.bin/lex', ['gen-api', 'web/src/lexicon', '--yes', ...docs.map(d => `lexicons/${d.id}.json`)], { stdio: 'inherit' });
 normalize('web/src/lexicon');
 mkdirSync('src/generated', { recursive: true });

@@ -1,0 +1,47 @@
+lexicon = 1
+id = "app.citruswallet.listNotifications"
+defs = new Dynamic {
+  `main` = new Dynamic {
+    `type` = "query"
+    `output` = new Dynamic {
+      `encoding` = "application/json"
+      `schema` = new Dynamic {
+        `type` = "object"
+        `required` = List("notifications", "unread")
+        `properties` = new Dynamic {
+          `notifications` = new Dynamic {
+            `type` = "array"
+            `items` = new Dynamic {
+              `type` = "ref"
+              `ref` = "#notification"
+            }
+          }
+          `unread` = new Dynamic {
+            `type` = "integer"
+          }
+        }
+      }
+    }
+  }
+  `notification` = new Dynamic {
+    `type` = "object"
+    `required` = List("id", "paymentId", "createdAt", "read")
+    `properties` = new Dynamic {
+      `id` = new Dynamic {
+        `type` = "string"
+        `maxLength` = 256
+      }
+      `paymentId` = new Dynamic {
+        `type` = "string"
+        `maxLength` = 256
+      }
+      `createdAt` = new Dynamic {
+        `type` = "string"
+        `maxLength` = 256
+      }
+      `read` = new Dynamic {
+        `type` = "boolean"
+      }
+    }
+  }
+}

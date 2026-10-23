@@ -12,6 +12,8 @@ pub const create_payment = "app.citruswallet.createPayment"
 
 pub const delete_payment = "app.citruswallet.deletePayment"
 
+pub const exchange_native_session = "app.citruswallet.exchangeNativeSession"
+
 pub const get_addresses = "app.citruswallet.getAddresses"
 
 pub const get_invitation = "app.citruswallet.getInvitation"
@@ -22,11 +24,17 @@ pub const get_profile = "app.citruswallet.getProfile"
 
 pub const get_session = "app.citruswallet.getSession"
 
+pub const list_notifications = "app.citruswallet.listNotifications"
+
 pub const list_payments = "app.citruswallet.listPayments"
 
 pub const logout = "app.citruswallet.logout"
 
+pub const mark_notification_read = "app.citruswallet.markNotificationRead"
+
 pub const prepare_payment = "app.citruswallet.preparePayment"
+
+pub const register_push_token = "app.citruswallet.registerPushToken"
 
 pub const resolve_recipient = "app.citruswallet.resolveRecipient"
 
@@ -38,8 +46,12 @@ pub const start_login = "app.citruswallet.startLogin"
 
 pub const submit_payment = "app.citruswallet.submitPayment"
 
+pub const subscribe_notifications = "app.citruswallet.subscribeNotifications"
+
 pub const sync_addresses = "app.citruswallet.syncAddresses"
 
 pub const unlink_address = "app.citruswallet.unlinkAddress"
+
+pub const unregister_push_token = "app.citruswallet.unregisterPushToken"
 
 pub const verify_challenge = "app.citruswallet.verifyChallenge"

@@ -1,0 +1,19 @@
+lexicon = 1
+id = "app.citruswallet.subscribeNotifications"
+defs = new Dynamic {
+  `main` = new Dynamic {
+    `type` = "query"
+    `parameters` = new Dynamic {
+      `type` = "params"
+      `properties` = new Dynamic {
+        `cursor` = new Dynamic {
+          `type` = "string"
+          `maxLength` = 256
+        }
+      }
+    }
+    `output` = new Dynamic {
+      `encoding` = "text/event-stream"
+    }
+  }
+}

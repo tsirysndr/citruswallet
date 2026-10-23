@@ -6,10 +6,13 @@ import citruswallet/ffi/node
 import citruswallet/ffi/url
 import citruswallet/identity
 import citruswallet/jetstream
+import citruswallet/linking
 import citruswallet/network.{type Network}
 import citruswallet/oauth
+import citruswallet/payments
 import citruswallet/store.{type Store}
 import citruswallet/xrpc/context
+import citruswallet/xrpc/notification
 import gleam/int
 import gleam/javascript/promise
 import gleam/option.{type Option, None, Some}
@@ -90,8 +93,24 @@ fn start() -> Result(Nil, String) {
         <> ")",
       )
     })
+  let notification_payments =
+    payments.new(
+      store,
+      linking.new(store, origin, network.chain_id),
+      identity.resolver(),
+      origin,
+      network.chain_id,
+      chain,
+    )
+  let stop_notifications =
+    notification.start(
+      store.client,
+      fn(id, did) { payments.get(notification_payments, did, Some(id)) },
+      network.chain_id,
+    )
   let cleanup = node.every(60_000, fn() { store.cleanup(store, node.now()) })
   let stop = fn() {
+    stop_notifications()
     node.cancel(cleanup)
     let _ =
       promise.map(jetstream.stop(listener), fn(_) {

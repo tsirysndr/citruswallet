@@ -4,6 +4,7 @@ import citruswallet/ffi/hono
 import citruswallet/ffi/node
 import citruswallet/xrpc/auth
 import citruswallet/xrpc/context
+import citruswallet/xrpc/native
 import citruswallet/xrpc/register
 import gleam/javascript/promise
 
@@ -43,6 +44,7 @@ pub fn build(settings: Settings) -> hono.App {
   hono.use_(app, context.same_origin(server))
   hono.use_on(app, guarded, context.csrf(server))
 
+  hono.get(app, "/auth/native/start", context.serve(server, native.start))
   register.register(app, server)
   hono.get(
     app,

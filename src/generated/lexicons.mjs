@@ -30,7 +30,7 @@ export const schemas = [
           "encoding": "application/json",
           "schema": {
             "type": "ref",
-            "ref": "app.citruswallet.defs#paymentResult"
+            "ref": "lex:app.citruswallet.defs#paymentResult"
           }
         }
       }
@@ -106,7 +106,7 @@ export const schemas = [
           "encoding": "application/json",
           "schema": {
             "type": "ref",
-            "ref": "app.citruswallet.defs#paymentResult"
+            "ref": "lex:app.citruswallet.defs#paymentResult"
           }
         }
       }
@@ -141,7 +141,7 @@ export const schemas = [
           "encoding": "application/json",
           "schema": {
             "type": "ref",
-            "ref": "app.citruswallet.defs#challenge"
+            "ref": "lex:app.citruswallet.defs#challenge"
           }
         }
       }
@@ -172,7 +172,7 @@ export const schemas = [
           "encoding": "application/json",
           "schema": {
             "type": "ref",
-            "ref": "app.citruswallet.defs#invitationResult"
+            "ref": "lex:app.citruswallet.defs#invitationResult"
           }
         }
       }
@@ -204,7 +204,7 @@ export const schemas = [
               },
               "media": {
                 "type": "ref",
-                "ref": "app.citruswallet.defs#paymentMedia"
+                "ref": "lex:app.citruswallet.defs#paymentMedia"
               },
               "description": {
                 "type": "string",
@@ -229,7 +229,7 @@ export const schemas = [
             "properties": {
               "payment": {
                 "type": "ref",
-                "ref": "app.citruswallet.defs#payment"
+                "ref": "lex:app.citruswallet.defs#payment"
               },
               "invitationUrl": {
                 "type": "string"
@@ -310,7 +310,7 @@ export const schemas = [
           },
           "nativeCurrency": {
             "type": "ref",
-            "ref": "app.citruswallet.defs#currency"
+            "ref": "lex:app.citruswallet.defs#currency"
           },
           "rpcUrls": {
             "type": "array",
@@ -372,7 +372,7 @@ export const schemas = [
         "properties": {
           "network": {
             "type": "ref",
-            "ref": "app.citruswallet.defs#network"
+            "ref": "lex:app.citruswallet.defs#network"
           },
           "paymentsEnabled": {
             "type": "boolean"
@@ -387,7 +387,7 @@ export const schemas = [
             "type": "array",
             "items": {
               "type": "ref",
-              "ref": "app.citruswallet.defs#link"
+              "ref": "lex:app.citruswallet.defs#link"
             }
           },
           "addressSyncPending": {
@@ -457,7 +457,7 @@ export const schemas = [
           },
           "media": {
             "type": "ref",
-            "ref": "app.citruswallet.defs#paymentMedia"
+            "ref": "lex:app.citruswallet.defs#paymentMedia"
           },
           "description": {
             "type": "string",
@@ -466,18 +466,18 @@ export const schemas = [
           },
           "sender": {
             "type": "ref",
-            "ref": "app.citruswallet.defs#actor"
+            "ref": "lex:app.citruswallet.defs#actor"
           },
           "recipient": {
             "type": "ref",
-            "ref": "app.citruswallet.defs#actor"
+            "ref": "lex:app.citruswallet.defs#actor"
           },
           "amountWei": {
             "type": "string"
           },
           "state": {
             "type": "ref",
-            "ref": "app.citruswallet.defs#paymentState"
+            "ref": "lex:app.citruswallet.defs#paymentState"
           },
           "address": {
             "type": "string"
@@ -567,14 +567,14 @@ export const schemas = [
         "properties": {
           "payment": {
             "type": "ref",
-            "ref": "app.citruswallet.defs#payment"
+            "ref": "lex:app.citruswallet.defs#payment"
           },
           "attemptId": {
             "type": "string"
           },
           "transaction": {
             "type": "ref",
-            "ref": "app.citruswallet.defs#transaction"
+            "ref": "lex:app.citruswallet.defs#transaction"
           }
         }
       },
@@ -642,7 +642,7 @@ export const schemas = [
             "type": "array",
             "items": {
               "type": "ref",
-              "ref": "app.citruswallet.defs#link"
+              "ref": "lex:app.citruswallet.defs#link"
             }
           },
           "addressSyncPending": {
@@ -658,7 +658,7 @@ export const schemas = [
         "properties": {
           "payment": {
             "type": "ref",
-            "ref": "app.citruswallet.defs#payment"
+            "ref": "lex:app.citruswallet.defs#payment"
           }
         }
       },
@@ -752,6 +752,49 @@ export const schemas = [
   },
   {
     "lexicon": 1,
+    "id": "app.citruswallet.exchangeNativeSession",
+    "defs": {
+      "main": {
+        "type": "procedure",
+        "input": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "code",
+              "verifier"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "maxLength": 64
+              },
+              "verifier": {
+                "type": "string",
+                "maxLength": 64
+              }
+            }
+          }
+        },
+        "output": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "token"
+            ],
+            "properties": {
+              "token": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
     "id": "app.citruswallet.getAddresses",
     "defs": {
       "main": {
@@ -784,7 +827,7 @@ export const schemas = [
                 "type": "array",
                 "items": {
                   "type": "ref",
-                  "ref": "app.citruswallet.defs#link"
+                  "ref": "lex:app.citruswallet.defs#link"
                 }
               }
             }
@@ -815,7 +858,7 @@ export const schemas = [
           "encoding": "application/json",
           "schema": {
             "type": "ref",
-            "ref": "app.citruswallet.defs#paymentResult"
+            "ref": "lex:app.citruswallet.defs#paymentResult"
           }
         }
       }
@@ -843,7 +886,7 @@ export const schemas = [
           "encoding": "application/json",
           "schema": {
             "type": "ref",
-            "ref": "app.citruswallet.defs#paymentResult"
+            "ref": "lex:app.citruswallet.defs#paymentResult"
           }
         }
       }
@@ -865,7 +908,7 @@ export const schemas = [
             "properties": {
               "actor": {
                 "type": "ref",
-                "ref": "app.citruswallet.defs#actor"
+                "ref": "lex:app.citruswallet.defs#actor"
               }
             }
           }
@@ -883,7 +926,64 @@ export const schemas = [
           "encoding": "application/json",
           "schema": {
             "type": "ref",
-            "ref": "app.citruswallet.defs#session"
+            "ref": "lex:app.citruswallet.defs#session"
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "app.citruswallet.listNotifications",
+    "defs": {
+      "main": {
+        "type": "query",
+        "output": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "notifications",
+              "unread"
+            ],
+            "properties": {
+              "notifications": {
+                "type": "array",
+                "items": {
+                  "type": "ref",
+                  "ref": "lex:app.citruswallet.listNotifications#notification"
+                }
+              },
+              "unread": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      },
+      "notification": {
+        "type": "object",
+        "required": [
+          "id",
+          "paymentId",
+          "createdAt",
+          "read"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "maxLength": 256
+          },
+          "paymentId": {
+            "type": "string",
+            "maxLength": 256
+          },
+          "createdAt": {
+            "type": "string",
+            "maxLength": 256
+          },
+          "read": {
+            "type": "boolean"
           }
         }
       }
@@ -978,7 +1078,7 @@ export const schemas = [
                 "type": "array",
                 "items": {
                   "type": "ref",
-                  "ref": "app.citruswallet.defs#payment"
+                  "ref": "lex:app.citruswallet.defs#payment"
                 }
               }
             }
@@ -999,6 +1099,44 @@ export const schemas = [
             "type": "object",
             "required": [],
             "properties": {}
+          }
+        },
+        "output": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "ok"
+            ],
+            "properties": {
+              "ok": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "app.citruswallet.markNotificationRead",
+    "defs": {
+      "main": {
+        "type": "procedure",
+        "input": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "id"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "maxLength": 256
+              }
+            }
           }
         },
         "output": {
@@ -1058,7 +1196,53 @@ export const schemas = [
           "encoding": "application/json",
           "schema": {
             "type": "ref",
-            "ref": "app.citruswallet.defs#attempt"
+            "ref": "lex:app.citruswallet.defs#attempt"
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "app.citruswallet.registerPushToken",
+    "defs": {
+      "main": {
+        "type": "procedure",
+        "input": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "token",
+              "platform"
+            ],
+            "properties": {
+              "token": {
+                "type": "string",
+                "maxLength": 256
+              },
+              "platform": {
+                "type": "string",
+                "enum": [
+                  "android",
+                  "ios"
+                ]
+              }
+            }
+          }
+        },
+        "output": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "ok"
+            ],
+            "properties": {
+              "ok": {
+                "type": "boolean"
+              }
+            }
           }
         }
       }
@@ -1089,7 +1273,7 @@ export const schemas = [
           "encoding": "application/json",
           "schema": {
             "type": "ref",
-            "ref": "app.citruswallet.defs#recipient"
+            "ref": "lex:app.citruswallet.defs#recipient"
           }
         }
       }
@@ -1125,7 +1309,7 @@ export const schemas = [
                 "type": "array",
                 "items": {
                   "type": "ref",
-                  "ref": "app.citruswallet.defs#actor"
+                  "ref": "lex:app.citruswallet.defs#actor"
                 }
               }
             }
@@ -1160,7 +1344,7 @@ export const schemas = [
           "encoding": "application/json",
           "schema": {
             "type": "ref",
-            "ref": "app.citruswallet.defs#linksResult"
+            "ref": "lex:app.citruswallet.defs#linksResult"
           }
         }
       }
@@ -1240,8 +1424,29 @@ export const schemas = [
           "encoding": "application/json",
           "schema": {
             "type": "ref",
-            "ref": "app.citruswallet.defs#paymentResult"
+            "ref": "lex:app.citruswallet.defs#paymentResult"
           }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "app.citruswallet.subscribeNotifications",
+    "defs": {
+      "main": {
+        "type": "query",
+        "parameters": {
+          "type": "params",
+          "properties": {
+            "cursor": {
+              "type": "string",
+              "maxLength": 256
+            }
+          }
+        },
+        "output": {
+          "encoding": "text/event-stream"
         }
       }
     }
@@ -1303,7 +1508,45 @@ export const schemas = [
           "encoding": "application/json",
           "schema": {
             "type": "ref",
-            "ref": "app.citruswallet.defs#linksResult"
+            "ref": "lex:app.citruswallet.defs#linksResult"
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "app.citruswallet.unregisterPushToken",
+    "defs": {
+      "main": {
+        "type": "procedure",
+        "input": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "token"
+            ],
+            "properties": {
+              "token": {
+                "type": "string",
+                "maxLength": 256
+              }
+            }
+          }
+        },
+        "output": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "ok"
+            ],
+            "properties": {
+              "ok": {
+                "type": "boolean"
+              }
+            }
           }
         }
       }
@@ -1339,7 +1582,7 @@ export const schemas = [
           "encoding": "application/json",
           "schema": {
             "type": "ref",
-            "ref": "app.citruswallet.defs#linksResult"
+            "ref": "lex:app.citruswallet.defs#linksResult"
           }
         }
       }

@@ -1,0 +1,57 @@
+{
+  "lexicon": 1,
+  "id": "app.citruswallet.listNotifications",
+  "defs": {
+    "main": {
+      "type": "query",
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": [
+            "notifications",
+            "unread"
+          ],
+          "properties": {
+            "notifications": {
+              "type": "array",
+              "items": {
+                "type": "ref",
+                "ref": "#notification"
+              }
+            },
+            "unread": {
+              "type": "integer"
+            }
+          }
+        }
+      }
+    },
+    "notification": {
+      "type": "object",
+      "required": [
+        "id",
+        "paymentId",
+        "createdAt",
+        "read"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "paymentId": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "createdAt": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "read": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

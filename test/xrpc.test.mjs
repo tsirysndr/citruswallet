@@ -344,3 +344,40 @@ test('KLIPY attachments remain participant-only and reject unsafe media URLs', a
   await assert.rejects(f.query('getPayment', { id: created.payment.id }), e => e.status === 404);
   assert.equal(f.writes.length, 0, 'attachments are never published to AT Protocol');
 });
+
+test('native bearer sessions are isolated from cookies and revoked by logout', async t => {
+  const f=fixture(t),token='a'.repeat(64),key=createHash('sha256').update(token).digest('hex');
+  f.store.client.prepare('INSERT INTO kv(namespace,key,value,expires) VALUES(?,?,?,?)').run('native-session',key,JSON.stringify({did:alice,csrf:'native-csrf',createdAt:Date.now(),scopeVersion:1}),Date.now()+60000);
+  const native=async(path,body)=>f.app.fetch(new Request(origin+'/xrpc/app.citruswallet.'+path,{method:body?'POST':'GET',headers:{Host:'citruswallet.app',Authorization:'Bearer '+token,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})}),env);
+  assert.equal((await (await native('getSession')).json()).did,alice);
+  assert.equal((await native('listPayments?q=dinner')).status,200);
+  assert.equal((await native('createChallenge',{address:account.address})).status,200);
+  assert.equal((await f.raw('/xrpc/app.citruswallet.getProfile',{headers:{cookie:'__Host-citruswallet='+token}})).status,401);
+  await f.login();
+  assert.equal((await f.raw('/xrpc/app.citruswallet.getProfile',{headers:{Authorization:'Bearer '+'f'.repeat(64)}})).status,401);
+  assert.equal((await native('logout',{})).status,200);
+  assert.equal((await native('getSession')).status,401);
+});
+
+test('notification stream authenticates, replays only the recipient and supports read state',async t=>{
+  const f=fixture(t);assert.equal((await f.raw('/xrpc/app.citruswallet.subscribeNotifications')).status,401);
+  await f.login(bob);
+  f.store.client.prepare("INSERT INTO payments(id,sender_did,recipient_did,recipient_label,chain_id,amount_wei,state,created_at,expires_at) VALUES('notice',?,?,'bob.test',1,'1','confirmed',1,2)").run(alice,bob);
+  const listed=await f.query('listNotifications');assert.equal(listed.unread,1);
+  const response=await f.raw('/xrpc/app.citruswallet.subscribeNotifications?cursor=0');assert.equal(response.status,200);assert.match(response.headers.get('content-type'),/text\/event-stream/);assert.equal(response.headers.get('x-accel-buffering'),'no');
+  const reader=response.body.getReader();let data='';for(let i=0;i<4&&!data.includes('payment-received');i++){data+=new TextDecoder().decode((await reader.read()).value);}await reader.cancel();assert.match(data,/payment-received/);assert.match(data,/notice/);
+  await f.call('markNotificationRead',{id:listed.notifications[0].id});assert.equal((await f.query('listNotifications')).unread,0);
+  await f.call('registerPushToken',{token:'ExpoPushToken[http_test]',platform:'android'});await f.call('logout',{});assert.equal(f.store.client.prepare('SELECT count(*) AS n FROM push_devices').get().n,0);
+  await f.login(alice);assert.equal((await f.query('listNotifications')).notifications.length,0);
+});
+
+test('native OAuth returns only a one-time proof-bound code and preserves browser binding',async t=>{
+  const f=fixture(t),verifier='d'.repeat(64),state='e'.repeat(64),challenge=createHash('sha256').update(verifier).digest('hex');let oauthState;
+  f.oauth.authorize=async(_identifier,options)=>{oauthState=options.state;return new URL('https://provider.example/authorize');};
+  const start=await f.raw(`/auth/native/start?identifier=alice.test&challenge=${challenge}&state=${state}`);assert.equal(start.status,302);
+  f.oauth.callback=async()=>({session:{did:alice},state:oauthState});
+  assert.equal((await f.raw('/auth/callback?code=test',{headers:{cookie:''}})).status,401);
+  const callback=await f.raw('/auth/callback?code=test');assert.equal(callback.status,302);const redirect=new URL(callback.headers.get('location'));assert.equal(redirect.origin,'null');assert.equal(redirect.protocol,'citruswallet:');assert.equal(redirect.searchParams.get('state'),state);
+  const exchange=body=>f.app.fetch(new Request(origin+'/xrpc/app.citruswallet.exchangeNativeSession',{method:'POST',headers:{Host:'citruswallet.app','Content-Type':'application/json'},body:JSON.stringify(body)}),env);
+  const code=redirect.searchParams.get('code');assert.equal((await exchange({code,verifier:'f'.repeat(64)})).status,401);const response=await exchange({code,verifier});assert.equal(response.status,200);assert.match((await response.json()).token,/^[a-f0-9]{64}$/);assert.equal((await exchange({code,verifier})).status,401);
+});

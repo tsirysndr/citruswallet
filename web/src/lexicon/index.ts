@@ -9,21 +9,27 @@ import * as AppCitruswalletCreateChallenge from './types/app/citruswallet/create
 import * as AppCitruswalletCreateInvitation from './types/app/citruswallet/createInvitation'
 import * as AppCitruswalletCreatePayment from './types/app/citruswallet/createPayment'
 import * as AppCitruswalletDeletePayment from './types/app/citruswallet/deletePayment'
+import * as AppCitruswalletExchangeNativeSession from './types/app/citruswallet/exchangeNativeSession'
 import * as AppCitruswalletGetAddresses from './types/app/citruswallet/getAddresses'
 import * as AppCitruswalletGetInvitation from './types/app/citruswallet/getInvitation'
 import * as AppCitruswalletGetPayment from './types/app/citruswallet/getPayment'
 import * as AppCitruswalletGetProfile from './types/app/citruswallet/getProfile'
 import * as AppCitruswalletGetSession from './types/app/citruswallet/getSession'
+import * as AppCitruswalletListNotifications from './types/app/citruswallet/listNotifications'
 import * as AppCitruswalletListPayments from './types/app/citruswallet/listPayments'
 import * as AppCitruswalletLogout from './types/app/citruswallet/logout'
+import * as AppCitruswalletMarkNotificationRead from './types/app/citruswallet/markNotificationRead'
 import * as AppCitruswalletPreparePayment from './types/app/citruswallet/preparePayment'
+import * as AppCitruswalletRegisterPushToken from './types/app/citruswallet/registerPushToken'
 import * as AppCitruswalletResolveRecipient from './types/app/citruswallet/resolveRecipient'
 import * as AppCitruswalletSearchActors from './types/app/citruswallet/searchActors'
 import * as AppCitruswalletSetDefaultAddress from './types/app/citruswallet/setDefaultAddress'
 import * as AppCitruswalletStartLogin from './types/app/citruswallet/startLogin'
 import * as AppCitruswalletSubmitPayment from './types/app/citruswallet/submitPayment'
+import * as AppCitruswalletSubscribeNotifications from './types/app/citruswallet/subscribeNotifications'
 import * as AppCitruswalletSyncAddresses from './types/app/citruswallet/syncAddresses'
 import * as AppCitruswalletUnlinkAddress from './types/app/citruswallet/unlinkAddress'
+import * as AppCitruswalletUnregisterPushToken from './types/app/citruswallet/unregisterPushToken'
 import * as AppCitruswalletVerifyChallenge from './types/app/citruswallet/verifyChallenge'
 
 export * as AppCitruswalletAcceptInvitation from './types/app/citruswallet/acceptInvitation'
@@ -34,21 +40,27 @@ export * as AppCitruswalletCreateInvitation from './types/app/citruswallet/creat
 export * as AppCitruswalletCreatePayment from './types/app/citruswallet/createPayment'
 export * as AppCitruswalletDefs from './types/app/citruswallet/defs'
 export * as AppCitruswalletDeletePayment from './types/app/citruswallet/deletePayment'
+export * as AppCitruswalletExchangeNativeSession from './types/app/citruswallet/exchangeNativeSession'
 export * as AppCitruswalletGetAddresses from './types/app/citruswallet/getAddresses'
 export * as AppCitruswalletGetInvitation from './types/app/citruswallet/getInvitation'
 export * as AppCitruswalletGetPayment from './types/app/citruswallet/getPayment'
 export * as AppCitruswalletGetProfile from './types/app/citruswallet/getProfile'
 export * as AppCitruswalletGetSession from './types/app/citruswallet/getSession'
+export * as AppCitruswalletListNotifications from './types/app/citruswallet/listNotifications'
 export * as AppCitruswalletListPayments from './types/app/citruswallet/listPayments'
 export * as AppCitruswalletLogout from './types/app/citruswallet/logout'
+export * as AppCitruswalletMarkNotificationRead from './types/app/citruswallet/markNotificationRead'
 export * as AppCitruswalletPreparePayment from './types/app/citruswallet/preparePayment'
+export * as AppCitruswalletRegisterPushToken from './types/app/citruswallet/registerPushToken'
 export * as AppCitruswalletResolveRecipient from './types/app/citruswallet/resolveRecipient'
 export * as AppCitruswalletSearchActors from './types/app/citruswallet/searchActors'
 export * as AppCitruswalletSetDefaultAddress from './types/app/citruswallet/setDefaultAddress'
 export * as AppCitruswalletStartLogin from './types/app/citruswallet/startLogin'
 export * as AppCitruswalletSubmitPayment from './types/app/citruswallet/submitPayment'
+export * as AppCitruswalletSubscribeNotifications from './types/app/citruswallet/subscribeNotifications'
 export * as AppCitruswalletSyncAddresses from './types/app/citruswallet/syncAddresses'
 export * as AppCitruswalletUnlinkAddress from './types/app/citruswallet/unlinkAddress'
+export * as AppCitruswalletUnregisterPushToken from './types/app/citruswallet/unregisterPushToken'
 export * as AppCitruswalletVerifyChallenge from './types/app/citruswallet/verifyChallenge'
 
 export class AtpBaseClient extends XrpcClient {
@@ -154,6 +166,18 @@ export class AppCitruswalletNS {
     )
   }
 
+  exchangeNativeSession(
+    data: AppCitruswalletExchangeNativeSession.InputSchema,
+    opts?: AppCitruswalletExchangeNativeSession.CallOptions,
+  ): Promise<AppCitruswalletExchangeNativeSession.Response> {
+    return this._client.call(
+      'app.citruswallet.exchangeNativeSession',
+      opts?.qp,
+      data,
+      opts,
+    )
+  }
+
   getAddresses(
     params?: AppCitruswalletGetAddresses.QueryParams,
     opts?: AppCitruswalletGetAddresses.CallOptions,
@@ -214,6 +238,18 @@ export class AppCitruswalletNS {
     )
   }
 
+  listNotifications(
+    params?: AppCitruswalletListNotifications.QueryParams,
+    opts?: AppCitruswalletListNotifications.CallOptions,
+  ): Promise<AppCitruswalletListNotifications.Response> {
+    return this._client.call(
+      'app.citruswallet.listNotifications',
+      params,
+      undefined,
+      opts,
+    )
+  }
+
   listPayments(
     params?: AppCitruswalletListPayments.QueryParams,
     opts?: AppCitruswalletListPayments.CallOptions,
@@ -233,12 +269,36 @@ export class AppCitruswalletNS {
     return this._client.call('app.citruswallet.logout', opts?.qp, data, opts)
   }
 
+  markNotificationRead(
+    data: AppCitruswalletMarkNotificationRead.InputSchema,
+    opts?: AppCitruswalletMarkNotificationRead.CallOptions,
+  ): Promise<AppCitruswalletMarkNotificationRead.Response> {
+    return this._client.call(
+      'app.citruswallet.markNotificationRead',
+      opts?.qp,
+      data,
+      opts,
+    )
+  }
+
   preparePayment(
     data: AppCitruswalletPreparePayment.InputSchema,
     opts?: AppCitruswalletPreparePayment.CallOptions,
   ): Promise<AppCitruswalletPreparePayment.Response> {
     return this._client.call(
       'app.citruswallet.preparePayment',
+      opts?.qp,
+      data,
+      opts,
+    )
+  }
+
+  registerPushToken(
+    data: AppCitruswalletRegisterPushToken.InputSchema,
+    opts?: AppCitruswalletRegisterPushToken.CallOptions,
+  ): Promise<AppCitruswalletRegisterPushToken.Response> {
+    return this._client.call(
+      'app.citruswallet.registerPushToken',
       opts?.qp,
       data,
       opts,
@@ -305,6 +365,18 @@ export class AppCitruswalletNS {
     )
   }
 
+  subscribeNotifications(
+    params?: AppCitruswalletSubscribeNotifications.QueryParams,
+    opts?: AppCitruswalletSubscribeNotifications.CallOptions,
+  ): Promise<AppCitruswalletSubscribeNotifications.Response> {
+    return this._client.call(
+      'app.citruswallet.subscribeNotifications',
+      params,
+      undefined,
+      opts,
+    )
+  }
+
   syncAddresses(
     data: AppCitruswalletSyncAddresses.InputSchema,
     opts?: AppCitruswalletSyncAddresses.CallOptions,
@@ -323,6 +395,18 @@ export class AppCitruswalletNS {
   ): Promise<AppCitruswalletUnlinkAddress.Response> {
     return this._client.call(
       'app.citruswallet.unlinkAddress',
+      opts?.qp,
+      data,
+      opts,
+    )
+  }
+
+  unregisterPushToken(
+    data: AppCitruswalletUnregisterPushToken.InputSchema,
+    opts?: AppCitruswalletUnregisterPushToken.CallOptions,
+  ): Promise<AppCitruswalletUnregisterPushToken.Response> {
+    return this._client.call(
+      'app.citruswallet.unregisterPushToken',
       opts?.qp,
       data,
       opts,

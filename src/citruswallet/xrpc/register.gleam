@@ -4,9 +4,39 @@ import citruswallet/xrpc/address
 import citruswallet/xrpc/auth
 import citruswallet/xrpc/context.{type Server}
 import citruswallet/xrpc/methods
+import citruswallet/xrpc/native
+import citruswallet/xrpc/notification
 import citruswallet/xrpc/payment
 
 pub fn register(app: hono.App, server: Server) -> Nil {
+  hono.xrpc(
+    app,
+    methods.list_notifications,
+    context.serve(server, notification.listing),
+  )
+  hono.xrpc(
+    app,
+    methods.mark_notification_read,
+    context.serve(server, notification.read),
+  )
+  hono.xrpc(
+    app,
+    methods.register_push_token,
+    context.serve(server, notification.register_device),
+  )
+  hono.xrpc(
+    app,
+    methods.unregister_push_token,
+    context.serve(server, notification.remove_device),
+  )
+  hono.xrpc(app, methods.subscribe_notifications, fn(ctx) {
+    notification.subscribe(server, ctx)
+  })
+  hono.xrpc(
+    app,
+    methods.exchange_native_session,
+    context.serve(server, native.redeem),
+  )
   hono.xrpc(
     app,
     methods.get_session,
