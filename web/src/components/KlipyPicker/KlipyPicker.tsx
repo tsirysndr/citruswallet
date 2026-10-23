@@ -20,9 +20,9 @@ export function KlipyPicker({ value, onChange, children }: { children?: ReactNod
   return <div className="klipy-attachment">
     <div className={children ? "klipy-editor" : undefined}>
       {children}
+      {value && <div className="klipy-selected"><PaymentMedia key={value.url} media={value} /><button className="klipy-remove" type="button" aria-label="Remove attachment" onClick={() => onChange(null)}><X size={17} /></button></div>}
       <button type="button" className="klipy-trigger" aria-label={value ? "Change media" : "Add GIF, sticker, meme or clip"} title={value ? "Change media" : "Add GIF"} onClick={() => { setOpen(true); dialog.current?.showModal(); }}><ImagePlus size={20} aria-hidden="true" /></button>
     </div>
-    {value && <div className="klipy-selected"><PaymentMedia key={value.url} media={value} /><button className="klipy-remove" type="button" aria-label="Remove attachment" onClick={() => onChange(null)}><X size={17} /></button></div>}
     <dialog ref={dialog} className="klipy-dialog" aria-labelledby="klipy-title" onClose={() => setOpen(false)} onClick={event => { if (event.target === event.currentTarget) { const r = event.currentTarget.getBoundingClientRect(); if (event.clientX < r.left || event.clientX > r.right || event.clientY < r.top || event.clientY > r.bottom) close(); } }}>
       <header><div><p className="eyebrow">A LITTLE MORE EXPRESSION</p><h2 id="klipy-title">Say it with KLIPY.</h2></div><button type="button" className="klipy-close" aria-label="Close media picker" onClick={close}><X size={21} /></button></header>
       <div className="klipy-tabs" aria-label="Media type">{mediaKinds.map(tab => <button type="button" aria-pressed={kind === tab.value} key={tab.value} onClick={() => { setKind(tab.value); setPage(1); }}>{tab.label}</button>)}</div>

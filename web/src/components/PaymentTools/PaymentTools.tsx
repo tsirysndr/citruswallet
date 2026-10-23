@@ -193,7 +193,7 @@ export function PaymentTools({ className }: { className?: string }) {
                 placeholder="What’s this payment for?"
                 aria-describedby="description-hint"
                 aria-invalid={Boolean(amount.formState.errors.description)}
-                className="block min-h-32 w-full resize-y rounded-[6px] border border-edge bg-sunken p-3 pb-14 text-[13px] text-ink"
+                className="block min-h-24 w-full resize-y rounded-[6px] border-0 bg-transparent p-3 text-[13px] text-ink"
                 {...amount.register("description")}
               />
             </KlipyPicker>

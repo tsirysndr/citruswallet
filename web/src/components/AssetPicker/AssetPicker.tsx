@@ -4,7 +4,7 @@ import { formatBalance } from "@citruswallet/amounts";
 import { useAssets, readAsset, type Asset, nativeAsset } from "../../assets";
 import type { Session } from "../../types";
 import { ContentSkeleton } from "../ContentSkeleton";
-import { Button, Input, Label } from "../ui";
+import { Button, Label } from "../ui";
 export function AssetPicker({ session, value, onChange }: { session: Session; value: Asset; onChange: (asset: Asset) => void }) {
   const links = (session.links ?? []).filter(link => link.chain_id === session.network.chainId);
   const [wallet, setWallet] = useState("");
@@ -39,20 +39,18 @@ export function AssetPicker({ session, value, onChange }: { session: Session; va
       const bounds = event.currentTarget.getBoundingClientRect();
       if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) close();
     }}>
-      <header className="flex items-center justify-between gap-3">
-        <h2 id={`${dialogId}-title`} className="text-lg font-semibold">Choose asset</h2>
-        <button type="button" aria-label="Close asset picker" className="flex size-9 items-center justify-center rounded-md hover:bg-sunken" onClick={close}><X size={20} aria-hidden="true" /></button>
-      </header>
-      <div className="relative">
-        <Search size={18} aria-hidden="true" className="pointer-events-none absolute left-3 top-3.5 text-ink-muted" />
-        <Input ref={searchInput} type="search" aria-label="Search assets or paste token contract" placeholder="Search name, symbol or contract" className="pl-10" autoComplete="off" value={search} onChange={event => setSearch(event.target.value)} onKeyDown={event => {
+      <h2 id={`${dialogId}-title`} className="sr-only">Choose asset</h2>
+      <div className="command-search-field">
+        <Search size={20} aria-hidden="true" />
+        <input ref={searchInput} type="search" aria-label="Search assets or paste token contract" placeholder="Search name, symbol or contract…" autoComplete="off" value={search} onChange={event => setSearch(event.target.value)} onKeyDown={event => {
           if (event.key === "Enter") { event.preventDefault(); if (matches.length === 1 && !loading) void pick(matches[0]!.asset.id); }
         }} />
+        <button type="button" aria-label="Close asset picker" onClick={close}><X size={20} aria-hidden="true" /></button>
       </div>
       {inventory.isPending && address && <ContentSkeleton label="Loading assets" />}
       {(inventory.isError || inventory.data?.pages.some(page => !page.discoveryAvailable)) && <p className="text-xs text-ink-muted">Token discovery is unavailable. Paste a contract address to look it up on-chain.</p>}
       <div className="min-h-0 overflow-y-auto overscroll-contain" aria-busy={loading || inventory.isFetching}>
-        {matches.map(({ asset, balanceAtomic }) => <button type="button" key={asset.id} disabled={loading} onClick={() => void pick(asset.id)} className="flex w-full flex-col gap-1 border-b border-edge p-3 text-left hover:bg-panel">
+        {matches.map(({ asset, balanceAtomic }) => <button type="button" key={asset.id} disabled={loading} onClick={() => void pick(asset.id)} className="flex w-full flex-col gap-1 rounded-lg p-3 text-left hover:bg-sunken">
           <span className="flex w-full justify-between gap-3"><strong>{asset.symbol}</strong><span className="font-mono text-xs" title={formatBalance(balanceAtomic, asset.decimals)}>{formatBalance(balanceAtomic, asset.decimals, 6)}</span></span>
           <span className="text-xs text-ink-muted">{asset.name}</span>
           {asset.contractAddress && <span className="break-all font-mono text-xs text-ink-faint">{asset.contractAddress}</span>}
