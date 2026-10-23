@@ -1,6 +1,6 @@
 # Citrus Wallet service
 
-`citruswallet.service` follows the services in `rocksky/systemd`: root's interactive Bash environment, Doppler's `prd` configuration, journal logging, and automatic restart on failure.
+`citruswallet.service` uses root's interactive Bash environment, Doppler's `prd` configuration, journal logging, and automatic restart on failure.
 
 The unit assumes the checkout is `/root/github/citruswallet`. Update `WorkingDirectory` if your checkout has another name, such as `/root/github/atproto-wallet`.
 

@@ -1,8 +1,8 @@
 # Citrus Wallet for Android and iOS
 
-Expo SDK 54 (matching the existing Rocksky native project), React Native, NativeWind 4, Jotai, TanStack Query and MetaMask Connect. The app has Account, Wallet, Payments and Activity tabs, a decimal-safe custom amount keypad, payment review/recovery, recipient suggestions, FTS activity search, filters and a notification inbox.
+Expo SDK 54, React Native, NativeWind 4, Jotai, TanStack Query and MetaMask Connect. The app has Account, Wallet, Payments and Activity tabs, a decimal-safe custom amount keypad, payment review/recovery, recipient suggestions, FTS activity search, filters and a notification inbox.
 
-The dedicated Expo project is `@tsirysndr/citruswallet` (`4111c93c-f70b-4ed0-b80e-efdb725dd710`), with native identifier `app.citruswallet` and callback scheme `citruswallet://auth`. Rocksky's project and signing credentials are not reused.
+The dedicated Expo project is `@tsirysndr/citruswallet` (`4111c93c-f70b-4ed0-b80e-efdb725dd710`), with native identifier `app.citruswallet` and callback scheme `citruswallet://auth`. It uses dedicated signing credentials.
 
 ## Run
 

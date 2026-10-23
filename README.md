@@ -253,7 +253,7 @@ Recipients can read their incoming payment details, but only senders can prepare
 
 The production frontend registers `/sw.js` and exposes `/manifest.webmanifest`, PNG icons derived from the Citrus logo, an Apple touch icon, and an install control in the footer. Supported browsers show a native install prompt; other browsers get installation instructions. MetaMask must still be available in the chosen browser—installing Citrus does not install or embed MetaMask.
 
-The service worker only caches the static offline page and its public assets. It does **not** cache authenticated responses, wallet data, avatars, OAuth requests, or payment requests, and never queues transfers. Offline navigation shows a reconnect screen. Updates wait for existing windows to close instead of reloading an in-progress payment. The sign-in form includes a local, animated Atmosphere app-logo strip adapted from Rocksky, with pause and reduced-motion support.
+The service worker only caches the static offline page and its public assets. It does **not** cache authenticated responses, wallet data, avatars, OAuth requests, or payment requests, and never queues transfers. Offline navigation shows a reconnect screen. Updates wait for existing windows to close instead of reloading an in-progress payment. The sign-in form includes a local, animated Atmosphere app-logo strip, with pause and reduced-motion support.
 
 ### KLIPY payment attachments
 
