@@ -1,4 +1,5 @@
 import { requestUnlock } from "./wallet-unlock";
+import { walletMode } from "./wallet-preferences";
 import { nativeProvider, nativeVaultState } from "./local-wallet";
 import { expectedTransfer } from "@citruswallet/amounts";
 import { Linking } from "react-native";
@@ -39,7 +40,9 @@ export function getClient() {
   }));
 }
 export async function connect(network: Network) {
-  if (["locked", "unlocked"].includes(nativeVaultState()) && await SecureStore.getItemAsync("citrus-wallet-mode") !== "metamask") {
+  if (walletMode() === 'citrus') {
+    if (nativeVaultState() === 'loading') throw new Error('Your Citrus wallet is still loading. Try again in a moment.');
+    if (nativeVaultState() === 'absent') throw new Error('Set up your Citrus wallet from the Wallet screen first.');
     if (nativeVaultState() === "locked") await requestUnlock();
     const wallet = nativeProvider(network);
     const addresses = await wallet.request({ method: "eth_requestAccounts" });
