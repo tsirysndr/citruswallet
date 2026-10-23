@@ -86,7 +86,7 @@ export function ActivitySearch() {
           </button>;
         })}
       </div>
-      {!session?.did ? <p className="command-empty">Sign in to search your payments.</p> : error ? <div className="command-empty">Could not search activity. <button type="button" onClick={() => void refetch()}>Try again</button></div> : !waiting && !payments.length ? <p className="command-empty">{query ? "No payments found. Try another name, handle, or description." : "Your payments will appear here."}</p> : waiting ? <ContentSkeleton label="Finding payments" /> : null}
+      {!session?.did ? <p className="command-empty">Sign in to search your payments.</p> : error ? <div className="command-empty">Could not search activity. <button type="button" onClick={() => void refetch()}>Try again</button></div> : !waiting && !payments.length ? <p className="command-empty">{query ? "No payments found. Try another name, handle, or description." : "Your payments will appear here."}</p> : waiting ? <div className="px-6 pt-2 pb-6"><ContentSkeleton label="Finding payments" /></div> : null}
       <footer className="command-footer"><span><kbd>↑</kbd><kbd>↓</kbd> navigate <kbd>↵</kbd> open <kbd>esc</kbd> close</span>
         {session?.did && (data?.total ?? 0) > 8 && <div><button type="button" disabled={page <= 1 || waiting} onClick={() => { setPage(p => p - 1); setSelected(0); }}>Previous</button><span>{page} / {Math.ceil((data?.total ?? 0) / 8)}</span><button type="button" disabled={page * 8 >= (data?.total ?? 0) || waiting} onClick={() => { setPage(p => p + 1); setSelected(0); }}>Next</button></div>}
       </footer>
