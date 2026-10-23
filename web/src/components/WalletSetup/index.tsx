@@ -1,4 +1,7 @@
 import { OnboardingSignIn } from '../OnboardingSignIn';
+import { useAtomValue } from 'jotai';
+import { busyAtom } from '../../atoms';
+import { requestUnlock } from '../../wallet-unlock';
 import { useState, useSyncExternalStore } from 'react';
 import { ArrowLeft, ArrowRight, Copy, Wallet, Link2 } from 'lucide-react';
 import { stringToHex } from 'viem';
@@ -21,6 +24,7 @@ export function WalletSetup({ onFinished, restart = false }: { onFinished?: () =
   const { data: session } = useSession();
   const vault = useSyncExternalStore(subscribeWallet, localWalletState);
   const refresh = useRefresh(), run = useRun(), status = useStatus();
+  const busy = useAtomValue(busyAtom);
   const existing = vault !== 'absent' || Boolean(localStorage.getItem('citrus:metamask-address'));
   const [kind, setKind] = useState<'citrus' | 'metamask'>(() => vault !== 'absent' && localStorage.getItem('citrus:wallet-mode') !== 'metamask' ? 'citrus' : 'metamask');
   const [stage, setStage] = useState<'choice' | 'create' | 'import' | 'link' | 'signin' | 'done'>(() => !restart && existing ? session?.did ? 'link' : 'signin' : 'choice');
@@ -31,6 +35,18 @@ export function WalletSetup({ onFinished, restart = false }: { onFinished?: () =
   const ready = Boolean(session?.did) && (stage === 'done' || (!editing && Boolean(linked)));
   const signingIn = !session?.did && stage === 'signin';
   const [address, setAddress] = useState(current || linked?.address || '');
+  const switchWallet = (selection: 'citrus' | 'metamask') => {
+    if (busy || selection === kind) return;
+    localStorage.setItem('citrus:wallet-mode', selection);
+    setKind(selection);
+    const nextAddress = configuredAddress();
+    setAddress(nextAddress || '');
+    const alreadyLinked = links.some(link => nextAddress && link.address.toLowerCase() === nextAddress.toLowerCase());
+    setEditing(!alreadyLinked);
+    setStage(alreadyLinked ? 'done' : selection === 'citrus' && vault === 'absent' ? 'choice' : 'link');
+    void refresh();
+    if (selection === 'citrus' && vault === 'locked') void requestUnlock().catch(() => {});
+  };
   const choose = (selection: 'citrus' | 'metamask', action?: 'import') => {
     setKind(selection); setEditing(true);
     localStorage.setItem('citrus:wallet-mode', selection);
@@ -59,6 +75,17 @@ export function WalletSetup({ onFinished, restart = false }: { onFinished?: () =
   const created = () => { setAddress(localBalanceAddress() || ''); setStage(session?.did ? 'link' : 'signin'); };
   const needsInstall = kind === 'metamask' && !detectedMetaMask() && !isMobileWalletBrowser();
   return <div className="mx-auto w-full max-w-[560px] font-sans">
+    {session?.did && !onFinished && <fieldset disabled={busy} className="mb-6">
+      <legend className="mb-2 text-sm font-semibold">Wallet to use</legend>
+      <div className="flex gap-1 rounded-xl bg-sunken p-1">
+        {(['citrus', 'metamask'] as const).map(value => <label key={value} className={`relative flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg px-3 py-3 text-sm font-semibold transition has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-ink ${kind === value ? 'bg-accent text-accent-ink' : 'text-ink-muted'} ${busy ? 'cursor-wait opacity-60' : ''}`}>
+          <input className="sr-only" type="radio" name="wallet-provider" value={value} checked={kind === value} onChange={() => switchWallet(value)} />
+          {value === 'citrus' ? <Wallet size={18} aria-hidden="true" /> : <img src="/metamask.png" alt="" className="size-[18px]" />}
+          {value === 'citrus' ? 'Citrus Wallet' : 'MetaMask'}
+        </label>)}
+      </div>
+      <p className="mt-2 text-xs text-ink-muted">Choose which wallet to pay with. Switching does not move funds or change your receiving address.</p>
+    </fieldset>}
     {!ready && <div className="mb-7 flex items-center justify-between text-xs text-ink-muted">
       <span>WALLET SETUP</span><span>{signingIn ? 'Final step · Sign in' : stage === 'choice' ? '1 · Choose' : stage === 'link' ? 'Connect your account' : '2 · Secure'}</span>
     </div>}
