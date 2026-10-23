@@ -11,6 +11,7 @@ import { screenAtom } from "../state";
 import { formatWei } from "../amount";
 import { Avatar, Button, Heading } from "../components/ui";
 import { HandleInput } from "../components/HandleInput";
+import { AtmosphereApps } from "../components/AtmosphereApps";
 import { WalletAction } from "../components/WalletAction";
 export function Account() {
   const { data: session } = useSession(),
@@ -62,9 +63,10 @@ export function Account() {
         />
         <View className="gap-5 rounded-3xl bg-white p-6">
           <Heading title="Welcome to Citrus" />
+          <AtmosphereApps />
           <HandleInput value={handle} onChange={setHandle} />
           <Button
-            title="Sign in with AT Protocol"
+            title="Sign In"
             tone="black"
             disabled={!handle.trim()}
             onPress={() =>
@@ -73,6 +75,11 @@ export function Account() {
               })
             }
           />
+          <Text className="text-sm text-muted">
+            Don't have an account?{" "}
+            <Text accessibilityRole="link" className="text-sm underline"
+              onPress={() => void Linking.openURL("https://atmosphereaccount.com/signin?mode=create&next=%2Fapps")}>Create one</Text>
+          </Text>
           <Text className="text-sm leading-6 text-muted">
             By continuing, you agree to the Terms and Conditions and Privacy
             Policy.
