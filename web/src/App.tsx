@@ -80,7 +80,7 @@ export function App() {
           <span className="hidden rounded-full border border-edge px-2.5 py-1.5 text-[12px] tracking-[0.04em] text-ink-muted xl:inline">
             {session?.network.name ?? "AT Protocol × Ethereum"}
           </span>
-          <ActivitySearch />
+          {session?.did && <ActivitySearch />}
           <InstallMetaMask />
         </div>
       </header>
