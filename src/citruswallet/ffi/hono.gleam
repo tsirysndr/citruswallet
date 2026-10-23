@@ -252,7 +252,7 @@ fn content_security_policy(secure: Bool, image_sources: List(String)) -> Js {
       js.list([
         js.string("'self'"),
         js.string("https://api.klipy.com"),
-        js.string("https://eth.drpc.org"),
+        js.string("https://ethereum-rpc.publicnode.com"),
         js.string("wss://mm-sdk-relay.api.cx.metamask.io"),
       ]),
     ),

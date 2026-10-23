@@ -17,7 +17,7 @@ export function getClient() {
     },
     api: {
       supportedNetworks: {
-        "0x1": process.env.EXPO_PUBLIC_ETH_RPC_URL || "https://eth.drpc.org",
+        "0x1": process.env.EXPO_PUBLIC_ETH_RPC_URL || "https://ethereum-rpc.publicnode.com",
       },
     },
     analytics: { enabled: false },

@@ -298,7 +298,7 @@ not claim it can inspect which apps are installed. A download link is available
 in the wallet card if MetaMask is missing.
 
 The SDK loads only for an explicit mobile connection, with analytics disabled.
-Mobile balance reads use the public mainnet RPC at `https://eth.drpc.org` and
+Mobile balance reads use the public mainnet RPC at `https://ethereum-rpc.publicnode.com` and
 connections use MetaMask’s WebSocket relay. The CSP explicitly allows those two
 origins. Background balance reads never initiate a connection or app handoff.
 After a page reload, tap Connect MetaMask to resume the SDK session. Account and

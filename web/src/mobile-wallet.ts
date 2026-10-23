@@ -15,7 +15,7 @@ export function mobileWalletClient() {
         url: window.location.origin,
         iconUrl: new URL("/icons/icon-192.png", window.location.origin).href,
       },
-      api: { supportedNetworks: { "0x1": "https://eth.drpc.org" } },
+      api: { supportedNetworks: { "0x1": "https://ethereum-rpc.publicnode.com" } },
       analytics: { enabled: false },
       // Preserve the session payload by opening the native scheme directly.
       mobile: { useDeeplink: true },

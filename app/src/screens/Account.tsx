@@ -35,7 +35,7 @@ export function Account() {
       let total = 0n;
       for (const address of addresses) {
         const response = await fetch(
-          process.env.EXPO_PUBLIC_ETH_RPC_URL || "https://eth.drpc.org",
+          process.env.EXPO_PUBLIC_ETH_RPC_URL || "https://ethereum-rpc.publicnode.com",
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
