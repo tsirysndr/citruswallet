@@ -305,19 +305,24 @@ pub fn start(
   check: fn(String, String) -> Promise(a),
   chain: Int,
 ) -> fn() -> Nil {
-  transport.every(5000, fn(stopped) {
-    let payments =
-      query(
-        db,
-        "SELECT p.id,p.sender_did FROM payments p LEFT JOIN kv k ON k.namespace='payment-check' AND k.key=p.id WHERE p.chain_id=? AND p.state IN ('submitted','confirming') ORDER BY COALESCE(CAST(k.value AS INTEGER),0),p.created_at LIMIT 10",
-        [js.int(chain)],
-      )
-    use _ <- promise.await(check_payments(db, payments, check, stopped))
-    case stopped() {
-      True -> promise.resolve(Nil)
-      False -> deliver(db, js.global("fetch"), node.now(), web_push.send)
-    }
-  })
+  let stop =
+    transport.every(5000, fn(stopped) {
+      let payments =
+        query(
+          db,
+          "SELECT p.id,p.sender_did FROM payments p LEFT JOIN kv k ON k.namespace='payment-check' AND k.key=p.id WHERE p.chain_id=? AND p.state IN ('submitted','confirming') ORDER BY COALESCE(CAST(k.value AS INTEGER),0),p.created_at LIMIT 10",
+          [js.int(chain)],
+        )
+      use _ <- promise.await(check_payments(db, payments, check, stopped))
+      case stopped() {
+        True -> promise.resolve(Nil)
+        False -> deliver(db, js.global("fetch"), node.now(), web_push.send)
+      }
+    })
+  fn() {
+    stop()
+    transport.close_streams()
+  }
 }
 
 fn check_payments(

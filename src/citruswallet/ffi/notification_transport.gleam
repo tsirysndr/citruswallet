@@ -1,6 +1,9 @@
 import citruswallet/ffi/js.{type Js}
 import gleam/javascript/promise.{type Promise}
 
+@external(javascript, "../../notification_transport.mjs", "closeStreams")
+pub fn close_streams() -> Nil
+
 @external(javascript, "../../notification_transport.mjs", "generateKeys")
 pub fn generate_keys() -> Js
 

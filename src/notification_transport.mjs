@@ -11,11 +11,16 @@ export async function invoke(callback, args) {
 // Transport lifecycle only. Authentication, cursor progression and event data
 // are supplied by the Gleam callback on every poll.
 const connections = new Map();
+const streams = new Set();
+export function closeStreams() {
+  for (const output of streams) output.abort();
+}
 export function stream(context, key, maxConnections, poll) {
   if ((connections.get(key) || 0) >= maxConnections) return context.json({ error: 'RateLimitExceeded', message: 'Too many notification streams.' }, 429);
   connections.set(key, (connections.get(key) || 0) + 1);
   context.header('X-Accel-Buffering', 'no');
   return streamSSE(context, async output => {
+    streams.add(output);
     let aborted = false, tick = 0;
     output.onAbort(() => { aborted = true; });
     try {
@@ -28,6 +33,7 @@ export function stream(context, key, maxConnections, poll) {
         await output.sleep(2000);
       }
     } finally {
+      streams.delete(output);
       const count = (connections.get(key) || 1) - 1;
       if (count) connections.set(key, count); else connections.delete(key);
     }
