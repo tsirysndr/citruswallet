@@ -387,3 +387,8 @@ textarea:focus-visible { outline: none; }
   .command-amount { font-size: 13px; max-width: 32%; }
   .command-result { gap: 9px; padding: 10px; }
 }
+
+.notification-dialog { margin: auto; width: min(480px, calc(100vw - 32px)); max-height: 80dvh; overflow-y: auto; border: 1px solid var(--edge); border-radius: 20px; background: var(--surface); color: var(--ink); padding: 22px; }
+.notification-dialog::backdrop { background: #19191655; }
+.notification-item { display: flex; flex-direction: column; gap: 8px; padding: 16px; border: 1px solid var(--edge-soft); background: var(--panel); text-align: left; border-radius: 8px; cursor: pointer; }
+.notification-item:hover { border-color: var(--accent-strong); }

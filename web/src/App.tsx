@@ -6,6 +6,7 @@ import { rpc } from "./api";
 import { inviteTokenAtom, reviewIdAtom, statusAtom } from "./atoms";
 import { BottomNav, SidebarNav } from "./components/Nav";
 import { CitrusMark } from "./components/CitrusMark";
+import { Notifications } from "./components/Notifications";
 import { ActivitySearch } from "./components/ActivitySearch";
 import { InstallApp } from "./components/InstallApp";
 import { KeyboardShortcuts } from "./components/KeyboardShortcuts";
@@ -88,7 +89,7 @@ export function App() {
           <span className="logo-mark"><CitrusMark /></span><span>Citrus<span className="logo-wallet hidden min-[400px]:inline"> Wallet</span></span>
         </Link>
         <div className="flex items-center gap-2.5">
-          {session?.did && <ActivitySearch />}
+          {session?.did && <><Notifications /><ActivitySearch /></>}
           <InstallMetaMask />
         </div>
       </header>
