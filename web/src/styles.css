@@ -1,9 +1,13 @@
 @import "tailwindcss";
 @import "@fontsource-variable/roboto-mono";
 
+@font-face { font-family: "Rockford"; src: url("/fonts/RockfordSans-Regular.otf") format("opentype"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "Rockford"; src: url("/fonts/RockfordSans-Medium.otf") format("opentype"); font-weight: 500; font-style: normal; font-display: swap; }
+@font-face { font-family: "Rockford"; src: url("/fonts/RockfordSans-Bold.otf") format("opentype"); font-weight: 600 900; font-style: normal; font-display: swap; }
+
 /* Citrus: warm neutrals, lime, lilac, peach, and electric blue. */
 @theme {
-  --font-sans: "Roboto Mono Variable", "SF Mono", "Fira Code", "Fira Mono", "Roboto Mono", monospace;
+  --font-sans: "Rockford", system-ui, sans-serif;
   --font-mono: "Roboto Mono Variable", "SF Mono", "Fira Code", "Fira Mono", "Roboto Mono", monospace;
 
   --color-canvas: var(--canvas);
@@ -152,9 +156,9 @@ textarea:focus-visible { outline: none; }
 .signed-out-card h1 { font-size: 48px; letter-spacing: -2px; line-height: 1.15; margin-bottom: 20px; }.signed-out-card .brand-cta { margin: 32px auto 0; max-width: 350px; }
 @media (min-width: 768px) and (max-width: 1020px) { .app-shell { --sidebar-width: 230px; }.app-workspace { padding: 0 24px; }.app-sidebar { padding-inline: 16px; }.sidebar-brand .logo-wallet { display: none; }.identity-card .form-row { flex-wrap: wrap; }.identity-card button[type=submit] { width: 100%; } }
 @media (max-width: 767px) {
-  .app-shell { padding: 0; }.app-workspace { padding: 0 18px 90px; }.app-sidebar { display: none; }.mobile-brand { display: flex !important; }.app-header { justify-content: space-between; min-height: 84px; padding: 20px 4px; gap: 10px; }.brand-logo { font-size: 20px; }.logo-mark { width: 36px; height: 36px; font-size: 30px; }.app-main { padding-top: 0; }
+  .app-shell { padding: 0; }.app-workspace { padding: 0 18px calc(112px + env(safe-area-inset-bottom)); }.app-sidebar { display: none; }.mobile-brand { display: flex !important; }.app-header { justify-content: space-between; min-height: 84px; padding: 20px 4px; gap: 10px; }.brand-logo { font-size: 20px; }.logo-mark { width: 36px; height: 36px; font-size: 30px; }.app-main { padding-top: 0; }
   .dashboard { padding: 16px 0 0; }.dashboard-greeting h2 { font-size: 30px; }.balance-amount { font-size: clamp(24px, 6.5vw, 32px); }.balance-card { padding: 24px; }.action-tile { min-height: 54px; font-size: 13px; gap: 6px; }.quick-actions { gap: 11px; }
-  .mobile-nav { background: var(--surface); border-radius: 24px 24px 0 0; padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); box-shadow: 0 -4px 25px var(--shadow); gap: 8px; }.mobile-nav a { border-radius: 15px; gap: 5px; padding: 10px 0; }.mobile-nav a svg { width: 22px; height: 22px; }
+  .mobile-nav { left: max(16px, env(safe-area-inset-left)); right: max(16px, env(safe-area-inset-right)); bottom: calc(12px + env(safe-area-inset-bottom)); max-width: 460px; margin-inline: auto; background: var(--surface); border: 1px solid var(--edge-soft); border-radius: 999px; padding: 6px; box-shadow: 0 8px 28px var(--shadow); gap: 4px; }.mobile-nav a { min-width: 0; border-radius: 999px; gap: 4px; padding: 10px 0; font-size: 12px; }.mobile-nav a svg { width: 24px; height: 24px; }
   .app-footer { flex-direction: column; gap: 5px; text-align: center; font-size: 12px; padding-bottom: 0; }.page-content { padding: 26px 18px; border-radius: 30px; }.page-content .ui-panel { padding: 22px 18px; }.page-heading { margin-bottom: 12px; }.signed-out-card { padding: 40px 24px; border-radius: 30px; }.signed-out-card h1 { font-size: 40px; }.form-row { flex-wrap: wrap; }.form-row > button { flex-grow: 1; min-height: 46px; }.form-row > div { flex-basis: 180px; }.form-row > input { flex-basis: 180px; flex-grow: 1; }.identity-card .form-row { flex-direction: column; flex-wrap: nowrap; }.identity-card .form-row > button { flex-grow: 0; width: 100%; }.identity-card .form-row > div { flex-basis: auto; width: 100%; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
