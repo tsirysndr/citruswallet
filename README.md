@@ -1,5 +1,8 @@
 # Citrus Wallet
 
+[![API tests](https://github.com/tsirysndr/citruswallet/actions/workflows/api-tests.yml/badge.svg)](https://github.com/tsirysndr/citruswallet/actions/workflows/api-tests.yml)
+[![Web tests](https://github.com/tsirysndr/citruswallet/actions/workflows/web-tests.yml/badge.svg)](https://github.com/tsirysndr/citruswallet/actions/workflows/web-tests.yml)
+
 Pay someone by their AT Protocol handle instead of their Ethereum address.
 
 ![Citrus Wallet signed in: an account card showing an avatar, display name, handle, linked balance and DID, beside the panel for linking a MetaMask wallet](preview.png)
