@@ -22,3 +22,4 @@ credentials.json
 # Include Firebase's Android client configuration in EAS archives only.
 # Service-account private keys must never be placed in this file.
 !app/google-services.json
+!app/klipy.config.json

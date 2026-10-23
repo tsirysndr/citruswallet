@@ -1,5 +1,7 @@
+import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
-import { Image, Linking, Text, View } from "react-native";
+import { Image, Linking, Pressable, View } from "react-native";
+import { Text } from "../components/Typography";
 import { useSetAtom } from "jotai";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { request, saveToken } from "../api";
@@ -7,7 +9,9 @@ import { signIn } from "../auth";
 import { useAction, useProfile, useSession } from "../hooks";
 import { screenAtom } from "../state";
 import { formatWei } from "../amount";
-import { Avatar, Button, Field, Heading } from "../components/ui";
+import { Avatar, Button, Heading } from "../components/ui";
+import { HandleInput } from "../components/HandleInput";
+import { WalletAction } from "../components/WalletAction";
 export function Account() {
   const { data: session } = useSession(),
     { data: profile } = useProfile();
@@ -62,16 +66,10 @@ export function Account() {
         />
         <View className="gap-5 rounded-3xl bg-white p-6">
           <Heading title="Welcome to Citrus" />
-          <Field
-            label="Handle"
-            placeholder="you.bsky.social"
-            value={handle}
-            onChangeText={setHandle}
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
+          <HandleInput value={handle} onChange={setHandle} />
           <Button
             title="Sign in with AT Protocol"
+            tone="black"
             disabled={!handle.trim()}
             onPress={() =>
               run(async () => {
@@ -113,17 +111,18 @@ export function Account() {
         <Avatar actor={profile} />
       </View>
       <View className="gap-4 rounded-3xl bg-ink p-6">
-        <Text
-          className="text-base text-white"
-          onPress={() => setHidden(!hidden)}
-          accessibilityRole="button"
-        >
-          Your balance {hidden ? "◉" : "○"}
-        </Text>
+        <View className="flex-row items-center justify-between">
+          <Text className="text-lg text-white">Your balance</Text>
+          <Pressable accessibilityRole="button" accessibilityLabel={hidden ? "Show balance" : "Hide balance"}
+            onPress={() => setHidden(!hidden)} hitSlop={8}
+            className="h-12 w-12 items-center justify-center rounded-full bg-white/15">
+            <Ionicons name={hidden ? "eye-off-outline" : "eye-outline"} size={28} color="#ffffff" />
+          </Pressable>
+        </View>
         <Text
           numberOfLines={1}
           adjustsFontSizeToFit
-          className="text-4xl font-semibold text-white"
+          className="font-mono text-4xl font-semibold text-white"
         >
           {hidden ? "••••••" : (balance ?? "—")} ETH
         </Text>
@@ -131,10 +130,10 @@ export function Account() {
       </View>
       <View className="flex-row gap-3">
         <View className="flex-1">
-          <Button title="Link wallet" onPress={() => go("Wallet")} />
+          <WalletAction action="link" onPress={() => go("Wallet")} />
         </View>
         <View className="flex-1">
-          <Button title="Send ETH" tone="dark" onPress={() => go("Payments")} />
+          <WalletAction action="send" onPress={() => go("Payments")} />
         </View>
       </View>
       <View className="gap-4 rounded-3xl bg-white p-5">

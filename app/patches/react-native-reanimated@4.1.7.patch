@@ -1,0 +1,22 @@
+diff --git a/android/CMakeLists.txt b/android/CMakeLists.txt
+index c4e4df92cc30961d75d06fcd7e0209140e7391ca..19e9dc4387ee0d96f345e556b4bef65148a82eab 100644
+--- a/android/CMakeLists.txt
++++ b/android/CMakeLists.txt
+@@ -79,14 +79,9 @@ else()
+   set(BUILD_TYPE "release")
+ endif()
+ 
+-add_library(worklets SHARED IMPORTED)
+-
+-set_target_properties(
+-  worklets
+-  PROPERTIES
+-    IMPORTED_LOCATION
+-    "${REACT_NATIVE_WORKLETS_DIR}/android/build/intermediates/cmake/${BUILD_TYPE}/obj/${ANDROID_ABI}/libworklets.so"
+-)
++# Use the exported Prefab target instead of assuming an AGP output directory.
++find_package(react-native-worklets REQUIRED CONFIG)
++add_library(worklets ALIAS react-native-worklets::worklets)
+ 
+ set_target_properties(reanimated PROPERTIES LINKER_LANGUAGE CXX)
+ # remove dead code sections

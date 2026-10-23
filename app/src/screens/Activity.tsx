@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Alert, Modal, Pressable, Text, View } from "react-native";
+import { Alert, Modal, Pressable, View } from "react-native";
+import { Text } from "../components/Typography";
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSetAtom } from "jotai";

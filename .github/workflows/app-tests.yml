@@ -28,5 +28,5 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bun install --frozen-lockfile
         working-directory: app
-      - run: bun run typecheck && bun run test && bun run export
+      - run: bun run typecheck && bun run test && bun run test:ui && bun run export
         working-directory: app

@@ -1,16 +1,21 @@
+import { ThemeSwitch } from "../components/ThemeSwitch";
 import { useEffect, useState } from "react";
-import { Alert, Share, Switch, Text, View } from "react-native";
+import { Alert, BackHandler, Keyboard, Pressable, Share, View } from "react-native";
+import { Text } from "../components/Typography";
 import { useAtom } from "jotai";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { request } from "../api";
 import { useAction, useSession } from "../hooks";
 import { reviewAtom } from "../state";
-import { amountWei } from "../amount";
+import { Ionicons } from "@expo/vector-icons";
 import { pending, recover, sendPayment } from "../wallet";
-import type { Actor, Payment, Recipient } from "../types";
+import type { Actor, Payment, PaymentMedia, Recipient } from "../types";
 import { Avatar, Button, Empty, Field, Heading } from "../components/ui";
-import { AmountPad } from "../components/AmountPad";
-export function Payments() {
+import { Image } from "expo-image";
+import { recordShare } from "../klipy";
+import { RecipientStep } from "./payment/RecipientStep";
+import { AmountStep } from "./payment/AmountStep";
+export function Payments({ onStepChange }: { onStepChange?: () => void }) {
   const { data: session } = useSession(),
     query = useQueryClient(),
     run = useAction();
@@ -22,17 +27,17 @@ export function Payments() {
     [ack, setAck] = useState(false),
     [hash, setHash] = useState(""),
     [hasPending, setPending] = useState(false);
-  const [search, setSearch] = useState("");
+  const [media, setMedia] = useState<PaymentMedia | null>(null);
+  const [step, setStep] = useState<1 | 2>(1);
+  const [actor, setActor] = useState<Actor | null>(null);
+  useEffect(() => { onStepChange?.(); }, [step, id]);
   useEffect(() => {
-    const timer = setTimeout(() => setSearch(handle.trim()), 250);
-    return () => clearTimeout(timer);
-  }, [handle]);
-  const { data: suggestions } = useQuery({
-    queryKey: ["actors", search],
-    enabled: !!session?.did && search.length > 1 && !recipient,
-    queryFn: () =>
-      request<{ actors: Actor[] }>("searchActors", undefined, { q: search }),
-  });
+    const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (!id && step === 2) { setStep(1); return true; }
+      return false;
+    });
+    return () => subscription.remove();
+  }, [step, id]);
   const { data: detail, isFetching } = useQuery({
     queryKey: ["payment", session?.did, id],
     enabled: !!id && !!session?.did,
@@ -57,22 +62,28 @@ export function Payments() {
   const resolve = () =>
     run(async () => {
       const result = await request<Recipient>("resolveRecipient", {
-        identifier: handle,
+        identifier: actor?.did || handle,
       });
       if (result.did === session.did)
         throw new Error("You cannot send ETH to yourself.");
       setRecipient(result);
+      Keyboard.dismiss();
+      setStep(2);
     });
   return (
     <View className="gap-5">
-      <Heading
-        title={id ? "Review payment" : "Send ETH"}
-        subtitle={
-          id
-            ? "Check every detail before opening MetaMask."
-            : "Pay someone by their AT Protocol handle."
-        }
-      />
+      <View className="flex-row items-center justify-between">
+        {!id && step === 2 ? <Pressable accessibilityRole="button" accessibilityLabel="Back to recipient"
+          onPress={() => setStep(1)} className="min-h-12 flex-row items-center gap-2 pr-4">
+          <Ionicons name="arrow-back" size={24} color="#191916" /><Text className="text-base">Back</Text>
+        </Pressable> : <Text className="text-base font-medium">Send ETH</Text>}
+        <Text accessibilityLabel={`Step ${id ? 3 : step} of 3`} className="text-sm text-muted">Step {id ? 3 : step} of 3</Text>
+      </View>
+      <View className="flex-row gap-2">
+        {[1, 2, 3].map(value => <View key={value} className={`h-1 flex-1 rounded-full ${value <= (id ? 3 : step) ? 'bg-ink' : 'bg-edge'}`} />)}
+      </View>
+      <Heading title={id ? "Review payment" : step === 1 ? "Who are you paying?" : "How much?"}
+        subtitle={id ? "Check every detail before opening MetaMask." : step === 1 ? "Find someone by their AT Protocol handle." : "Enter an amount and add an optional note."} />
       {hasPending && (
         <View className="gap-3 rounded-2xl bg-peach p-4">
           <Text className="text-base">
@@ -97,80 +108,23 @@ export function Payments() {
         </View>
       )}
       {!id ? (
-        <>
-          <Field
-            label="Recipient handle"
-            value={handle}
-            onChangeText={(text) => {
-              setHandle(text);
-              setRecipient(null);
-            }}
-            autoCapitalize="none"
-            autoCorrect={false}
-            placeholder="friend.bsky.social"
-          />
-          {!recipient &&
-            suggestions?.actors
-              .filter((actor) => actor.did !== session.did)
-              .slice(0, 5)
-              .map((actor) => (
-                <Button
-                  key={actor.did}
-                  title={`@${actor.handle}`}
-                  tone="plain"
-                  onPress={() => {
-                    setHandle(actor.handle);
-                    void run(async () =>
-                      setRecipient(
-                        await request<Recipient>("resolveRecipient", {
-                          identifier: actor.did,
-                        }),
-                      ),
-                    );
-                  }}
-                />
-              ))}
-          {!recipient ? (
-            <Button
-              title="Find recipient"
-              disabled={!handle.trim()}
-              onPress={resolve}
-            />
-          ) : (
-            <View className="rounded-xl bg-lilac p-4">
-              <Text className="text-base font-semibold">{handle}</Text>
-              <Text className="text-xs">{recipient.did}</Text>
-            </View>
-          )}
-          <AmountPad value={amount} onChange={setAmount} />
-          <Field
-            label="Description (optional)"
-            value={description}
-            onChangeText={setDescription}
-            maxLength={500}
-            multiline
-            placeholder="What's this payment for?"
-          />
-          <Button
-            title="Create payment & review"
-            disabled={!recipient || amountWei(amount) === 0n}
-            onPress={() =>
-              run(async () => {
-                const { payment } = await request<{ payment: Payment }>(
-                  "createPayment",
-                  {
-                    identifier: handle,
-                    expectedDid: recipient!.did,
-                    amount: amount.replace(/\.$/, ""),
-                    description: description.trim() || undefined,
-                  },
-                );
-                setId(payment.id);
-                await query.invalidateQueries();
-              })
-            }
-          />
-        </>
+        step === 1 ? <RecipientStep handle={handle} actor={actor} ownDid={session.did}
+          onChange={value => { setHandle(value); setActor(null); setRecipient(null); }}
+          onSelect={setActor} onContinue={resolve} /> :
+        <AmountStep actor={actor} handle={handle} amount={amount} description={description}
+          onAmount={setAmount} onDescription={setDescription} media={media} onMedia={setMedia}
+          onReview={() => run(async () => {
+            if (!recipient || recipient.did === session.did) throw new Error("Choose a different recipient.");
+            const { payment } = await request<{ payment: Payment }>("createPayment", {
+              identifier: recipient.did, expectedDid: recipient.did,
+              amount: amount.replace(/\.$/, ""), description: description.trim() || undefined, media: media || undefined,
+            });
+            Keyboard.dismiss();
+            query.setQueryData(["payment", session.did, payment.id], { payment });
+            setId(payment.id);
+            if (media) void recordShare(media, "");
+            await query.invalidateQueries();
+          })} />
       ) : (
         <>
           {!payment ? (
@@ -202,6 +156,7 @@ export function Payments() {
                   {payment.recipientDid}
                 </Text>
                 {payment.description && <Text>{payment.description}</Text>}
+                {payment.media && <Image source={{ uri: payment.media.preview }} style={{ width: "100%", height: 160 }} contentFit="contain" accessibilityLabel={payment.media.title} />}
                 {payment.txHash && (
                   <Text selectable className="text-xs">
                     {payment.txHash}
@@ -215,7 +170,7 @@ export function Payments() {
                 ["ready", "prepared"].includes(payment.state) && (
                   <>
                     <View className="flex-row items-center gap-3">
-                      <Switch
+                      <ThemeSwitch
                         accessibilityLabel="Confirm payment details"
                         value={ack}
                         onValueChange={setAck}
@@ -284,6 +239,12 @@ export function Payments() {
                     />
                   </>
                 )}
+              {recipient && payment.senderDid === session.did && ["waiting", "ready"].includes(payment.state) && (
+                <Button title="Edit details" tone="plain" onPress={() => run(async () => {
+                  await request("cancelPayment", { id: payment.id });
+                  setId(null); setStep(2); await query.invalidateQueries();
+                })} />
+              )}
               <Button
                 title="Refresh status"
                 tone="plain"
@@ -296,10 +257,13 @@ export function Payments() {
             tone="plain"
             onPress={() => {
               setId(null);
+              setStep(1);
+              setActor(null);
               setAmount("0");
               setRecipient(null);
               setHandle("");
               setDescription("");
+              setMedia(null);
             }}
           />
         </>

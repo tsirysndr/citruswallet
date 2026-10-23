@@ -1,5 +1,7 @@
+import { ThemeSwitch } from "../components/ThemeSwitch";
 import { useState } from "react";
-import { Alert, Linking, Switch, Text, View } from "react-native";
+import { Alert, Linking, View } from "react-native";
+import { Text } from "../components/Typography";
 import * as Clipboard from "expo-clipboard";
 import { useQueryClient } from "@tanstack/react-query";
 import { request } from "../api";
@@ -11,6 +13,7 @@ export function Wallet() {
     query = useQueryClient(),
     run = useAction();
   const [isPublic, setPublic] = useState(true);
+  const [connecting, setConnecting] = useState(false);
   if (!session?.did)
     return <Empty text="Sign in from Account to link a wallet." />;
   return (
@@ -20,7 +23,7 @@ export function Wallet() {
         subtitle="Connect with the MetaMask app. Signing proves ownership; it does not move funds."
       />
       <View className="flex-row items-center gap-3">
-        <Switch
+        <ThemeSwitch
           accessibilityLabel="Public receiving address"
           value={isPublic}
           onValueChange={setPublic}
@@ -30,11 +33,16 @@ export function Wallet() {
         </Text>
       </View>
       <Button
-        title="Connect & link MetaMask"
+        title={connecting ? "Connecting to MetaMask…" : "Connect & link MetaMask"}
         onPress={() =>
           run(async () => {
-            await linkWallet(session.network, isPublic);
-            await query.invalidateQueries();
+            setConnecting(true);
+            try {
+              await linkWallet(session.network, isPublic);
+              await query.invalidateQueries();
+            } finally {
+              setConnecting(false);
+            }
           })
         }
       />
@@ -49,7 +57,7 @@ export function Wallet() {
           key={`${link.chain_id}:${link.address}`}
           className="gap-4 rounded-3xl bg-white p-5"
         >
-          <Text selectable className="text-sm">
+          <Text selectable className="font-mono text-sm">
             {link.address}
           </Text>
           <Text className="text-sm text-muted">

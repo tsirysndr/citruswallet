@@ -1,21 +1,14 @@
 import "./global.css";
 import { useNotifications } from "./src/notifications";
 import { NotificationsInbox } from "./src/components/NotificationsInbox";
-import { useEffect } from "react";
-import {
-  AppState,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  RefreshControl,
-  ScrollView,
-  Text,
-  View,
-} from "react-native";
+import { useEffect, useRef } from "react";
+import { AppState, Image, KeyboardAvoidingView, Platform, Pressable, RefreshControl, ScrollView, View } from "react-native";
+import { Text } from "./src/components/Typography";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
+import { useFonts } from "expo-font";
 import * as Linking from "expo-linking";
-import { Ionicons } from "@expo/vector-icons";
+import { BottomTabs } from "./src/components/BottomTabs";
 import { Provider, useAtom, useAtomValue, useSetAtom } from "jotai";
 import {
   QueryClient,
@@ -31,7 +24,6 @@ import {
   noticeAtom,
   readyAtom,
   screenAtom,
-  type Screen,
 } from "./src/state";
 import { Account } from "./src/screens/Account";
 import { Wallet } from "./src/screens/Wallet";
@@ -43,16 +35,8 @@ const client = new QueryClient({
     mutations: { retry: false },
   },
 });
-const tabs: {
-  name: Screen;
-  icon: React.ComponentProps<typeof Ionicons>["name"];
-}[] = [
-  { name: "Account", icon: "person-outline" },
-  { name: "Wallet", icon: "wallet-outline" },
-  { name: "Payments", icon: "arrow-up-outline" },
-  { name: "Activity", icon: "time-outline" },
-];
 function Shell() {
+  const scroll = useRef<ScrollView>(null);
   const [screen, setScreen] = useAtom(screenAtom),
     [notice, setNotice] = useAtom(noticeAtom),
     busy = useAtomValue(busyAtom),
@@ -96,8 +80,11 @@ function Shell() {
     <SafeAreaView className="flex-1 bg-canvas" edges={["top", "bottom"]}>
       <StatusBar style="dark" />
       <View className="flex-row items-center justify-between px-5 py-4">
-        <Text className="text-xl font-bold text-ink">◉ Citrus Wallet</Text>
-        <View className="flex-row items-center gap-1">
+        <View className="min-w-0 flex-1 flex-row items-center gap-3">
+          <Image source={require('./assets/icon.png')} accessibilityLabel="Citrus Wallet logo" style={{ width: 42, height: 42 }} />
+          <Text numberOfLines={1} adjustsFontSizeToFit className="flex-shrink text-xl font-bold text-ink">Citrus Wallet</Text>
+        </View>
+        <View className="items-end pl-2">
           <NotificationsInbox />
           <Text className="text-xs text-muted">
             <Text style={{ color: "#39e75f" }}>● </Text>
@@ -110,6 +97,7 @@ function Shell() {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <ScrollView
+          ref={scroll}
           key={screen}
           contentContainerStyle={{ padding: 20, paddingBottom: 32 }}
           keyboardShouldPersistTaps="handled"
@@ -151,30 +139,23 @@ function Shell() {
           ) : screen === "Wallet" ? (
             <Wallet />
           ) : screen === "Payments" ? (
-            <Payments />
+            <Payments onStepChange={() => scroll.current?.scrollTo({ y: 0, animated: false })} />
           ) : (
             <Activity />
           )}
         </ScrollView>
       </KeyboardAvoidingView>
-      <View className="flex-row border-t border-edge bg-white px-2 py-2">
-        {tabs.map((tab) => (
-          <Pressable
-            key={tab.name}
-            accessibilityRole="tab"
-            accessibilityState={{ selected: screen === tab.name }}
-            onPress={() => setScreen(tab.name)}
-            className={`flex-1 items-center gap-1 rounded-2xl py-3 ${screen === tab.name ? "bg-accent" : ""}`}
-          >
-            <Ionicons name={tab.icon} size={23} color="#191916" />
-            <Text className="text-xs text-ink">{tab.name}</Text>
-          </Pressable>
-        ))}
-      </View>
+      <BottomTabs screen={screen} onChange={setScreen} />
     </SafeAreaView>
   );
 }
 export default function App() {
+  const [fontsLoaded, fontError] = useFonts({
+    Rockford: require('./assets/fonts/RockfordSans-Regular.otf'),
+    RockfordMedium: require('./assets/fonts/RockfordSans-Medium.otf'),
+    RockfordBold: require('./assets/fonts/RockfordSans-Bold.otf'),
+  });
+  if (!fontsLoaded && !fontError) return null;
   return (
     <SafeAreaProvider>
       <Provider>

@@ -1,11 +1,5 @@
-import {
-  Image,
-  Pressable,
-  Text,
-  TextInput,
-  View,
-  type TextInputProps,
-} from "react-native";
+import { Image, Pressable, View, type TextInputProps } from "react-native";
+import { Text, TextInput } from "./Typography";
 import { useAtomValue } from "jotai";
 import { busyAtom } from "../state";
 import type { Actor } from "../types";
@@ -18,18 +12,24 @@ export function Button({
   title: string;
   onPress: () => void;
   disabled?: boolean;
-  tone?: "lime" | "plain" | "dark";
+  tone?: "lime" | "plain" | "dark" | "black";
 }) {
   const busy = useAtomValue(busyAtom);
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityLabel={title}
+      style={{ alignSelf: "stretch", minHeight: 48 }}
       disabled={disabled || busy}
       onPress={onPress}
-      className={`min-h-12 items-center justify-center rounded-lg px-4 py-3 ${tone === "dark" ? "bg-ink" : tone === "plain" ? "bg-white" : "bg-accent"} ${disabled || busy ? "opacity-40" : ""}`}
+      className={`min-h-12 items-center justify-center rounded-lg px-4 py-3 ${tone === "black" ? "bg-black" : tone === "dark" ? "bg-ink" : tone === "plain" ? "bg-white" : "bg-accent"} ${(disabled || busy) && tone !== "black" ? "opacity-40" : ""}`}
     >
       <Text
-        className={`text-base font-semibold ${tone === "dark" ? "text-white" : "text-ink"}`}
+        numberOfLines={1}
+        adjustsFontSizeToFit
+        minimumFontScale={0.8}
+        style={{ width: "100%", textAlign: "center", lineHeight: 26, includeFontPadding: true, flexShrink: 0 }}
+        className={`text-base font-semibold ${tone === "dark" || tone === "black" ? "text-white" : "text-ink"}`}
       >
         {title}
       </Text>

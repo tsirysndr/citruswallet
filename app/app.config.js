@@ -32,5 +32,9 @@ module.exports = {
     ["expo-notifications", { color: "#c5f277" }],
   ],
   // Dedicated Citrus Wallet project under the existing Expo account.
-  extra: { eas: { projectId: "4111c93c-f70b-4ed0-b80e-efdb725dd710" } },
+  extra: {
+    eas: { projectId: "4111c93c-f70b-4ed0-b80e-efdb725dd710" },
+    klipyApiKey: process.env.EXPO_PUBLIC_KLIPY_API_KEY ||
+      (fs.existsSync('./klipy.config.json') ? JSON.parse(fs.readFileSync('./klipy.config.json', 'utf8')).apiKey : ''),
+  },
 };

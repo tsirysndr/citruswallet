@@ -8,6 +8,7 @@ ios/
 *.tsbuildinfo
 
 google-services.json
+klipy.config.json
 *service-account*.json
 credentials.json
 *.jks
