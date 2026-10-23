@@ -125,6 +125,36 @@ defs = new Dynamic {
     `type` = "string"
     `knownValues` = List("waiting", "ready", "prepared", "submitted", "confirming", "confirmed", "failed", "cancelled", "expired")
   }
+  `asset` = new Dynamic {
+    `type` = "object"
+    `required` = List("id", "chain", "chainId", "kind", "contractAddress", "symbol", "name", "decimals")
+    `properties` = new Dynamic {
+      `id` = new Dynamic { `type` = "string" }
+      `chain` = new Dynamic { `type` = "string" }
+      `chainId` = new Dynamic { `type` = "integer" }
+      `kind` = new Dynamic { `type` = "string"
+        `knownValues` = List("native", "erc20") }
+      `contractAddress` = new Dynamic { `type` = "string" }
+      `symbol` = new Dynamic { `type` = "string"
+        `maxLength` = 128 }
+      `name` = new Dynamic { `type` = "string"
+        `maxLength` = 512 }
+      `decimals` = new Dynamic { `type` = "integer"
+        `minimum` = 0
+        `maximum` = 255 }
+    }
+    `nullable` = List("contractAddress")
+  }
+  `assetBalance` = new Dynamic {
+    `type` = "object"
+    `required` = List("asset", "balanceAtomic", "address")
+    `properties` = new Dynamic {
+      `asset` = new Dynamic { `type` = "ref"
+        `ref` = "app.citruswallet.defs#asset" }
+      `balanceAtomic` = new Dynamic { `type` = "string" }
+      `address` = new Dynamic { `type` = "string" }
+    }
+  }
   `payment` = new Dynamic {
     `type` = "object"
     `required` = List("id", "senderDid", "recipientDid", "recipientLabel", "chainId", "asset", "amount", "amountWei", "state", "address", "revision", "source", "createdAt", "expiresAt", "txHash", "error", "confirmationsRequired")
@@ -167,6 +197,10 @@ defs = new Dynamic {
         `type` = "ref"
         `ref` = "app.citruswallet.defs#actor"
       }
+      `assetId` = new Dynamic { `type` = "string" }
+      `assetDetails` = new Dynamic { `type` = "ref"
+        `ref` = "app.citruswallet.defs#asset" }
+      `amountAtomic` = new Dynamic { `type` = "string" }
       `amountWei` = new Dynamic {
         `type` = "string"
       }

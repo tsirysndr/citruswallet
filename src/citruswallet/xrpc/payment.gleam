@@ -45,12 +45,13 @@ pub fn create_payment(
 ) -> Promise(Result(Reply, HttpError)) {
   use body <- promise.try_await(context.read_body(ctx))
   use #(_, did) <- context.attempt(context.authenticated(server, ctx))
-  use #(payment, invitation) <- promise.try_await(payments.create(
+  use #(payment, invitation) <- promise.try_await(payments.create_asset(
     server.payments,
     sender_did: did,
     identifier: js.string_field(body, "identifier"),
     expected_did: js.string_field(body, "expectedDid"),
     amount: js.string_field(body, "amount"),
+    asset: js.string_field(body, "assetId"),
     description: js.string_field(body, "description"),
     media: js.field(body, "media") |> option.map(js.stringify),
   ))

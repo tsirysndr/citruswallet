@@ -286,3 +286,77 @@ pub fn reverted_transaction_is_failed_not_confirmed_test() {
     )
   store.close(service.store)
 }
+
+fn token_payment(service) {
+  f.set_mode(service, "erc20")
+  use outcome <- promise.map(payments.create_asset(
+    service,
+    f.alice,
+    Some("bob.test"),
+    Some(f.bob),
+    Some("1"),
+    None,
+    None,
+    Some("eip155:1/erc20:0x4444444444444444444444444444444444444444"),
+  ))
+  let assert Ok(#(payment, _)) = outcome
+  assert payment.amount_atomic == "1000000"
+  assert payment.asset.decimals == 6
+  payment
+}
+
+pub fn erc20_requires_exact_transfer_receipt_test() {
+  [
+    "erc20",
+    "log-contract",
+    "log-sender",
+    "log-recipient",
+    "log-amount",
+    "log-missing",
+    "log-duplicate",
+    "reverted",
+    "wrong-data",
+    "wrong-value",
+    "wrong-recipient",
+    "wrong-sender",
+    "wrong-nonce",
+    "wrong-transaction-chain",
+  ]
+  |> list.map(fn(mode) {
+    let service = f.ready()
+    use payment <- promise.await(token_payment(service))
+    use prepared <- promise.await(f.prepare(service, payment))
+    let assert Ok(attempt) = prepared
+    assert attempt.value_wei == "0"
+    assert attempt.to == "0x4444444444444444444444444444444444444444"
+    f.set_mode(service, mode)
+    use submitted <- promise.map(payments.submit(
+      service,
+      f.alice,
+      Some(payment.id),
+      Some(attempt.attempt_id),
+      Some(f.hash),
+    ))
+    let assert Ok(confirmed) = submitted
+    assert confirmed.state
+      == case mode {
+        "erc20" -> payments.Confirmed
+        _ -> payments.Failed
+      }
+    store.close(service.store)
+  })
+  |> promise.await_list
+}
+
+pub fn erc20_preflight_rejects_changed_decimals_balance_and_failed_simulations_test() {
+  ["changed-decimals", "insufficient", "simulation-revert", "simulation-false"]
+  |> list.map(fn(mode) {
+    let service = f.ready()
+    use payment <- promise.await(token_payment(service))
+    f.set_mode(service, mode)
+    use prepared <- promise.map(f.prepare(service, payment))
+    let assert Error(_) = prepared
+    store.close(service.store)
+  })
+  |> promise.await_list
+}

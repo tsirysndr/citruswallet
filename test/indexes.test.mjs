@@ -10,7 +10,7 @@ function fixture(t) {
   t.after(() => close(store));
   const db = store.client;
   db.transaction(() => {
-    const put = db.prepare(`INSERT INTO payments(id,sender_did,recipient_did,recipient_label,chain_id,amount_wei,state,created_at,expires_at)
+    const put = db.prepare(`INSERT INTO payments(id,sender_did,recipient_did,recipient_label,chain_id,amount_atomic,state,created_at,expires_at)
       VALUES(?,?,?,'recipient.test',?,'1',?,?,?)`);
     const profile = db.prepare('INSERT INTO user_profiles(did,handle,display_name) VALUES(?,?,?)');
     for (let i = 0; i < 1000; i++) profile.run(`did:plc:user${i}`, `user${i}.test`, `Person ${i}`);

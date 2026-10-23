@@ -211,9 +211,13 @@ export const schemas = [
                 "maxLength": 2000,
                 "maxGraphemes": 500
               },
+              "assetId": {
+                "type": "string",
+                "maxLength": 160
+              },
               "amount": {
                 "type": "string",
-                "maxLength": 80
+                "maxLength": 340
               }
             }
           }
@@ -412,6 +416,76 @@ export const schemas = [
           "expired"
         ]
       },
+      "asset": {
+        "type": "object",
+        "required": [
+          "id",
+          "chain",
+          "chainId",
+          "kind",
+          "contractAddress",
+          "symbol",
+          "name",
+          "decimals"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "chain": {
+            "type": "string"
+          },
+          "chainId": {
+            "type": "integer"
+          },
+          "kind": {
+            "type": "string",
+            "knownValues": [
+              "native",
+              "erc20"
+            ]
+          },
+          "contractAddress": {
+            "type": "string"
+          },
+          "symbol": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 512
+          },
+          "decimals": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          }
+        },
+        "nullable": [
+          "contractAddress"
+        ]
+      },
+      "assetBalance": {
+        "type": "object",
+        "required": [
+          "asset",
+          "balanceAtomic",
+          "address"
+        ],
+        "properties": {
+          "asset": {
+            "type": "ref",
+            "ref": "lex:app.citruswallet.defs#asset"
+          },
+          "balanceAtomic": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          }
+        }
+      },
       "payment": {
         "type": "object",
         "required": [
@@ -471,6 +545,16 @@ export const schemas = [
           "recipient": {
             "type": "ref",
             "ref": "lex:app.citruswallet.defs#actor"
+          },
+          "assetId": {
+            "type": "string"
+          },
+          "assetDetails": {
+            "type": "ref",
+            "ref": "lex:app.citruswallet.defs#asset"
+          },
+          "amountAtomic": {
+            "type": "string"
           },
           "amountWei": {
             "type": "string"
@@ -829,6 +913,89 @@ export const schemas = [
                   "type": "ref",
                   "ref": "lex:app.citruswallet.defs#link"
                 }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "app.citruswallet.getAsset",
+    "defs": {
+      "main": {
+        "type": "query",
+        "parameters": {
+          "type": "params",
+          "required": [
+            "address",
+            "assetId"
+          ],
+          "properties": {
+            "address": {
+              "type": "string",
+              "maxLength": 42
+            },
+            "assetId": {
+              "type": "string",
+              "maxLength": 160
+            }
+          }
+        },
+        "output": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "ref",
+            "ref": "lex:app.citruswallet.defs#assetBalance"
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "app.citruswallet.getAssets",
+    "defs": {
+      "main": {
+        "type": "query",
+        "parameters": {
+          "type": "params",
+          "required": [
+            "address"
+          ],
+          "properties": {
+            "address": {
+              "type": "string",
+              "maxLength": 42
+            },
+            "cursor": {
+              "type": "string",
+              "maxLength": 2000
+            }
+          }
+        },
+        "output": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "assets",
+              "discoveryAvailable"
+            ],
+            "properties": {
+              "assets": {
+                "type": "array",
+                "items": {
+                  "type": "ref",
+                  "ref": "lex:app.citruswallet.defs#assetBalance"
+                }
+              },
+              "cursor": {
+                "type": "string"
+              },
+              "discoveryAvailable": {
+                "type": "boolean"
               }
             }
           }

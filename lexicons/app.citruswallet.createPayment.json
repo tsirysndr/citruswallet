@@ -31,9 +31,13 @@
               "maxLength": 2000,
               "maxGraphemes": 500
             },
+            "assetId": {
+              "type": "string",
+              "maxLength": 160
+            },
             "amount": {
               "type": "string",
-              "maxLength": 80
+              "maxLength": 340
             }
           }
         }

@@ -13,7 +13,7 @@ function fixture(t) {
   const db = store.client;
   const service = new Payments(store, null, null, '', 1, null, () => 100, 12);
   const put = (id, description = 'Dinner', sender = alice, recipient = bob, chain = 1) =>
-    db.prepare(`INSERT INTO payments(id,sender_did,recipient_did,recipient_label,chain_id,amount_wei,state,description,created_at,expires_at)
+    db.prepare(`INSERT INTO payments(id,sender_did,recipient_did,recipient_label,chain_id,amount_atomic,state,description,created_at,expires_at)
       VALUES(?,?,?,'bob.test',?,'1','cancelled',?,10,1000)`).run(id,sender,recipient,chain,description);
   const search = (q, direction = 'all', page = 1, pageSize = 20) => history(service, alice, new Filters(q,direction,'all',0,1000,page,pageSize,'newest'));
   const ids = (q, direction) => Array.from(search(q, direction).payments).map(p => p.id);

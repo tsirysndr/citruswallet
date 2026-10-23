@@ -267,7 +267,7 @@ pub fn create_payment_waits_for_a_receiving_address_test() {
   ))
   let assert Ok(#(payment, invitation)) = outcome
   assert payment.state == payments.Waiting
-  assert payment.amount_wei == "250000000000000000"
+  assert payment.amount_atomic == "250000000000000000"
   assert payment.recipient_label == "bob.bsky.social"
   assert payment.address == None
   assert invitation != "http://127.0.0.1:4747/#invite="
@@ -321,7 +321,7 @@ pub fn create_payment_rejects_self_payment_test() {
   ))
   assert outcome
     == Error(error.bad_request(
-      "You cannot send ETH to yourself. Choose another account.",
+      "You cannot send a payment to yourself. Choose another account.",
     ))
 }
 
@@ -339,7 +339,7 @@ pub fn resolve_rejects_self_by_handle_or_did_test() {
   ))
   let expected =
     Error(error.bad_request(
-      "You cannot send ETH to yourself. Choose another account.",
+      "You cannot send a payment to yourself. Choose another account.",
     ))
   assert handle == expected
   assert did == expected
@@ -358,13 +358,15 @@ pub fn create_payment_rejects_bad_amounts_test() {
     media: None,
   ))
   assert zero
-    == Error(error.bad_request("ETH amount must be greater than zero."))
+    == Error(error.bad_request(
+      "Enter a positive ETH amount with at most 18 decimal places.",
+    ))
   use malformed <- promise.map(payments.create(
     payments,
     sender_did: "did:plc:alice",
     identifier: Some("bob.bsky.social"),
     expected_did: Some("did:plc:bob"),
-    amount: Some("1,5"),
+    amount: Some("1,500.00"),
     description: None,
     media: None,
   ))

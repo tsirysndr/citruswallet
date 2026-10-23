@@ -205,3 +205,63 @@ fn read(
     }
   })
 }
+
+@external(javascript, "../../asset-bindings.mjs", "erc20ABI")
+fn erc20_abi() -> Js
+
+@external(javascript, "../../asset-bindings.mjs", "encodeTransfer")
+pub fn encode_transfer(recipient: String, amount: String) -> String
+
+@external(javascript, "../../asset-bindings.mjs", "decodeTransfer")
+pub fn decode_transfer(log: Js) -> Js
+
+pub fn token_read(
+  client: Client,
+  contract: String,
+  method: String,
+  args: List(Js),
+) -> Promise(Result(Js, Exception)) {
+  js.attempt_promise(
+    js.call(client, "readContract", [
+      js.object([
+        #("address", js.string(contract)),
+        #("abi", erc20_abi()),
+        #("functionName", js.string(method)),
+        #("args", js.list(args)),
+      ]),
+    ]),
+  )
+}
+
+pub fn balance(
+  client: Client,
+  address: String,
+) -> Promise(Result(String, Exception)) {
+  use value <- promise.try_await(
+    js.attempt_promise(
+      js.call(client, "getBalance", [
+        js.object([#("address", js.string(address))]),
+      ]),
+    ),
+  )
+  promise.resolve(Ok(js.big_int_digits(value)))
+}
+
+pub fn simulate_transfer(
+  client: Client,
+  from: String,
+  to: String,
+  data: String,
+) -> Promise(Result(Js, Exception)) {
+  js.attempt_promise(
+    js.call(client, "call", [
+      js.object([
+        #("account", js.string(from)),
+        #("to", js.string(to)),
+        #("data", js.string(data)),
+        #("value", js.big_int("0")),
+        #("blockTag", js.string("pending")),
+      ]),
+    ]),
+  )
+}

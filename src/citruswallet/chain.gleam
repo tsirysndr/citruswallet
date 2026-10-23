@@ -2,10 +2,12 @@ import citruswallet/error.{type HttpError}
 import citruswallet/ffi/js.{type Js}
 import citruswallet/ffi/url
 import citruswallet/ffi/viem
+import gleam/dynamic/decode
 import gleam/int
 import gleam/javascript/promise.{type Promise}
 import gleam/list
 import gleam/option.{type Option, None, Some}
+import gleam/result
 
 pub type Chain {
   Chain(client: viem.Client)
@@ -23,7 +25,7 @@ pub type Transaction {
 }
 
 pub type Receipt {
-  Receipt(status: String, block_number: Int)
+  Receipt(status: String, block_number: Int, logs: List(Js))
 }
 
 const loopback_hosts = ["127.0.0.1", "localhost", "[::1]"]
@@ -142,7 +144,17 @@ fn decode_receipt(found: Js) -> Option(Receipt) {
     js.big_int_digits,
   ))
   use height <- option.then(option.from_result(int.parse(height)))
-  Some(Receipt(status: status, block_number: height))
+  Some(
+    Receipt(
+      status: status,
+      block_number: height,
+      logs: case js.field(found, "logs") {
+        Some(value) ->
+          decode.run(value, decode.list(decode.dynamic)) |> result.unwrap([])
+        None -> []
+      },
+    ),
+  )
 }
 
 fn unreachable() -> HttpError {

@@ -1,6 +1,7 @@
 import citruswallet/ffi/hono
 import citruswallet/xrpc/actor
 import citruswallet/xrpc/address
+import citruswallet/xrpc/asset
 import citruswallet/xrpc/auth
 import citruswallet/xrpc/context.{type Server}
 import citruswallet/xrpc/methods
@@ -138,6 +139,8 @@ pub fn register(app: hono.App, server: Server) -> Nil {
     methods.accept_invitation,
     context.serve(server, payment.accept_invitation),
   )
+  hono.xrpc(app, methods.get_assets, context.serve(server, asset.listing))
+  hono.xrpc(app, methods.get_asset, context.serve(server, asset.get))
   hono.xrpc(app, methods.logout, context.serve(server, auth.logout))
   hono.xrpc(
     app,

@@ -119,6 +119,47 @@ export type PaymentState =
   | 'expired'
   | (string & {})
 
+export interface Asset {
+  id: string
+  chain: string
+  chainId: number
+  kind: 'native' | 'erc20' | (string & {})
+  contractAddress: string | null
+  symbol: string
+  name: string
+  decimals: number
+  [k: string]: unknown
+}
+
+export function isAsset(v: unknown): v is Asset {
+  return (
+    isObj(v) && hasProp(v, '$type') && v.$type === 'app.citruswallet.defs#asset'
+  )
+}
+
+export function validateAsset(v: unknown): ValidationResult {
+  return lexicons.validate('app.citruswallet.defs#asset', v)
+}
+
+export interface AssetBalance {
+  asset: Asset
+  balanceAtomic: string
+  address: string
+  [k: string]: unknown
+}
+
+export function isAssetBalance(v: unknown): v is AssetBalance {
+  return (
+    isObj(v) &&
+    hasProp(v, '$type') &&
+    v.$type === 'app.citruswallet.defs#assetBalance'
+  )
+}
+
+export function validateAssetBalance(v: unknown): ValidationResult {
+  return lexicons.validate('app.citruswallet.defs#assetBalance', v)
+}
+
 export interface Payment {
   id: string
   senderDid: string
@@ -131,6 +172,9 @@ export interface Payment {
   description?: string | null
   sender?: Actor | null
   recipient?: Actor | null
+  assetId?: string
+  assetDetails?: Asset
+  amountAtomic?: string
   amountWei: string
   state: PaymentState
   address: string | null

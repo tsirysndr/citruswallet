@@ -7,6 +7,7 @@ import { schemas } from '../src/generated/lexicons.mjs';
 import { lexicons } from '../src/xrpc.mjs';
 import { syncAddresses, queueRemovedAddress, addressSyncPending } from '../src/address-records.mjs';
 import { build } from '../build/dev/javascript/citruswallet/citruswallet/app.mjs';
+import { Chain } from '../build/dev/javascript/citruswallet/citruswallet/chain.mjs';
 import { Settings } from '../build/dev/javascript/citruswallet/citruswallet/xrpc/context.mjs';
 import * as storeModule from '../build/dev/javascript/citruswallet/citruswallet/store.mjs';
 import * as oauthModule from '../build/dev/javascript/citruswallet/citruswallet/oauth.mjs';
@@ -22,7 +23,7 @@ const bob = 'did:plc:bob';
 const account = privateKeyToAccount('0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80');
 const env = { incoming: { socket: { remoteAddress: '127.0.0.1', remoteFamily: 'IPv4', remotePort: 10000 } } };
 
-function fixture(t) {
+function fixture(t, chain = new None()) {
   const opened = storeModule.open(':memory:', './drizzle');
   assert.ok(opened instanceof Ok);
   const store = opened[0];
@@ -41,7 +42,7 @@ function fixture(t) {
   };
   const directory = new Directory(async () => new Ok(toList([])), async () => new Ok(new None()));
   const lookup = async identifier => new Ok(new Identity(identifier?.[0] === 'alice.test' ? alice : bob, new Some('bob.test')));
-  const app = build(new Settings(store, oauth, origin, 0, mainnet, lookup, directory, 'https://bsky.social', new None(), './web/dist'));
+  const app = build(new Settings(store, oauth, origin, 0, mainnet, lookup, directory, 'https://bsky.social', chain, './web/dist'));
   let cookie = '';
   let csrf = '';
   async function raw(path, options = {}) {
@@ -266,7 +267,7 @@ test('activity filters run before pagination, sort deterministically, and isolat
   const f = fixture(t);
   await f.login();
   const now = Date.now();
-  const put = f.store.client.prepare(`INSERT INTO payments(id,sender_did,recipient_did,recipient_label,chain_id,amount_wei,state,description,created_at,expires_at)
+  const put = f.store.client.prepare(`INSERT INTO payments(id,sender_did,recipient_did,recipient_label,chain_id,amount_atomic,state,description,created_at,expires_at)
     VALUES(?,?,?,?,1,'10000000000000000',?,?,?,?)`);
   for (let i = 0; i < 55; i++) put.run(`sent-${String(i).padStart(2,'0')}`, alice, bob, 'bob.test', i === 54 ? 'cancelled' : 'ready', i === 53 ? 'Lunch 100%_ literal' : `Dinner ${i}`, now - i * 1000, now + 600000);
   put.run('received', bob, alice, 'alice.test', 'confirmed', 'Refund', now + 1, now + 600000);
@@ -362,7 +363,7 @@ test('native bearer sessions are isolated from cookies and revoked by logout', a
 test('notification stream authenticates, replays only the recipient and supports read state',async t=>{
   const f=fixture(t);assert.equal((await f.raw('/xrpc/app.citruswallet.subscribeNotifications')).status,401);
   await f.login(bob);
-  f.store.client.prepare("INSERT INTO payments(id,sender_did,recipient_did,recipient_label,chain_id,amount_wei,state,created_at,expires_at) VALUES('notice',?,?,'bob.test',1,'1','confirmed',1,2)").run(alice,bob);
+  f.store.client.prepare("INSERT INTO payments(id,sender_did,recipient_did,recipient_label,chain_id,amount_atomic,state,created_at,expires_at) VALUES('notice',?,?,'bob.test',1,'1','confirmed',1,2)").run(alice,bob);
   const listed=await f.query('listNotifications');assert.equal(listed.unread,1);
   const response=await f.raw('/xrpc/app.citruswallet.subscribeNotifications?cursor=0');assert.equal(response.status,200);assert.match(response.headers.get('content-type'),/text\/event-stream/);assert.equal(response.headers.get('x-accel-buffering'),'no');
   const reader=response.body.getReader();let data='';for(let i=0;i<4&&!data.includes('payment-received');i++){data+=new TextDecoder().decode((await reader.read()).value);}await reader.cancel();assert.match(data,/payment-received/);assert.match(data,/notice/);
@@ -421,4 +422,36 @@ test('invitation fallback and Android association are publicly served', async t 
   const page = await f.raw('/invite');
   assert.equal(page.status, 200);
   assert.match(page.headers.get('content-type'), /text\/html/);
+});
+
+test('asset discovery is wallet-scoped, paginated, and rechecks metadata on-chain', async t => {
+  const contract = '0x4444444444444444444444444444444444444444';
+  const client = { async getChainId() { return 1; }, async getBalance() { return 1000000000000000000n; },
+    async readContract({ functionName }) { return { decimals: 6, symbol: 'REAL', name: 'Verified token', balanceOf: 1234567n }[functionName]; } };
+  const f = fixture(t, new Some(new Chain(client)));
+  await f.login();
+  await assert.rejects(f.query('getAssets', { address: account.address }), e => e.status === 403);
+  const challenge = await f.call('createChallenge', { address: account.address, public: false });
+  await f.call('verifyChallenge', { id: challenge.id, signature: await account.signMessage({ message: challenge.message }) });
+  const originalFetch = globalThis.fetch;
+  t.after(() => { globalThis.fetch = originalFetch; });
+  const urls = [];
+  const token = { token: { address_hash: contract, decimals: '6', name: 'Indexer name', symbol: 'FAKE', type: 'ERC-20' }, value: '1234567' };
+  globalThis.fetch = async url => {
+    urls.push(url);
+    return Response.json({ items: [token, { ...token, value: '0' }, { ...token, value: (2n ** 256n).toString() }, { token: null }, { ...token, token: { ...token.token, type: 'ERC-721' } }], next_page_params: { id: 42, items_count: 50, value: '1234567', fiat_value: '1.23' } });
+  };
+  const page = await f.query('getAssets', { address: account.address });
+  assert.equal(page.discoveryAvailable, true); assert.equal(page.assets.length, 2);
+  assert.equal(page.assets[0].asset.kind, 'native'); assert.equal(page.assets[1].asset.symbol, 'FAKE');
+  await f.query('getAssets', { address: account.address, cursor: page.cursor });
+  assert.match(urls[1], /&id=42/);
+  await assert.rejects(f.query('getAssets', { address: account.address, cursor: '{bad' }), e => e.status === 400);
+  await assert.rejects(f.query('getAssets', { address: account.address, cursor: '{"url":"https://evil.test"}' }), e => e.status === 400);
+  const verified = await f.query('getAsset', { address: account.address, assetId: `eip155:1/erc20:${contract}` });
+  assert.equal(verified.asset.symbol, 'REAL'); assert.equal(verified.asset.decimals, 6); assert.equal(verified.balanceAtomic, '1234567');
+  await assert.rejects(f.query('getAsset', { address: account.address, assetId: `eip155:2/erc20:${contract}` }), e => e.status === 400);
+  globalThis.fetch = async () => new Response('Unavailable', { status: 503 });
+  const unavailable = await f.query('getAssets', { address: account.address });
+  assert.equal(unavailable.discoveryAvailable, false); assert.equal(unavailable.assets.length, 1);
 });

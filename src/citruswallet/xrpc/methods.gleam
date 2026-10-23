@@ -16,6 +16,10 @@ pub const exchange_native_session = "app.citruswallet.exchangeNativeSession"
 
 pub const get_addresses = "app.citruswallet.getAddresses"
 
+pub const get_asset = "app.citruswallet.getAsset"
+
+pub const get_assets = "app.citruswallet.getAssets"
+
 pub const get_invitation = "app.citruswallet.getInvitation"
 
 pub const get_payment = "app.citruswallet.getPayment"

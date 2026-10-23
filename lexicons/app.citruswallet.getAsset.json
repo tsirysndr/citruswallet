@@ -1,0 +1,33 @@
+{
+  "lexicon": 1,
+  "id": "app.citruswallet.getAsset",
+  "defs": {
+    "main": {
+      "type": "query",
+      "parameters": {
+        "type": "params",
+        "required": [
+          "address",
+          "assetId"
+        ],
+        "properties": {
+          "address": {
+            "type": "string",
+            "maxLength": 42
+          },
+          "assetId": {
+            "type": "string",
+            "maxLength": 160
+          }
+        }
+      },
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "ref",
+          "ref": "app.citruswallet.defs#assetBalance"
+        }
+      }
+    }
+  }
+}

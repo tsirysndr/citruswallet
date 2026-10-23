@@ -11,6 +11,7 @@ export interface InputSchema {
   expectedDid: string
   media?: AppCitruswalletDefs.PaymentMedia
   description?: string
+  assetId?: string
   amount: string
   [k: string]: unknown
 }

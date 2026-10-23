@@ -1,3 +1,4 @@
+import citruswallet/assets.{type Asset}
 import citruswallet/chain.{type Chain}
 import citruswallet/directory
 import citruswallet/drizzle/orm.{
@@ -9,6 +10,8 @@ import citruswallet/drizzle/orm.{
 import citruswallet/drizzle/schema/payments as payments_schema
 import citruswallet/drizzle/schema/user_profiles
 import citruswallet/error.{type HttpError}
+import citruswallet/ffi/amounts
+import citruswallet/ffi/js
 import citruswallet/ffi/node
 import citruswallet/ffi/viem
 import citruswallet/identity.{type Identity, type Lookup}
@@ -51,7 +54,8 @@ pub type Payment {
     recipient_did: String,
     recipient_label: String,
     chain_id: Int,
-    amount_wei: String,
+    amount_atomic: String,
+    asset: Asset,
     description: Option(String),
     media: Option(String),
     state: State,
@@ -121,7 +125,7 @@ pub fn resolve(
   use <- guard(
     identity.did != sender_did,
     error.bad_request(
-      "You cannot send ETH to yourself. Choose another account.",
+      "You cannot send a payment to yourself. Choose another account.",
     ),
   )
   let link =
@@ -138,6 +142,28 @@ pub fn create(
   description description: Option(String),
   media media: Option(String),
 ) -> Promise(Result(#(Payment, String), HttpError)) {
+  create_asset(
+    payments,
+    sender_did:,
+    identifier:,
+    expected_did:,
+    amount:,
+    description:,
+    media:,
+    asset: None,
+  )
+}
+
+pub fn create_asset(
+  payments: Payments,
+  sender_did sender_did: String,
+  identifier identifier: Option(String),
+  expected_did expected_did: Option(String),
+  amount amount: Option(String),
+  description description: Option(String),
+  media media: Option(String),
+  asset selection: Option(String),
+) -> Promise(Result(#(Payment, String), HttpError)) {
   use <- guard(
     payment_media.valid(media),
     error.bad_request("Invalid KLIPY attachment."),
@@ -151,9 +177,14 @@ pub fn create(
     Some("") -> None
     _ -> description
   }
-  case wei_of(amount) {
+  use asset <- promise.try_await(assets.resolve(
+    payments.chain,
+    payments.chain_id,
+    selection,
+  ))
+  case atomic_of(amount, asset) {
     Error(reason) -> promise.resolve(Error(reason))
-    Ok(amount_wei) -> {
+    Ok(amount_atomic) -> {
       use #(recipient, _) <- promise.try_await(resolve(
         payments,
         sender_did,
@@ -185,7 +216,11 @@ pub fn create(
             option.unwrap(recipient.handle, recipient.did),
           ),
           set(table.chain_id, payments.chain_id),
-          set(table.amount_wei, amount_wei),
+          set(table.amount_atomic, amount_atomic),
+          set(table.asset_contract, asset.contract),
+          set(table.asset_symbol, asset.symbol),
+          set(table.asset_name, asset.name),
+          set(table.asset_decimals, asset.decimals),
           set(table.description, description),
           set(table.media, media),
           set(
@@ -213,22 +248,20 @@ pub fn create(
   }
 }
 
-fn wei_of(amount: Option(String)) -> Result(String, HttpError) {
+fn atomic_of(
+  amount: Option(String),
+  asset: Asset,
+) -> Result(String, HttpError) {
   let invalid =
     error.bad_request(
-      "Enter a positive ETH amount with at most 18 decimal places.",
+      "Enter a positive "
+      <> asset.symbol
+      <> " amount with at most "
+      <> int.to_string(asset.decimals)
+      <> " decimal places.",
     )
   use amount <- result.try(option.to_result(amount, invalid))
-  use <- bool.guard(
-    when: !validate.is_ether_amount(amount),
-    return: Error(invalid),
-  )
-  use wei <- result.try(result.replace_error(viem.to_wei(amount), invalid))
-  use <- bool.guard(
-    when: wei == "0",
-    return: Error(error.bad_request("ETH amount must be greater than zero.")),
-  )
-  Ok(wei)
+  amounts.parse(amount, asset.decimals) |> result.replace_error(invalid)
 }
 
 pub type Filters {
@@ -515,6 +548,13 @@ pub fn prepare(
         payments.chain,
         payments.chain_id,
       ))
+      use _ <- promise.try_await(assets.preflight(
+        chain,
+        payment.asset,
+        from,
+        option.unwrap(payment.address, ""),
+        payment.amount_atomic,
+      ))
       use nonce <- promise.try_await(chain.nonce(chain, from))
       case payment.state {
         Prepared -> promise.resolve(resume(payment, from, nonce))
@@ -672,8 +712,11 @@ fn attempt(payment: Payment) -> Result(Attempt, HttpError) {
         payment: payment,
         attempt_id: attempt_id,
         from: viem.checksum(from),
-        to: viem.checksum(to),
-        value_wei: payment.amount_wei,
+        to: viem.checksum(assets.transaction_to(payment.asset, to)),
+        value_wei: assets.transaction_value(
+          payment.asset,
+          payment.amount_atomic,
+        ),
         nonce: nonce,
       ))
     _, _, _, _ ->
@@ -824,17 +867,30 @@ fn verify(
                 )),
               )
             Some(receipt) -> {
-              use height <- promise.try_await(chain.block_number(chain))
-              let confirmations = height - receipt.block_number + 1
-              promise.resolve(
-                Ok(#(
-                  case confirmations >= payments.confirmations {
-                    True -> Confirmed
-                    False -> Confirming
-                  },
-                  None,
-                )),
-              )
+              case receipt_matches(payment, receipt) {
+                False ->
+                  promise.resolve(
+                    Ok(#(
+                      Failed,
+                      Some(
+                        "Token transfer receipt does not match the reviewed recipient and amount.",
+                      ),
+                    )),
+                  )
+                True -> {
+                  use height <- promise.try_await(chain.block_number(chain))
+                  let confirmations = height - receipt.block_number + 1
+                  promise.resolve(
+                    Ok(#(
+                      case confirmations >= payments.confirmations {
+                        True -> Confirmed
+                        False -> Confirming
+                      },
+                      None,
+                    )),
+                  )
+                }
+              }
             }
           }
         }
@@ -844,10 +900,19 @@ fn verify(
 
 fn matches(payment: Payment, transaction: chain.Transaction) -> Bool {
   Some(string.lowercase(transaction.from)) == payment.from_address
-  && option.map(transaction.to, string.lowercase) == payment.address
-  && transaction.value == payment.amount_wei
+  && option.map(transaction.to, string.lowercase)
+  == option.map(payment.address, fn(address) {
+    assets.transaction_to(payment.asset, address) |> string.lowercase
+  })
+  && transaction.value
+  == assets.transaction_value(payment.asset, payment.amount_atomic)
   && Some(transaction.nonce) == payment.nonce
-  && transaction.input == "0x"
+  && string.lowercase(transaction.input)
+  == assets.transaction_data(
+    payment.asset,
+    option.unwrap(payment.address, ""),
+    payment.amount_atomic,
+  )
   && case transaction.chain_id {
     Some(chain_id) -> chain_id == payment.chain_id
     None -> True
@@ -1015,9 +1080,15 @@ pub fn to_json(
     #("recipientDid", json.string(payment.recipient_did)),
     #("recipientLabel", json.string(payment.recipient_label)),
     #("chainId", json.int(payment.chain_id)),
-    #("asset", json.string("ETH")),
-    #("amount", json.string(viem.to_ether(payment.amount_wei))),
-    #("amountWei", json.string(payment.amount_wei)),
+    #("asset", json.string(payment.asset.symbol)),
+    #("assetId", json.string(assets.id(payment.asset))),
+    #("assetDetails", assets.to_json(payment.asset)),
+    #("amountAtomic", json.string(payment.amount_atomic)),
+    #(
+      "amount",
+      json.string(amounts.format(payment.amount_atomic, payment.asset.decimals)),
+    ),
+    #("amountWei", json.string(payment.amount_atomic)),
     #("description", json.nullable(payment.description, json.string)),
     #("media", payment_media.to_json(payment.media)),
     #("sender", profile_json(payments, payment.sender_did)),
@@ -1064,7 +1135,14 @@ pub fn attempt_to_json(attempt: Attempt, payments: Payments) -> Json {
         #("value", json.string(viem.hex_of_wei(attempt.value_wei))),
         #("chainId", json.string(viem.hex_of_int(attempt.payment.chain_id))),
         #("nonce", json.string(viem.hex_of_int(attempt.nonce))),
-        #("data", json.string("0x")),
+        #(
+          "data",
+          json.string(assets.transaction_data(
+            attempt.payment.asset,
+            option.unwrap(attempt.payment.address, ""),
+            attempt.payment.amount_atomic,
+          )),
+        ),
       ]),
     ),
   ])
@@ -1112,7 +1190,14 @@ fn payment_decoder() -> Decoder(Payment) {
   use recipient_did <- decode.field("recipient_did", decode.string)
   use recipient_label <- decode.field("recipient_label", decode.string)
   use chain_id <- decode.field("chain_id", decode.int)
-  use amount_wei <- decode.field("amount_wei", decode.string)
+  use amount_atomic <- decode.field("amount_atomic", decode.string)
+  use asset_contract <- decode.field(
+    "asset_contract",
+    decode.optional(decode.string),
+  )
+  use asset_symbol <- decode.field("asset_symbol", decode.string)
+  use asset_name <- decode.field("asset_name", decode.string)
+  use asset_decimals <- decode.field("asset_decimals", decode.int)
   use description <- decode.field("description", decode.optional(decode.string))
   use media <- decode.field("media", decode.optional(decode.string))
   use state <- decode.field("state", decode.string)
@@ -1136,7 +1221,14 @@ fn payment_decoder() -> Decoder(Payment) {
     recipient_did: recipient_did,
     recipient_label: recipient_label,
     chain_id: chain_id,
-    amount_wei: amount_wei,
+    amount_atomic: amount_atomic,
+    asset: assets.Asset(
+      chain_id,
+      asset_contract,
+      asset_symbol,
+      asset_name,
+      asset_decimals,
+    ),
     description: description,
     media: media,
     state: option.unwrap(state_of(state), Failed),
@@ -1220,5 +1312,35 @@ pub fn delete_cancelled(
   case changed {
     1 -> Ok(Nil)
     _ -> Error(error.conflict("The payment changed. Refresh and try again."))
+  }
+}
+
+fn receipt_matches(payment: Payment, receipt: chain.Receipt) -> Bool {
+  case payment.asset.contract {
+    None -> True
+    Some(contract) -> {
+      let matching =
+        list.filter_map(receipt.logs, fn(log) {
+          let event = viem.decode_transfer(log)
+          case
+            js.string_field(event, "contract"),
+            js.string_field(event, "from"),
+            js.string_field(event, "to"),
+            js.string_field(event, "amount")
+          {
+            Some(actual), Some(from), Some(to), Some(amount) ->
+              case
+                string.lowercase(actual) == contract
+                && Some(string.lowercase(from)) == payment.from_address
+                && Some(string.lowercase(to)) == payment.address
+              {
+                True -> Ok(amount)
+                False -> Error(Nil)
+              }
+            _, _, _, _ -> Error(Nil)
+          }
+        })
+      matching == [payment.amount_atomic]
+    }
   }
 }

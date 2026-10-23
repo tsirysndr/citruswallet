@@ -11,6 +11,8 @@ import * as AppCitruswalletCreatePayment from './types/app/citruswallet/createPa
 import * as AppCitruswalletDeletePayment from './types/app/citruswallet/deletePayment'
 import * as AppCitruswalletExchangeNativeSession from './types/app/citruswallet/exchangeNativeSession'
 import * as AppCitruswalletGetAddresses from './types/app/citruswallet/getAddresses'
+import * as AppCitruswalletGetAsset from './types/app/citruswallet/getAsset'
+import * as AppCitruswalletGetAssets from './types/app/citruswallet/getAssets'
 import * as AppCitruswalletGetInvitation from './types/app/citruswallet/getInvitation'
 import * as AppCitruswalletGetPayment from './types/app/citruswallet/getPayment'
 import * as AppCitruswalletGetProfile from './types/app/citruswallet/getProfile'
@@ -46,6 +48,8 @@ export * as AppCitruswalletDefs from './types/app/citruswallet/defs'
 export * as AppCitruswalletDeletePayment from './types/app/citruswallet/deletePayment'
 export * as AppCitruswalletExchangeNativeSession from './types/app/citruswallet/exchangeNativeSession'
 export * as AppCitruswalletGetAddresses from './types/app/citruswallet/getAddresses'
+export * as AppCitruswalletGetAsset from './types/app/citruswallet/getAsset'
+export * as AppCitruswalletGetAssets from './types/app/citruswallet/getAssets'
 export * as AppCitruswalletGetInvitation from './types/app/citruswallet/getInvitation'
 export * as AppCitruswalletGetPayment from './types/app/citruswallet/getPayment'
 export * as AppCitruswalletGetProfile from './types/app/citruswallet/getProfile'
@@ -192,6 +196,30 @@ export class AppCitruswalletNS {
   ): Promise<AppCitruswalletGetAddresses.Response> {
     return this._client.call(
       'app.citruswallet.getAddresses',
+      params,
+      undefined,
+      opts,
+    )
+  }
+
+  getAsset(
+    params?: AppCitruswalletGetAsset.QueryParams,
+    opts?: AppCitruswalletGetAsset.CallOptions,
+  ): Promise<AppCitruswalletGetAsset.Response> {
+    return this._client.call(
+      'app.citruswallet.getAsset',
+      params,
+      undefined,
+      opts,
+    )
+  }
+
+  getAssets(
+    params?: AppCitruswalletGetAssets.QueryParams,
+    opts?: AppCitruswalletGetAssets.CallOptions,
+  ): Promise<AppCitruswalletGetAssets.Response> {
+    return this._client.call(
+      'app.citruswallet.getAssets',
       params,
       undefined,
       opts,

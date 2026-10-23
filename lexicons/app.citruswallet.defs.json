@@ -170,6 +170,76 @@
         "expired"
       ]
     },
+    "asset": {
+      "type": "object",
+      "required": [
+        "id",
+        "chain",
+        "chainId",
+        "kind",
+        "contractAddress",
+        "symbol",
+        "name",
+        "decimals"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "chain": {
+          "type": "string"
+        },
+        "chainId": {
+          "type": "integer"
+        },
+        "kind": {
+          "type": "string",
+          "knownValues": [
+            "native",
+            "erc20"
+          ]
+        },
+        "contractAddress": {
+          "type": "string"
+        },
+        "symbol": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "name": {
+          "type": "string",
+          "maxLength": 512
+        },
+        "decimals": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        }
+      },
+      "nullable": [
+        "contractAddress"
+      ]
+    },
+    "assetBalance": {
+      "type": "object",
+      "required": [
+        "asset",
+        "balanceAtomic",
+        "address"
+      ],
+      "properties": {
+        "asset": {
+          "type": "ref",
+          "ref": "app.citruswallet.defs#asset"
+        },
+        "balanceAtomic": {
+          "type": "string"
+        },
+        "address": {
+          "type": "string"
+        }
+      }
+    },
     "payment": {
       "type": "object",
       "required": [
@@ -229,6 +299,16 @@
         "recipient": {
           "type": "ref",
           "ref": "app.citruswallet.defs#actor"
+        },
+        "assetId": {
+          "type": "string"
+        },
+        "assetDetails": {
+          "type": "ref",
+          "ref": "app.citruswallet.defs#asset"
+        },
+        "amountAtomic": {
+          "type": "string"
         },
         "amountWei": {
           "type": "string"
