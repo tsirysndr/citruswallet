@@ -1,10 +1,10 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useAtomValue, useSetAtom } from "jotai";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, Outlet, useNavigate } from "@tanstack/react-router";
 import { rpc } from "./api";
 import { inviteTokenAtom, reviewIdAtom, statusAtom } from "./atoms";
-import { BottomNav, HeaderNav } from "./components/Nav";
+import { BottomNav, SidebarNav } from "./components/Nav";
 import { CitrusMark } from "./components/CitrusMark";
 import { ActivitySearch } from "./components/ActivitySearch";
 import { InstallApp } from "./components/InstallApp";
@@ -64,22 +64,30 @@ export function App() {
   useRecovery();
   useSessionGuard();
 
+  const [collapsed, setCollapsed] = useState(() => {
+    try { return localStorage.getItem("citrus:sidebar-collapsed") === "true"; }
+    catch { return false; }
+  });
+  const toggleSidebar = () => setCollapsed(current => {
+    const next = !current;
+    try { localStorage.setItem("citrus:sidebar-collapsed", String(next)); } catch { /* Storage may be unavailable. */ }
+    return next;
+  });
+
   const marks = { "/payments": Boolean(review), "/wallet": Boolean(invite) };
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell${collapsed ? " sidebar-collapsed" : ""}`}>
+      <SidebarNav marks={marks} collapsed={collapsed} onToggle={toggleSidebar} network={session?.network.name ?? "AT Protocol × Ethereum"} />
+      <div className="app-workspace">
       <header className="app-header">
         <Link
           to="/"
-          className="brand-logo"
+          className="brand-logo mobile-brand"
         >
           <span className="logo-mark"><CitrusMark /></span><span>Citrus<span className="logo-wallet hidden min-[400px]:inline"> Wallet</span></span>
         </Link>
-        <HeaderNav marks={marks} />
         <div className="flex items-center gap-2.5">
-          <span className="hidden rounded-full border border-edge px-2.5 py-1.5 text-[12px] tracking-[0.04em] text-ink-muted xl:inline">
-            {session?.network.name ?? "AT Protocol × Ethereum"}
-          </span>
           {session?.did && <ActivitySearch />}
           <InstallMetaMask />
         </div>
@@ -119,6 +127,7 @@ export function App() {
         </nav>
       </footer>
 
+      </div>
       <BottomNav marks={marks} />
       <KeyboardShortcuts />
     </div>

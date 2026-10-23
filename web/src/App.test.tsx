@@ -43,3 +43,15 @@ it("only mounts activity search for signed-in users and closes it when the sessi
     screen.queryByRole("button", { name: "Search activity" }),
   ).not.toBeInTheDocument();
 });
+
+it("collapses the desktop sidebar and remembers the preference", async () => {
+  const { user, unmount } = await renderComponent(<App />);
+  await user.click(screen.getByRole("button", { name: "Collapse sidebar" }));
+  expect(document.querySelector(".app-shell")).toHaveClass("sidebar-collapsed");
+  expect(localStorage.getItem("citrus:sidebar-collapsed")).toBe("true");
+  unmount();
+  const next = await renderComponent(<App />);
+  expect(screen.getByRole("button", { name: "Expand sidebar" })).toBeInTheDocument();
+  await next.user.click(screen.getByRole("button", { name: "Expand sidebar" }));
+  expect(document.querySelector(".app-shell")).not.toHaveClass("sidebar-collapsed");
+});
