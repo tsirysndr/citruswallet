@@ -25,7 +25,7 @@ export function RecoveryBackup({ phrase, onConfirmed, allowWhileBusy = false }: 
     <View className="flex-row flex-wrap" style={{ gap: 8 }} onLayout={event => setColumns(event.nativeEvent.layout.width < 300 ? 2 : 3)}>
       {words.map((word, index) => {
         const prompt = prompts.findIndex(item => item.index === index), missing = checking && prompt !== -1;
-        const content = <><Text className="text-xs text-muted">{index + 1}.</Text><Text numberOfLines={1} adjustsFontSizeToFit className="font-mono text-sm">{missing ? answers[index] || '•••' : word}</Text></>;
+        const content = <><Text className="text-xs text-muted">{index + 1}.</Text><Text numberOfLines={1} adjustsFontSizeToFit className="text-sm">{missing ? answers[index] || '•••' : word}</Text></>;
         return missing ? <Pressable key={index} accessibilityRole="button" accessibilityLabel={`Choose word ${index + 1}`} accessibilityState={{ selected: !complete && active === prompt }}
           style={{ width: columns === 2 ? '48%' : '30%', minHeight: 48 }} className={`items-start gap-1 rounded-md border px-2 py-3 ${!complete && active === prompt ? 'border-ink bg-accent' : 'border-edge bg-canvas'}`}
           onPress={() => { setActive(prompt); setAnswers(previous => { const next = { ...previous }; delete next[index]; return next; }); setError(''); onConfirmed(false); }}>{content}</Pressable>

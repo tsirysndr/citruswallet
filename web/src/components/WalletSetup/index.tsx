@@ -54,7 +54,7 @@ export function WalletSetup({ onFinished, restart = false }: { onFinished?: () =
   });
   const created = () => { setAddress(localBalanceAddress() || ''); setStage(session?.did ? 'link' : 'done'); };
   const needsInstall = kind === 'metamask' && !detectedMetaMask() && !isMobileWalletBrowser();
-  return <div className="mx-auto w-full max-w-[560px]">
+  return <div className="mx-auto w-full max-w-[560px] font-sans">
     {!ready && <div className="mb-7 flex items-center justify-between text-xs text-ink-muted">
       <span>WALLET SETUP</span><span>{stage === 'choice' ? '1 · Choose' : stage === 'link' ? '3 · Connect' : '2 · Secure'}</span>
     </div>}

@@ -61,7 +61,7 @@ export function LocalWallet({ allowWhileBusy = false, initialAction, onCreated, 
         <Label htmlFor="wallet-security-password">Confirm your password</Label><Input id="wallet-security-password" type="password" value={password} onChange={e => setPassword(e.target.value)} autoComplete="current-password" />
         <Button keepEnabled={allowWhileBusy} disabled={busy} onClick={() => act(async () => { const value = await backupLocalWallet(password); setPhrase(value.value); setPassword(''); })}>Show my recovery information</Button>
         {passkeys && <Button keepEnabled={allowWhileBusy} disabled={busy} variant="subtle" onClick={() => act(async () => { await enableWalletPasskey(password); clear(); })}>Enable device unlock</Button>}
-        {phrase && <p className="break-all rounded-md bg-sunken p-4 font-mono">{phrase}</p>}
+        {phrase && <p className="break-all rounded-md bg-sunken p-4 font-sans">{phrase}</p>}
         <Hint>Device unlock depends on your browser and authenticator. Keep your password and recovery backup.</Hint>
         <Button keepEnabled={allowWhileBusy} variant="subtle" onClick={clear}>Done</Button>
       </>}

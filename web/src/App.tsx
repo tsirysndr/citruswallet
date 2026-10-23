@@ -101,7 +101,7 @@ export function App() {
     setNeedsSetup(!configured || Boolean(session.did && !linkedDefault));
   }, [session, needsSetup, vaultState]);
   if (needsSetup === null && !error && !['/privacy', '/terms'].includes(location.pathname)) return <div className="min-h-dvh bg-canvas p-8"><ContentSkeleton variant="card" label="Opening Citrus" /></div>;
-  if (needsSetup && session && !['/privacy', '/terms'].includes(location.pathname)) return <div className="min-h-dvh bg-canvas px-5 py-8 md:py-12">
+  if (needsSetup && session && !['/privacy', '/terms'].includes(location.pathname)) return <div className="min-h-dvh bg-canvas px-5 py-8 font-sans md:py-12">
     <div className="mx-auto mb-10 flex max-w-[560px] items-center gap-2 text-lg font-semibold"><CitrusMark className="size-9" />Citrus Wallet</div>
     <MetaMaskConnection /><WalletApproval /><WalletUnlock />
     <WalletSetup key={session.did || 'signed-out'} onFinished={() => { setNeedsSetup(false); void navigate({ to: invite ? '/wallet' : '/' }); }} />

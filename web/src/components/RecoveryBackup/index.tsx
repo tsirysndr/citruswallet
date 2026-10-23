@@ -33,15 +33,15 @@ export function RecoveryBackup({ phrase, onConfirmed, allowWhileBusy = false }: 
           {missing ? <button type="button" aria-label={`Choose word ${index + 1}`} aria-pressed={!complete && active === prompt}
             onClick={() => { setActive(prompt); setAnswers(previous => { const next = { ...previous }; delete next[index]; return next; }); setError(''); onConfirmed(false); }}
             className={`flex min-h-12 w-full flex-col items-start gap-1 rounded-md border px-2 py-3 text-sm ${!complete && active === prompt ? 'border-ink bg-accent' : 'border-edge bg-sunken'}`}>
-            <span className="text-xs text-ink-muted">{index + 1}.</span><span className="font-mono">{answers[index] || '•••'}</span>
-          </button> : <div className="flex min-h-12 flex-col items-start gap-1 rounded-md bg-sunken px-2 py-3 text-sm"><span className="text-xs text-ink-muted">{index + 1}.</span><span className="font-mono">{word}</span></div>}
+            <span className="text-xs text-ink-muted">{index + 1}.</span><span className="font-sans">{answers[index] || '•••'}</span>
+          </button> : <div className="flex min-h-12 flex-col items-start gap-1 rounded-md bg-sunken px-2 py-3 text-sm"><span className="text-xs text-ink-muted">{index + 1}.</span><span className="font-sans">{word}</span></div>}
         </li>;
       })}
     </ol>
     {!checking ? <Button keepEnabled={allowWhileBusy} onClick={() => { setChecking(true); onConfirmed(false); }}>I’ve saved my recovery phrase</Button> : <>
       <p role="status" className="text-sm font-semibold">{complete ? 'Backup confirmed. You’re ready to save your wallet.' : `${Object.keys(answers).length} of 3 confirmed · Choose word ${current.index + 1}`}</p>
       {!complete && <div ref={choices} role="group" aria-label={`Choices for word ${current.index + 1}`} className="grid grid-cols-2 gap-2">
-        {current.choices.map(word => <Button keepEnabled={allowWhileBusy} key={`${current.index}:${word}`} variant="subtle" className="min-h-12 font-mono" onClick={() => choose(word)}>{word}</Button>)}
+        {current.choices.map(word => <Button keepEnabled={allowWhileBusy} key={`${current.index}:${word}`} variant="subtle" className="min-h-12 font-sans" onClick={() => choose(word)}>{word}</Button>)}
       </div>}
       {error && <p role="alert" className="text-sm text-bad">{error}</p>}
       <Button keepEnabled={allowWhileBusy} variant="subtle" onClick={review}>Review my recovery phrase</Button>
