@@ -3,7 +3,7 @@
  * Updates wait for existing windows to close; never reload an active payment. */
 const CACHE = 'citrus-offline-v2';
 const PUBLIC_ASSETS = ['/offline.html', '/offline.css', '/favicon.svg', '/icons/icon-192.png', '/icons/icon-512.png', '/fonts/roboto-mono-latin.woff2'];
-const SCREENS = new Set(['/', '/wallet', '/payments', '/activity', '/privacy', '/terms']);
+const SCREENS = new Set(['/', '/wallet', '/settings', '/payments', '/activity', '/privacy', '/terms']);
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(PUBLIC_ASSETS.map(path => new Request(path, { cache: 'reload', credentials: 'omit' })))));
 });

@@ -33,6 +33,7 @@ export async function renderComponent(
   const routes = [
     "/",
     "/wallet",
+    "/settings",
     "/payments",
     "/activity",
     "/privacy",

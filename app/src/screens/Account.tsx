@@ -1,8 +1,10 @@
+import { requestUnlock } from "../wallet-unlock";
+import { nativeBalanceAddress, nativeVaultState, subscribeNativeVault } from "../local-wallet";
 import { deviceNetwork } from "../network";
 import { AssetBalances } from "../components/AssetBalances";
 import { ContentSkeleton } from "../components/ContentSkeleton";
 import { Ionicons } from "@expo/vector-icons";
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { Linking, Pressable, View } from "react-native";
 import { Text } from "../components/Typography";
 import { useSetAtom } from "jotai";
@@ -10,7 +12,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { request, saveToken } from "../api";
 import { signIn } from "../auth";
 import { useAction, useProfile, useSession } from "../hooks";
-import { screenAtom } from "../state";
+import { screenAtom, walletSetupAtom } from "../state";
 import { formatWei } from "../amount";
 import { Avatar, Button, Heading } from "../components/ui";
 import { HandleInput } from "../components/HandleInput";
@@ -24,14 +26,18 @@ export function Account() {
   const run = useAction(),
     query = useQueryClient(),
     go = useSetAtom(screenAtom);
-  const addresses =
-    session?.links
-      .filter((l) => l.chain_id === session.network.chainId)
-      .map((l) => l.address) ?? [];
-  const { data: balance, isFetching: balanceLoading } = useQuery({
+  const setup = useSetAtom(walletSetupAtom);
+  const localAddress = useSyncExternalStore(subscribeNativeVault, nativeBalanceAddress);
+  const vaultState = useSyncExternalStore(subscribeNativeVault, nativeVaultState);
+  const addresses = [...new Set([
+    ...(session?.links.filter(l => l.chain_id === session.network.chainId).map(l => l.address.toLowerCase()) ?? []),
+    ...(localAddress ? [localAddress.toLowerCase()] : []),
+  ])];
+  const needsUnlock = addresses.length === 0 && vaultState !== 'absent' && !localAddress;
+  const { data: balance, isFetching: balanceLoading, isError: balanceFailed } = useQuery({
     queryKey: ["balance", session?.did, session?.network.chainId, addresses],
     enabled:
-      !!session?.did && addresses.length > 0,
+      !!session?.did && !needsUnlock,
     queryFn: async () => {
       let total = 0n;
       for (const address of addresses) {
@@ -49,7 +55,7 @@ export function Account() {
           },
         );
         const data = await response.json();
-        if (!response.ok || typeof data.result !== "string")
+        if (!response.ok || typeof data.result !== "string" || !/^0x[0-9a-f]+$/i.test(data.result))
           throw new Error("Balance unavailable");
         total += BigInt(data.result);
       }
@@ -130,13 +136,14 @@ export function Account() {
           adjustsFontSizeToFit
           className="font-mono text-4xl font-semibold text-white"
         >
-          {hidden ? "••••••" : (balance ?? "—")} ETH
+          {hidden ? "•••••• ETH" : needsUnlock ? "Unlock to load balance" : balanceFailed ? "Balance unavailable" : balance !== undefined ? `${balance} ETH` : "Loading balance…"}
         </Text>}
+        {!hidden && (needsUnlock || balanceFailed) && <Pressable accessibilityRole="button" accessibilityLabel={needsUnlock ? 'Unlock wallet' : 'Retry balance'} onPress={() => needsUnlock ? void run(requestUnlock) : void query.invalidateQueries({ queryKey: ['balance'] })}><Text className="text-sm text-white underline">{needsUnlock ? 'Unlock wallet' : 'Try again'}</Text></Pressable>}
         <Text className="text-sm text-accent">● {session.network.name}</Text>
       </View>
       <View className="flex-row gap-3">
         <View className="flex-1">
-          <WalletAction action="link" onPress={() => go("Wallet")} />
+          <WalletAction action="link" onPress={() => { setup(true); go("Wallet"); }} />
         </View>
         <View className="flex-1">
           <WalletAction action="send" onPress={() => go("Payments")} />

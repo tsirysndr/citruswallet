@@ -51,7 +51,7 @@ it('only offers password setup after the three missing words are selected', asyn
   }
   expect(screen.getByLabelText('Protect this wallet with a password')).toBeVisible();
   expect(screen.getByRole('button', { name: 'Save my wallet' })).toBeVisible();
-  await user.click(screen.getByRole('button', { name: 'Review my recovery phrase' }));
+  await user.click(screen.getByRole('button', { name: 'Back to recovery phrase' }));
   expect(screen.queryByRole('button', { name: 'Save my wallet' })).not.toBeInTheDocument();
   await user.click(screen.getByRole('button', { name: 'Cancel' }));
 });

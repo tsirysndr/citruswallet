@@ -104,6 +104,7 @@ export async function linkWallet(network: Network, publicAddress: boolean) {
   });
   await check(wallet, address, network);
   await request("verifyChallenge", { id: challenge.id, signature });
+  return address;
 }
 const pendingKey = (did: string) =>
   "citrus-broadcast-" + did.replace(/[^a-zA-Z0-9._-]/g, "_");

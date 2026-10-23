@@ -26,12 +26,12 @@ export function Account() {
       </div>
       <div className="balance-stack"><div className="balance-card">
         <div className="balance-label">ETH balance <button type="button" onClick={() => setHidden(!hidden)} aria-label={hidden ? "Show balance" : "Hide balance"}>{hidden ? <EyeOff size={17} /> : <Eye size={17} />}</button></div>
-        {balanceLoading && !balances && !hidden ? <ContentSkeleton variant="line" label="Loading balance" inverse /> : <p className="balance-amount">{hidden ? "••••••" : amount ?? "—"}</p>}
+        {balanceLoading && !balances && !hidden ? <ContentSkeleton variant="line" label="Loading balance" inverse /> : <p className="balance-amount">{hidden ? "••••••" : amount ?? (session?.did ? "Balance unavailable" : "—")}</p>}
         <div className="balance-bottom"><span className="network-pill"><i />{session?.network.name ?? "Ethereum"}</span><CitrusMark className="balance-seal" /></div>
-        <p className="balance-note">{session?.did ? detail ? `Across ${detail}` : "Link a wallet to see your balance" : "Sign in to see your balance"}</p>
+        <p className="balance-note">{session?.did ? detail ? `Across ${detail}` : "Unlock or connect your wallet, then refresh its balance" : "Sign in to see your balance"}</p>
       </div></div>
       <div className="quick-actions">
-        <Link to="/wallet" className="action-tile action-link"><Plus /><span>Link wallet</span></Link>
+        <Link to="/wallet" search={{ setup: true }} className="action-tile action-link"><Plus /><span>Link wallet</span></Link>
         <Link to="/payments" className="action-tile action-send"><ArrowUpRight /><span>Send assets</span></Link>
         <Link to="/wallet" className="action-tile action-receive"><ArrowDownLeft /><span>Receive</span></Link>
       </div>

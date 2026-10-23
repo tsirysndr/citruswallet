@@ -1,0 +1,32 @@
+import React from 'react';
+import { screen, fireEventAsync as fireEvent, waitFor } from '@testing-library/react-native';
+import { renderComponent } from '../../../tests/render';
+import { WalletSetup } from './index';
+const mockAddress = '0x1111111111111111111111111111111111111111';
+const mockError = jest.fn();
+jest.mock('../../hooks', () => ({ useSession: () => ({ data: { did: 'did:plc:me', network: { chainId: 1 }, links: [] } }), useAction: () => fn => fn().catch(mockError) }));
+jest.mock('../../local-wallet', () => ({ nativeVaultState: () => 'absent', subscribeNativeVault: () => () => {}, nativeBalanceAddress: () => null }));
+jest.mock('../../wallet-preferences', () => ({ configuredAddress: () => null, walletMode: () => 'metamask', selectWallet: jest.fn(), rememberExternalWallet: jest.fn() }));
+jest.mock('../../wallet', () => ({ connect: jest.fn(), linkWallet: jest.fn() }));
+jest.mock('../../api', () => ({ request: jest.fn() }));
+jest.mock('../LocalWallet', () => ({ LocalWallet: () => null }));
+const { linkWallet, connect } = require('../../wallet');
+const { request } = require('../../api');
+beforeEach(() => { jest.clearAllMocks(); linkWallet.mockResolvedValue(mockAddress); request.mockResolvedValue({}); });
+test('sets the verified account as default without opening a second connection', async () => {
+  renderComponent(<WalletSetup onFinished={() => {}} />);
+  await fireEvent.press(screen.getByRole('button', { name: 'Connect MetaMask' }));
+  await fireEvent.press(screen.getByRole('button', { name: 'Link my wallet' }));
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Open Citrus Wallet' })).toBeTruthy());
+  expect(linkWallet).toHaveBeenCalledWith({ chainId: 1 }, true);
+  expect(request).toHaveBeenCalledWith('setDefaultAddress', { address: mockAddress });
+  expect(connect).not.toHaveBeenCalled();
+});
+test('keeps setup open when receiving-default update fails', async () => {
+  request.mockRejectedValue(new Error('Offline'));
+  renderComponent(<WalletSetup onFinished={() => {}} />);
+  await fireEvent.press(screen.getByRole('button', { name: 'Connect MetaMask' }));
+  await fireEvent.press(screen.getByRole('button', { name: 'Link my wallet' }));
+  expect(mockError).toHaveBeenCalled();
+  expect(screen.queryByRole('button', { name: 'Open Citrus Wallet' })).toBeNull();
+});

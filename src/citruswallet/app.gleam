@@ -14,6 +14,7 @@ pub type Settings =
 const screens = [
   "/invite",
   "/wallet",
+  "/settings",
   "/payments",
   "/activity",
   "/privacy",
