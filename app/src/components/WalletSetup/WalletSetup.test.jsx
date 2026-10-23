@@ -100,3 +100,14 @@ test('disables wallet switching during an active wallet operation', async () => 
   await fireEvent.press(citrus);
   expect(require('../../wallet-preferences').selectWallet).not.toHaveBeenCalled();
 });
+
+test.each([false, true])('shows sign-in for an existing locked wallet after sign-out, restart=%s', async restart => {
+  mockVault = 'locked'; mockMode = 'citrus'; mockDid = null;
+  renderComponent(<WalletSetup restart={restart} onFinished={() => {}} />);
+  expect(await screen.findByText('Welcome back.')).toBeTruthy();
+  expect(screen.getByRole('button', { name: 'Sign In' })).toBeTruthy();
+  expect(screen.queryByText('WALLET SETUP')).toBeNull();
+  expect(screen.queryByRole('button', { name: 'Create a Citrus wallet' })).toBeNull();
+  expect(require('../../wallet-unlock').requestUnlock).not.toHaveBeenCalled();
+  expect(require('../../wallet-preferences').selectWallet).not.toHaveBeenCalled();
+});

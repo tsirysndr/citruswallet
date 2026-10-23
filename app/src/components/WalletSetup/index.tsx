@@ -33,7 +33,8 @@ export function WalletSetup({ onFinished, restart = false }: { onFinished?: () =
   const linked = links.find(link => current && link.address.toLowerCase() === current.toLowerCase()) || (!existing ? links.find(link => link.is_default) || links[0] : undefined);
   const [address, setAddress] = useState(current || linked?.address || '');
   const ready = Boolean(session?.did) && (stage === 'done' || (!editing && Boolean(linked)));
-  const signingIn = !session?.did && stage === 'signin';
+  const returningSignIn = !session?.did && existing;
+  const signingIn = !session?.did && (existing || stage === 'signin');
   const switchWallet = (value: 'citrus' | 'metamask') => {
     if (busy || value === kind) return;
     return run(async () => {
@@ -76,8 +77,8 @@ export function WalletSetup({ onFinished, restart = false }: { onFinished?: () =
       </View>
       <Text className="text-xs leading-5 text-muted">Choose which wallet to pay with. Switching does not move funds or change your receiving address.</Text>
     </View>}
-    {!ready && <View className="flex-row justify-between"><Text className="text-xs text-muted">WALLET SETUP</Text><Text className="text-xs text-muted">{signingIn ? 'Final step · Sign in' : stage === 'choice' ? '1 · Choose' : stage === 'link' ? 'Connect your account' : '2 · Secure'}</Text></View>}
-    {signingIn ? <OnboardingSignIn /> : ready ? <View className="gap-5 rounded-3xl bg-white p-6"><View className="items-center"><WalletIllustration variant="ready" /></View>
+    {!ready && !returningSignIn && <View className="flex-row justify-between"><Text className="text-xs text-muted">WALLET SETUP</Text><Text className="text-xs text-muted">{signingIn ? 'Final step · Sign in' : stage === 'choice' ? '1 · Choose' : stage === 'link' ? 'Connect your account' : '2 · Secure'}</Text></View>}
+    {signingIn ? <OnboardingSignIn returning={returningSignIn} /> : ready ? <View className="gap-5 rounded-3xl bg-white p-6"><View className="items-center"><WalletIllustration variant="ready" /></View>
       <Text className="text-center text-3xl font-semibold">{session?.did ? 'Your wallet is ready.' : 'A wallet of your own.'}</Text>
       <Text className="text-center text-base leading-6 text-muted">{session?.did ? `Ready to receive on ${session.network.name}. Your wallet address is linked to your Atmosphere account.` : 'Sign in next to link this wallet to your Atmosphere account.'}</Text>
       {!!(address || linked?.address) && <View className="gap-2 rounded-xl bg-canvas p-4"><Text className="text-xs text-muted">Your address</Text><View className="flex-row items-center gap-3"><Text selectable className="flex-1 font-mono text-sm">{address || linked?.address}</Text><Pressable accessibilityRole="button" accessibilityLabel="Copy wallet address" hitSlop={12} onPress={() => run(() => Clipboard.setStringAsync(address || linked!.address))}><Copy size={20} color="#292d26" /></Pressable></View></View>}

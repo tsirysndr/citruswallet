@@ -11,7 +11,7 @@ import { HandleInput } from '../HandleInput';
 import { AtmosphereApps } from '../AtmosphereApps';
 import { Button } from '../ui';
 
-export function OnboardingSignIn() {
+export function OnboardingSignIn({ returning = false }: { returning?: boolean }) {
   const [explain, setExplain] = useState(false);
   const form = useForm({ resolver: zodResolver(signInForm), defaultValues: { identifier: '' } });
   const run = useAction(), query = useQueryClient();
@@ -20,9 +20,9 @@ export function OnboardingSignIn() {
   });
   const submit = form.handleSubmit(({ identifier }) => start(identifier));
   return <View className="gap-5 rounded-3xl bg-white p-6">
-    <Text className="text-center text-3xl font-semibold">Your handle. Your wallet.</Text>
-    <Text className="text-center text-base leading-6 text-muted">One last step: sign in with your Atmosphere account. Send and receive crypto using an @handle instead of a long wallet address.</Text>
-    <Text className="text-center text-sm leading-6 text-muted">We’ll link your wallet to your account so friends can pay you by handle. Your keys stay on your device.</Text>
+    <Text className="text-center text-3xl font-semibold">{returning ? 'Welcome back.' : 'Your handle. Your wallet.'}</Text>
+    <Text className="text-center text-base leading-6 text-muted">{returning ? 'Sign in with your Atmosphere account to continue.' : 'One last step: sign in with your Atmosphere account. Send and receive crypto using an @handle instead of a long wallet address.'}</Text>
+    <Text className="text-center text-sm leading-6 text-muted">{returning ? 'Your wallet is already configured. Your keys stay on your device.' : 'We’ll link your wallet to your account so friends can pay you by handle. Your keys stay on your device.'}</Text>
     <AtmosphereApps />
     <Controller control={form.control} name="identifier" render={({ field }) => <HandleInput value={field.value} onChange={field.onChange} onSubmit={submit} />} />
     {form.formState.errors.identifier && <Text accessibilityRole="alert" className="text-sm text-red-700">{form.formState.errors.identifier.message}</Text>}

@@ -158,7 +158,7 @@ function Shell() {
           )}
   </>;
   if (needsSetup === null || needsSetup) return <SafeAreaView className="flex-1 bg-canvas" edges={['top', 'bottom']}>
-    <WalletUnlock /><StatusBar style="dark" />
+    {session.data?.did && <WalletUnlock />}<StatusBar style="dark" />
     <View className="flex-row items-center gap-3 px-5 py-4"><Image source={require('./assets/icon.png')} style={{ width: 42, height: 42 }} /><Text className="text-xl font-bold">Citrus Wallet</Text></View>
     <KeyboardAvoidingView className="flex-1" behavior={Platform.OS === 'ios' ? 'padding' : undefined}><ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: 20 }}>
       {needsSetup && session.data ? <WalletSetup key={session.data.did || 'signed-out'} onFinished={() => { setNeedsSetup(false); setScreen(invite ? 'Wallet' : 'Account'); }} /> : <ContentSkeleton label="Opening Citrus" />}
