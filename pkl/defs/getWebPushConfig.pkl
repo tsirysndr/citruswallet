@@ -1,0 +1,17 @@
+lexicon = 1
+id = "app.citruswallet.getWebPushConfig"
+defs = new Dynamic {
+  `main` = new Dynamic {
+    `type` = "query"
+    `output` = new Dynamic {
+      `encoding` = "application/json"
+      `schema` = new Dynamic {
+        `type` = "object"
+        `required` = List("publicKey")
+        `properties` = new Dynamic {
+          `publicKey` = new Dynamic { `type` = "string" }
+        }
+      }
+    }
+  }
+}

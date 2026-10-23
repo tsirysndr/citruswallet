@@ -1,0 +1,32 @@
+lexicon = 1
+id = "app.citruswallet.registerWebPush"
+defs = new Dynamic {
+  `main` = new Dynamic {
+    `type` = "procedure"
+    `input` = new Dynamic {
+      `encoding` = "application/json"
+      `schema` = new Dynamic {
+        `type` = "object"
+        `required` = List("endpoint", "p256dh", "auth")
+        `properties` = new Dynamic {
+          `endpoint` = new Dynamic { `type` = "string"
+            `maxLength` = 2048 }
+          `p256dh` = new Dynamic { `type` = "string"
+            `maxLength` = 100 }
+          `auth` = new Dynamic { `type` = "string"
+            `maxLength` = 32 }
+        }
+      }
+    }
+    `output` = new Dynamic {
+      `encoding` = "application/json"
+      `schema` = new Dynamic {
+        `type` = "object"
+        `required` = List("ok")
+        `properties` = new Dynamic {
+          `ok` = new Dynamic { `type` = "boolean" }
+        }
+      }
+    }
+  }
+}

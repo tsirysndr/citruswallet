@@ -44,6 +44,7 @@ pub fn push_devices() {
       text("did") |> not_null,
       text("session_key") |> not_null,
       text("platform") |> not_null,
+      text("subscription"),
       integer("created_at") |> not_null,
       integer("updated_at") |> not_null,
     ],

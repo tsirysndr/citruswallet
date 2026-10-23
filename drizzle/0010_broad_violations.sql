@@ -1,0 +1,1 @@
+ALTER TABLE `push_devices` ADD `subscription` text;

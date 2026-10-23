@@ -1,7 +1,7 @@
 import { Lexicons } from '@atproto/lexicon';
 import { normalize } from './normalize-lexicon.mjs';
 import { readdirSync, mkdirSync, writeFileSync } from 'node:fs';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 
 // Like Rocksky: PKL is the source, JSON is the transport contract, lex-cli
 // generates the typed client. Commit all outputs so deployments need no PKL.
@@ -14,7 +14,10 @@ const docs = files.map(file => {
 });
 // Validate definitions before invoking lex-cli, which may skip invalid files.
 new Lexicons(docs);
-execFileSync('node_modules/.bin/lex', ['gen-api', 'web/src/lexicon', '--yes', ...docs.map(d => `lexicons/${d.id}.json`)], { stdio: 'inherit' });
+const generated = spawnSync('node_modules/.bin/lex', ['gen-api', 'web/src/lexicon', '--yes', ...docs.map(d => `lexicons/${d.id}.json`)], { encoding: 'utf8' });
+if (generated.error || generated.status !== 0 || /Invalid lexicon/.test(generated.stdout + generated.stderr)) {
+  throw generated.error || new Error(generated.stdout + generated.stderr);
+}
 normalize('web/src/lexicon');
 mkdirSync('src/generated', { recursive: true });
 writeFileSync('src/generated/lexicons.mjs', '// Generated from pkl/defs. Do not edit.\nexport const schemas = ' + JSON.stringify(docs, null, 2) + ';\n');

@@ -5,6 +5,7 @@ import citruswallet/ffi/js.{type Js}
 import citruswallet/ffi/node
 import citruswallet/ffi/url
 import citruswallet/identity
+import citruswallet/notifications
 import citruswallet/oauth
 import citruswallet/store
 import citruswallet/xrpc/context.{type Server, Elsewhere, Value}
@@ -70,5 +71,6 @@ pub fn redeem(server: Server, ctx: Context) {
   }
 }
 
-@external(javascript, "../../native-auth.mjs", "revokeDevices")
-pub fn revoke_devices(client: Client, key: String) -> Nil
+pub fn revoke_devices(client: Client, key: String) -> Nil {
+  notifications.revoke_devices(client, key)
+}

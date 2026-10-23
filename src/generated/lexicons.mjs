@@ -934,6 +934,29 @@ export const schemas = [
   },
   {
     "lexicon": 1,
+    "id": "app.citruswallet.getWebPushConfig",
+    "defs": {
+      "main": {
+        "type": "query",
+        "output": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "publicKey"
+            ],
+            "properties": {
+              "publicKey": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
     "id": "app.citruswallet.listNotifications",
     "defs": {
       "main": {
@@ -1120,6 +1143,37 @@ export const schemas = [
   },
   {
     "lexicon": 1,
+    "id": "app.citruswallet.markAllNotificationsRead",
+    "defs": {
+      "main": {
+        "type": "procedure",
+        "input": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [],
+            "properties": {}
+          }
+        },
+        "output": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "ok"
+            ],
+            "properties": {
+              "ok": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
     "id": "app.citruswallet.markNotificationRead",
     "defs": {
       "main": {
@@ -1227,6 +1281,54 @@ export const schemas = [
                   "android",
                   "ios"
                 ]
+              }
+            }
+          }
+        },
+        "output": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "ok"
+            ],
+            "properties": {
+              "ok": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "app.citruswallet.registerWebPush",
+    "defs": {
+      "main": {
+        "type": "procedure",
+        "input": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "endpoint",
+              "p256dh",
+              "auth"
+            ],
+            "properties": {
+              "endpoint": {
+                "type": "string",
+                "maxLength": 2048
+              },
+              "p256dh": {
+                "type": "string",
+                "maxLength": 100
+              },
+              "auth": {
+                "type": "string",
+                "maxLength": 32
               }
             }
           }
@@ -1531,6 +1633,44 @@ export const schemas = [
               "token": {
                 "type": "string",
                 "maxLength": 256
+              }
+            }
+          }
+        },
+        "output": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "ok"
+            ],
+            "properties": {
+              "ok": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "app.citruswallet.unregisterWebPush",
+    "defs": {
+      "main": {
+        "type": "procedure",
+        "input": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "endpoint"
+            ],
+            "properties": {
+              "endpoint": {
+                "type": "string",
+                "maxLength": 2048
               }
             }
           }

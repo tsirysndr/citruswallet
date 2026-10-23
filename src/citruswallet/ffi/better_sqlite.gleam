@@ -1,4 +1,5 @@
 import citruswallet/ffi/js.{type Exception, type Js}
+import gleam/option
 
 pub type Client =
   Js
@@ -26,4 +27,23 @@ pub fn execute(client: Client, sql: String) -> Result(Nil, Exception) {
 pub fn close(client: Client) -> Nil {
   let _ = js.attempt(fn() { js.call(client, "close", []) })
   Nil
+}
+
+// Bound parameters stay separate from SQL; these bindings are used for queue
+// claims and SQLite queries that are awkward to express in the ORM.
+pub fn query(client: Client, sql: String, params: List(Js)) -> List(Js) {
+  let statement = js.call(client, "prepare", [js.string(sql)])
+  js.as_list(js.call(statement, "all", params))
+}
+
+pub fn first(client: Client, sql: String, params: List(Js)) -> Js {
+  let statement = js.call(client, "prepare", [js.string(sql)])
+  js.call(statement, "get", params)
+}
+
+pub fn run(client: Client, sql: String, params: List(Js)) -> Int {
+  let statement = js.call(client, "prepare", [js.string(sql)])
+  js.call(statement, "run", params)
+  |> js.int_field("changes")
+  |> option.unwrap(0)
 }

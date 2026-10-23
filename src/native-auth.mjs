@@ -69,7 +69,3 @@ export function exchange(db, body) {
     return { token };
   })();
 }
-
-export function revokeDevices(db, key) {
-  db.prepare("DELETE FROM push_devices WHERE session_key=?").run(key);
-}

@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {open,close} from '../build/dev/javascript/citruswallet/citruswallet/store.mjs';
-import {list,markRead,register,unregister,deliver} from '../src/notifications.mjs';
+import {list,markRead,markAllRead,register,unregister,deliver} from './helpers/notifications.mjs';
 function fixture(t){const store=open(':memory:','./drizzle')[0];t.after(()=>close(store));const db=store.client;
  const payment=(id='payment',recipient='bob',chain=1)=>db.prepare("INSERT INTO payments(id,sender_did,recipient_did,recipient_label,chain_id,amount_wei,state,created_at,expires_at) VALUES(?,'alice',?,'bob.test',?,'1','submitted',1,9999999999999)").run(id,recipient,chain);
  return {db,payment};}
@@ -15,3 +15,8 @@ test('push delivery stores tickets and receipts, retries transport failures and 
  payment('second');db.exec("UPDATE payments SET state='confirmed' WHERE id='second'");await deliver(db,async()=>Response.json({data:{status:'error',details:{error:'DeviceNotRegistered'}}}));assert.equal(db.prepare('SELECT count(*) AS n FROM push_devices').get().n,0);
 });
 test('device tokens are validated and another user cannot unregister them',t=>{const {db}=fixture(t),token='ExponentPushToken[test]';assert.equal(register(db,'bob','session',{token:'https://evil',platform:'android'}),false);register(db,'bob','session',{token,platform:'android'});unregister(db,'alice',token);assert.equal(db.prepare('SELECT did FROM push_devices').get().did,'bob');register(db,'alice','new-session',{token,platform:'ios'});assert.equal(db.prepare('SELECT did FROM push_devices').get().did,'alice');unregister(db,'alice',token);assert.equal(db.prepare('SELECT count(*) AS n FROM push_devices').get().n,0);});
+
+test('mark all read is scoped to recipient and chain', t => {
+ const {db,payment}=fixture(t);payment('one');payment('two');payment('other-user','charlie');payment('other-chain','bob',31337);db.exec("UPDATE payments SET state='confirmed'");
+ markAllRead(db,'bob',1);assert.equal(list(db,'bob',1).unread,0);assert.equal(list(db,'charlie',1).unread,1);assert.equal(list(db,'bob',31337).unread,1);
+});

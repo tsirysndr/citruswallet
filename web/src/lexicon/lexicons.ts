@@ -834,6 +834,27 @@ export const schemaDict = {
       },
     },
   },
+  AppCitruswalletGetWebPushConfig: {
+    lexicon: 1,
+    id: 'app.citruswallet.getWebPushConfig',
+    defs: {
+      main: {
+        type: 'query',
+        output: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['publicKey'],
+            properties: {
+              publicKey: {
+                type: 'string',
+              },
+            },
+          },
+        },
+      },
+    },
+  },
   AppCitruswalletListNotifications: {
     lexicon: 1,
     id: 'app.citruswallet.listNotifications',
@@ -1000,6 +1021,35 @@ export const schemaDict = {
       },
     },
   },
+  AppCitruswalletMarkAllNotificationsRead: {
+    lexicon: 1,
+    id: 'app.citruswallet.markAllNotificationsRead',
+    defs: {
+      main: {
+        type: 'procedure',
+        input: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: [],
+            properties: {},
+          },
+        },
+        output: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['ok'],
+            properties: {
+              ok: {
+                type: 'boolean',
+              },
+            },
+          },
+        },
+      },
+    },
+  },
   AppCitruswalletMarkNotificationRead: {
     lexicon: 1,
     id: 'app.citruswallet.markNotificationRead',
@@ -1094,6 +1144,48 @@ export const schemaDict = {
               platform: {
                 type: 'string',
                 enum: ['android', 'ios'],
+              },
+            },
+          },
+        },
+        output: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['ok'],
+            properties: {
+              ok: {
+                type: 'boolean',
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  AppCitruswalletRegisterWebPush: {
+    lexicon: 1,
+    id: 'app.citruswallet.registerWebPush',
+    defs: {
+      main: {
+        type: 'procedure',
+        input: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['endpoint', 'p256dh', 'auth'],
+            properties: {
+              endpoint: {
+                type: 'string',
+                maxLength: 2048,
+              },
+              p256dh: {
+                type: 'string',
+                maxLength: 100,
+              },
+              auth: {
+                type: 'string',
+                maxLength: 32,
               },
             },
           },
@@ -1395,6 +1487,40 @@ export const schemaDict = {
       },
     },
   },
+  AppCitruswalletUnregisterWebPush: {
+    lexicon: 1,
+    id: 'app.citruswallet.unregisterWebPush',
+    defs: {
+      main: {
+        type: 'procedure',
+        input: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['endpoint'],
+            properties: {
+              endpoint: {
+                type: 'string',
+                maxLength: 2048,
+              },
+            },
+          },
+        },
+        output: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['ok'],
+            properties: {
+              ok: {
+                type: 'boolean',
+              },
+            },
+          },
+        },
+      },
+    },
+  },
   AppCitruswalletVerifyChallenge: {
     lexicon: 1,
     id: 'app.citruswallet.verifyChallenge',
@@ -1448,12 +1574,16 @@ export const ids = {
   AppCitruswalletGetPayment: 'app.citruswallet.getPayment',
   AppCitruswalletGetProfile: 'app.citruswallet.getProfile',
   AppCitruswalletGetSession: 'app.citruswallet.getSession',
+  AppCitruswalletGetWebPushConfig: 'app.citruswallet.getWebPushConfig',
   AppCitruswalletListNotifications: 'app.citruswallet.listNotifications',
   AppCitruswalletListPayments: 'app.citruswallet.listPayments',
   AppCitruswalletLogout: 'app.citruswallet.logout',
+  AppCitruswalletMarkAllNotificationsRead:
+    'app.citruswallet.markAllNotificationsRead',
   AppCitruswalletMarkNotificationRead: 'app.citruswallet.markNotificationRead',
   AppCitruswalletPreparePayment: 'app.citruswallet.preparePayment',
   AppCitruswalletRegisterPushToken: 'app.citruswallet.registerPushToken',
+  AppCitruswalletRegisterWebPush: 'app.citruswallet.registerWebPush',
   AppCitruswalletResolveRecipient: 'app.citruswallet.resolveRecipient',
   AppCitruswalletSearchActors: 'app.citruswallet.searchActors',
   AppCitruswalletSetDefaultAddress: 'app.citruswallet.setDefaultAddress',
@@ -1464,5 +1594,6 @@ export const ids = {
   AppCitruswalletSyncAddresses: 'app.citruswallet.syncAddresses',
   AppCitruswalletUnlinkAddress: 'app.citruswallet.unlinkAddress',
   AppCitruswalletUnregisterPushToken: 'app.citruswallet.unregisterPushToken',
+  AppCitruswalletUnregisterWebPush: 'app.citruswallet.unregisterWebPush',
   AppCitruswalletVerifyChallenge: 'app.citruswallet.verifyChallenge',
 }

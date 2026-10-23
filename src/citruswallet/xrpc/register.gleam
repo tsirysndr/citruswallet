@@ -11,6 +11,26 @@ import citruswallet/xrpc/payment
 pub fn register(app: hono.App, server: Server) -> Nil {
   hono.xrpc(
     app,
+    methods.mark_all_notifications_read,
+    context.serve(server, notification.read_all),
+  )
+  hono.xrpc(
+    app,
+    methods.get_web_push_config,
+    context.serve(server, notification.web_settings),
+  )
+  hono.xrpc(
+    app,
+    methods.register_web_push,
+    context.serve(server, notification.register_web),
+  )
+  hono.xrpc(
+    app,
+    methods.unregister_web_push,
+    context.serve(server, notification.remove_web),
+  )
+  hono.xrpc(
+    app,
     methods.list_notifications,
     context.serve(server, notification.listing),
   )

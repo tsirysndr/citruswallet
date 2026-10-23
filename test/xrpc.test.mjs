@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
+import { createHash, createECDH, randomBytes } from 'node:crypto';
 import { privateKeyToAccount } from 'viem/accounts';
 import { XrpcClient } from '@atproto/xrpc';
 import { schemas } from '../src/generated/lexicons.mjs';
@@ -380,4 +380,21 @@ test('native OAuth returns only a one-time proof-bound code and preserves browse
   const callback=await f.raw('/auth/callback?code=test');assert.equal(callback.status,302);const redirect=new URL(callback.headers.get('location'));assert.equal(redirect.origin,'null');assert.equal(redirect.protocol,'citruswallet:');assert.equal(redirect.searchParams.get('state'),state);
   const exchange=body=>f.app.fetch(new Request(origin+'/xrpc/app.citruswallet.exchangeNativeSession',{method:'POST',headers:{Host:'citruswallet.app','Content-Type':'application/json'},body:JSON.stringify(body)}),env);
   const code=redirect.searchParams.get('code');assert.equal((await exchange({code,verifier:'f'.repeat(64)})).status,401);const response=await exchange({code,verifier});assert.equal(response.status,200);assert.match((await response.json()).token,/^[a-f0-9]{64}$/);assert.equal((await exchange({code,verifier})).status,401);
+});
+
+
+test('browser push endpoints require authentication and CSRF, and logout revokes subscriptions', async t => {
+  const f = fixture(t);
+  assert.equal((await f.raw('/xrpc/app.citruswallet.getWebPushConfig')).status, 401);
+  await f.login(bob);
+  const settings = await f.query('getWebPushConfig');
+  assert.deepEqual(Object.keys(settings), ['publicKey']);
+  const ecdh = createECDH('prime256v1');
+  const subscription = { endpoint: 'https://fcm.googleapis.com/fcm/send/browser-test', p256dh: ecdh.generateKeys().toString('base64url'), auth: randomBytes(16).toString('base64url') };
+  assert.equal((await f.raw('/xrpc/app.citruswallet.registerWebPush', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-csrf-token': '' }, body: JSON.stringify(subscription) })).status, 403);
+  await f.call('registerWebPush', subscription);
+  assert.equal(f.store.client.prepare("SELECT platform FROM push_devices").get().platform, 'web');
+  await assert.rejects(f.call('registerWebPush', { ...subscription, endpoint: 'https://127.0.0.1/private' }), e => e.status === 400);
+  await f.call('logout', {});
+  assert.equal(f.store.client.prepare('SELECT count(*) AS n FROM push_devices').get().n, 0);
 });

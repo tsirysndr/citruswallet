@@ -15,12 +15,15 @@ import * as AppCitruswalletGetInvitation from './types/app/citruswallet/getInvit
 import * as AppCitruswalletGetPayment from './types/app/citruswallet/getPayment'
 import * as AppCitruswalletGetProfile from './types/app/citruswallet/getProfile'
 import * as AppCitruswalletGetSession from './types/app/citruswallet/getSession'
+import * as AppCitruswalletGetWebPushConfig from './types/app/citruswallet/getWebPushConfig'
 import * as AppCitruswalletListNotifications from './types/app/citruswallet/listNotifications'
 import * as AppCitruswalletListPayments from './types/app/citruswallet/listPayments'
 import * as AppCitruswalletLogout from './types/app/citruswallet/logout'
+import * as AppCitruswalletMarkAllNotificationsRead from './types/app/citruswallet/markAllNotificationsRead'
 import * as AppCitruswalletMarkNotificationRead from './types/app/citruswallet/markNotificationRead'
 import * as AppCitruswalletPreparePayment from './types/app/citruswallet/preparePayment'
 import * as AppCitruswalletRegisterPushToken from './types/app/citruswallet/registerPushToken'
+import * as AppCitruswalletRegisterWebPush from './types/app/citruswallet/registerWebPush'
 import * as AppCitruswalletResolveRecipient from './types/app/citruswallet/resolveRecipient'
 import * as AppCitruswalletSearchActors from './types/app/citruswallet/searchActors'
 import * as AppCitruswalletSetDefaultAddress from './types/app/citruswallet/setDefaultAddress'
@@ -30,6 +33,7 @@ import * as AppCitruswalletSubscribeNotifications from './types/app/citruswallet
 import * as AppCitruswalletSyncAddresses from './types/app/citruswallet/syncAddresses'
 import * as AppCitruswalletUnlinkAddress from './types/app/citruswallet/unlinkAddress'
 import * as AppCitruswalletUnregisterPushToken from './types/app/citruswallet/unregisterPushToken'
+import * as AppCitruswalletUnregisterWebPush from './types/app/citruswallet/unregisterWebPush'
 import * as AppCitruswalletVerifyChallenge from './types/app/citruswallet/verifyChallenge'
 
 export * as AppCitruswalletAcceptInvitation from './types/app/citruswallet/acceptInvitation'
@@ -46,12 +50,15 @@ export * as AppCitruswalletGetInvitation from './types/app/citruswallet/getInvit
 export * as AppCitruswalletGetPayment from './types/app/citruswallet/getPayment'
 export * as AppCitruswalletGetProfile from './types/app/citruswallet/getProfile'
 export * as AppCitruswalletGetSession from './types/app/citruswallet/getSession'
+export * as AppCitruswalletGetWebPushConfig from './types/app/citruswallet/getWebPushConfig'
 export * as AppCitruswalletListNotifications from './types/app/citruswallet/listNotifications'
 export * as AppCitruswalletListPayments from './types/app/citruswallet/listPayments'
 export * as AppCitruswalletLogout from './types/app/citruswallet/logout'
+export * as AppCitruswalletMarkAllNotificationsRead from './types/app/citruswallet/markAllNotificationsRead'
 export * as AppCitruswalletMarkNotificationRead from './types/app/citruswallet/markNotificationRead'
 export * as AppCitruswalletPreparePayment from './types/app/citruswallet/preparePayment'
 export * as AppCitruswalletRegisterPushToken from './types/app/citruswallet/registerPushToken'
+export * as AppCitruswalletRegisterWebPush from './types/app/citruswallet/registerWebPush'
 export * as AppCitruswalletResolveRecipient from './types/app/citruswallet/resolveRecipient'
 export * as AppCitruswalletSearchActors from './types/app/citruswallet/searchActors'
 export * as AppCitruswalletSetDefaultAddress from './types/app/citruswallet/setDefaultAddress'
@@ -61,6 +68,7 @@ export * as AppCitruswalletSubscribeNotifications from './types/app/citruswallet
 export * as AppCitruswalletSyncAddresses from './types/app/citruswallet/syncAddresses'
 export * as AppCitruswalletUnlinkAddress from './types/app/citruswallet/unlinkAddress'
 export * as AppCitruswalletUnregisterPushToken from './types/app/citruswallet/unregisterPushToken'
+export * as AppCitruswalletUnregisterWebPush from './types/app/citruswallet/unregisterWebPush'
 export * as AppCitruswalletVerifyChallenge from './types/app/citruswallet/verifyChallenge'
 
 export class AtpBaseClient extends XrpcClient {
@@ -238,6 +246,18 @@ export class AppCitruswalletNS {
     )
   }
 
+  getWebPushConfig(
+    params?: AppCitruswalletGetWebPushConfig.QueryParams,
+    opts?: AppCitruswalletGetWebPushConfig.CallOptions,
+  ): Promise<AppCitruswalletGetWebPushConfig.Response> {
+    return this._client.call(
+      'app.citruswallet.getWebPushConfig',
+      params,
+      undefined,
+      opts,
+    )
+  }
+
   listNotifications(
     params?: AppCitruswalletListNotifications.QueryParams,
     opts?: AppCitruswalletListNotifications.CallOptions,
@@ -267,6 +287,18 @@ export class AppCitruswalletNS {
     opts?: AppCitruswalletLogout.CallOptions,
   ): Promise<AppCitruswalletLogout.Response> {
     return this._client.call('app.citruswallet.logout', opts?.qp, data, opts)
+  }
+
+  markAllNotificationsRead(
+    data: AppCitruswalletMarkAllNotificationsRead.InputSchema,
+    opts?: AppCitruswalletMarkAllNotificationsRead.CallOptions,
+  ): Promise<AppCitruswalletMarkAllNotificationsRead.Response> {
+    return this._client.call(
+      'app.citruswallet.markAllNotificationsRead',
+      opts?.qp,
+      data,
+      opts,
+    )
   }
 
   markNotificationRead(
@@ -299,6 +331,18 @@ export class AppCitruswalletNS {
   ): Promise<AppCitruswalletRegisterPushToken.Response> {
     return this._client.call(
       'app.citruswallet.registerPushToken',
+      opts?.qp,
+      data,
+      opts,
+    )
+  }
+
+  registerWebPush(
+    data: AppCitruswalletRegisterWebPush.InputSchema,
+    opts?: AppCitruswalletRegisterWebPush.CallOptions,
+  ): Promise<AppCitruswalletRegisterWebPush.Response> {
+    return this._client.call(
+      'app.citruswallet.registerWebPush',
       opts?.qp,
       data,
       opts,
@@ -407,6 +451,18 @@ export class AppCitruswalletNS {
   ): Promise<AppCitruswalletUnregisterPushToken.Response> {
     return this._client.call(
       'app.citruswallet.unregisterPushToken',
+      opts?.qp,
+      data,
+      opts,
+    )
+  }
+
+  unregisterWebPush(
+    data: AppCitruswalletUnregisterWebPush.InputSchema,
+    opts?: AppCitruswalletUnregisterWebPush.CallOptions,
+  ): Promise<AppCitruswalletUnregisterWebPush.Response> {
+    return this._client.call(
+      'app.citruswallet.unregisterWebPush',
       opts?.qp,
       data,
       opts,
