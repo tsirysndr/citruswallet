@@ -25,8 +25,8 @@ module.exports = {
       category: ["BROWSABLE", "DEFAULT"],
     }],
     adaptiveIcon: {
-      foregroundImage: "./assets/icon.png",
-      backgroundColor: "#f2f1ed",
+      foregroundImage: "./assets/adaptive-icon.png",
+      backgroundColor: "#c5f277",
     },
   },
   plugins: [
