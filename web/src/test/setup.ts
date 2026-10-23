@@ -1,8 +1,12 @@
 import "@testing-library/jest-dom/vitest";
-import { cleanup } from "@testing-library/react";
+import { cleanup, configure } from "@testing-library/react";
 import { afterAll, afterEach, beforeAll, beforeEach, expect, vi } from "vitest";
 import { server } from "./mocks/server";
 import { rememberCsrf } from "../api";
+
+// Session-dependent queries can need more than the default one-second wait on CI.
+// Keep assertions bounded and allow the same async budget as the native UI tests.
+configure({ asyncUtilTimeout: 5000 });
 
 let unhandledFrames = 0;
 beforeAll(() =>

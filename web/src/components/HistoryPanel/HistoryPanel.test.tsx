@@ -98,3 +98,16 @@ it('preserves loaded mobile history when another batch fails and allows retry', 
   await user.click(retry);
   expect(await screen.findByText('Batch 2')).toBeInTheDocument();
 });
+
+it("shows loading until a slower history response arrives", async () => {
+  server.use(http.get(xrpc("listPayments"), async () => {
+    // Deliberately exceed Testing Library's old one-second default.
+    await new Promise(resolve => setTimeout(resolve, 1200));
+    return HttpResponse.json({ payments: [payment], total: 1, page: 1, pageSize: 20 });
+  }));
+  await renderComponent(<HistoryPanel advanced />);
+  expect(await screen.findByRole("status", { name: "Loading payments" })).toBeInTheDocument();
+  expect(screen.queryByText("No payment intents yet.")).not.toBeInTheDocument();
+  expect(await screen.findByText("Dinner with friends")).toBeInTheDocument();
+  expect(screen.queryByRole("status", { name: "Loading payments" })).not.toBeInTheDocument();
+});

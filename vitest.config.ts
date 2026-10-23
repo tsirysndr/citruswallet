@@ -15,5 +15,6 @@ export default defineConfig({
     clearMocks: true,
     restoreMocks: true,
     maxWorkers: 4,
+    testTimeout: 15000,
   },
 });
