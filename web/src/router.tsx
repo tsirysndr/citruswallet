@@ -10,6 +10,7 @@ const root = createRootRoute({ component: App });
 
 export const routeTree = root.addChildren([
   createRoute({ getParentRoute: () => root, path: "/", component: Account }),
+  createRoute({ getParentRoute: () => root, path: "/invite", component: Wallet }),
   createRoute({ getParentRoute: () => root, path: "/wallet", component: Wallet }),
   createRoute({ getParentRoute: () => root, path: "/payments", component: Payments }),
   createRoute({ getParentRoute: () => root, path: "/activity", component: Activity }),

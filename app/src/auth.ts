@@ -35,7 +35,7 @@ export async function finishLogin(url: string): Promise<boolean> {
   });
   return exchanging;
 }
-export async function signIn(identifier: string) {
+export async function signIn(identifier: string, create = false) {
   const verifier = random(),
     state = random();
   const challenge = await Crypto.digestStringAsync(
@@ -46,7 +46,7 @@ export async function signIn(identifier: string) {
     "citrus-login",
     JSON.stringify({ verifier, state, created: Date.now() }),
   );
-  const url = `${origin}/auth/native/start?${new URLSearchParams({ identifier: identifier.trim().replace(/^@/, ""), challenge, state })}`;
+  const url = `${origin}/auth/native/start?${new URLSearchParams({ identifier: identifier.trim().replace(/^@/, ""), challenge, state, ...(create ? { create: "true" } : {}) })}`;
   const result = await WebBrowser.openAuthSessionAsync(
     url,
     "citruswallet://auth",

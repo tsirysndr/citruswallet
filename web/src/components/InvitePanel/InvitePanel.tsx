@@ -69,6 +69,7 @@ export function InvitePanel({ className }: { className?: string }) {
           {label(invitation.state)}
         </Mono>
       )}
+      <a className="my-3 inline-block text-sm font-semibold underline md:hidden" href={`citruswallet://invite#invite=${token}`}>Open in Citrus Wallet app</a>
       <form
         noValidate
         onSubmit={form.handleSubmit(({ address }) =>

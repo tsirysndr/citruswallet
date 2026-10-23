@@ -6,6 +6,7 @@ on:
     paths:
       - "src/**"
       - "test/**"
+      - "web/public/.well-known/**"
       - "drizzle/**"
       - "gleam.toml"
       - "manifest.toml"
@@ -44,5 +45,7 @@ jobs:
         run: gleam format --check src test
       - name: Run Gleam tests
         run: gleam test
+      - name: Build public web assets for route tests
+        run: bunx vite build
       - name: Run API integration tests
         run: node --test test/*.test.mjs

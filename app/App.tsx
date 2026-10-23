@@ -1,4 +1,8 @@
 import "./global.css";
+import * as SecureStore from "expo-secure-store";
+import type { Session } from "./src/types";
+import { invitationToken } from "./src/invitation-link";
+import { InvitationPanel } from "./src/components/InvitationPanel";
 import { useNoticeTimeout } from "./src/useNoticeTimeout";
 import { useNotifications } from "./src/notifications";
 import { NotificationsInbox } from "./src/components/NotificationsInbox";
@@ -21,6 +25,7 @@ import { loadToken } from "./src/api";
 import { finishLogin } from "./src/auth";
 import { useSession } from "./src/hooks";
 import {
+  inviteTokenAtom,
   busyAtom,
   noticeAtom,
   readyAtom,
@@ -38,6 +43,7 @@ const client = new QueryClient({
 });
 function Shell() {
   const scroll = useRef<ScrollView>(null);
+  const [invite, setInvite] = useAtom(inviteTokenAtom);
   const [paymentStep, setPaymentStep] = useState(1);
   const [screen, setScreen] = useAtom(screenAtom),
     [notice, setNotice] = useAtom(noticeAtom),
@@ -48,6 +54,7 @@ function Shell() {
     session = useSession();
   useNotifications(session.data?.did);
   useNoticeTimeout();
+  useEffect(() => { if (invite && session.data?.did) setScreen("Wallet"); }, [invite, session.data?.did]);
   useEffect(() => {
     void loadToken()
       .then(() => setReady(true))
@@ -56,6 +63,13 @@ function Shell() {
       );
     const handle = async (url: string) => {
       try {
+        const token = invitationToken(url);
+        if (token) {
+          await SecureStore.setItemAsync("citrus-invitation", token);
+          setInvite(token);
+          setScreen(query.getQueryData<Session>(["session"])?.did ? "Wallet" : "Account");
+          return;
+        }
         if (await finishLogin(url)) {
           await query.resetQueries();
           setScreen("Account");
@@ -64,9 +78,14 @@ function Shell() {
         setNotice(error instanceof Error ? error.message : "Sign in failed.");
       }
     };
-    void Linking.getInitialURL().then((url) => {
-      if (url) void handle(url);
-    });
+    void Linking.getInitialURL().then(async url => {
+      if (url && invitationToken(url)) await handle(url);
+      else {
+        const saved = await SecureStore.getItemAsync("citrus-invitation");
+        if (saved && /^[a-f0-9]{64}$/.test(saved)) setInvite(saved);
+        if (url) await handle(url);
+      }
+    }).catch(() => setNotice("Could not restore the invitation. Open its link again."));
     const links = Linking.addEventListener(
       "url",
       (event) => void handle(event.url),
@@ -80,6 +99,7 @@ function Shell() {
     };
   }, []);
   const feedback = <>
+          {(screen === "Account" || screen === "Wallet") && <InvitationPanel />}
           {notice ? (
             <Pressable
               accessibilityLabel="Dismiss notice"

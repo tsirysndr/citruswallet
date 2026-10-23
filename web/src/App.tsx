@@ -90,7 +90,7 @@ export function App() {
         </Link>
         <div className="flex items-center gap-2.5">
           {session?.did && <><Notifications /><ActivitySearch /></>}
-          <InstallMetaMask />
+          <div className="hidden md:block"><InstallMetaMask /></div>
         </div>
       </header>
 

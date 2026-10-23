@@ -994,7 +994,7 @@ fn fingerprint(link: Link) -> String {
 }
 
 fn invitation_url(payments: Payments, token: String) -> String {
-  payments.origin <> "/#invite=" <> token
+  payments.origin <> "/invite#invite=" <> token
 }
 
 pub fn to_json(

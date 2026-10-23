@@ -79,7 +79,7 @@ export function ActivitySearch() {
             <span className="command-person"><span className="command-name"><Direction size={14} aria-hidden="true" />{outgoing ? "To" : "From"} <span className={actor.displayName ? "" : "font-mono"}>{name}</span></span>
               {actor.displayName && actor.handle && <span className="command-handle">@{actor.handle}</span>}
               {payment.description && <span className="command-description">{payment.description}</span>}
-              <span className="command-meta">{new Date(payment.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })} · {label(payment.state)}</span>
+              <span className="command-meta">{new Date(payment.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })} · <span className={`rounded-full px-2 py-1 payment-status-${payment.state}`}>{label(payment.state)}</span></span>
             </span>
             <span className="command-amount">{payment.amount} ETH</span>
           </button>;

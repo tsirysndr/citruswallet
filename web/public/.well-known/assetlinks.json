@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "app.citruswallet",
+      "sha256_cert_fingerprints": [
+        "E2:90:05:9A:0F:1B:E7:8A:CB:85:41:C1:9F:30:EF:76:5B:26:9B:60:B1:A8:D8:27:A0:F2:F1:02:00:90:50:32"
+      ]
+    }
+  }
+]

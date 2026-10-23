@@ -1,3 +1,4 @@
+import { PaymentStatus } from "../components/PaymentStatus";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ActivityIndicator, Alert, FlatList, Modal, Pressable, View } from "react-native";
 import { Text } from "../components/Typography";
@@ -117,7 +118,7 @@ export function Activity({ header }: { header?: ReactNode }) {
             </View>
             <View className="flex-row items-center justify-between">
               <Text className="text-xl font-bold">{payment.amount} ETH</Text>
-              <Text className="text-sm text-muted">{payment.state}</Text>
+              <PaymentStatus state={payment.state} />
             </View>
             {payment.description && (
               <Text numberOfLines={2} className="text-sm">

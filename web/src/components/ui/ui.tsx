@@ -44,10 +44,12 @@ export const Step = ({ children }: { children: ReactNode }) => (
 );
 
 export function Badge({
+  status,
   tone = "plain",
   className,
   children,
 }: {
+  status?: string;
   tone?: "plain" | "good";
   className?: string;
   children: ReactNode;
@@ -59,6 +61,7 @@ export function Badge({
         tone === "good"
           ? "border-good-edge bg-good-bg text-good"
           : "border-edge text-ink-muted",
+        status && `payment-status-${status}`,
         className,
       )}
     >

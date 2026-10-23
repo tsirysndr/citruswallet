@@ -135,7 +135,7 @@ export function ReviewPanel({ className }: { className?: string }) {
     <Panel className={className}>
       <PanelHeading>
         <Heading>Review payment</Heading>
-        <Badge className="ml-auto">{label(payment.state)}</Badge>
+        <Badge status={payment.state} className="ml-auto">{label(payment.state)}</Badge>
       </PanelHeading>
       <dl className="grid grid-cols-[85px_minmax(0,1fr)] gap-3 text-xs leading-[1.6] md:grid-cols-[110px_minmax(0,1fr)] md:text-[13px]">
         {details.map(([term, value]) => (

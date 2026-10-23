@@ -1,3 +1,5 @@
+import { PaymentStatus } from "../components/PaymentStatus";
+import * as Clipboard from "expo-clipboard";
 import { ThemeSwitch } from "../components/ThemeSwitch";
 import { useEffect, useState } from "react";
 import { Alert, BackHandler, Keyboard, Pressable, Share, View } from "react-native";
@@ -6,7 +8,7 @@ import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { request } from "../api";
 import { useAction, useSession } from "../hooks";
-import { busyAtom, reviewAtom, screenAtom } from "../state";
+import { busyAtom, noticeAtom, reviewAtom, screenAtom } from "../state";
 import { Ionicons } from "@expo/vector-icons";
 import { pending, recover, sendPayment } from "../wallet";
 import type { Actor, Payment, PaymentMedia, Recipient } from "../types";
@@ -32,6 +34,14 @@ export function Payments({ onStepChange }: { onStepChange?: (step: number) => vo
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const busy = useAtomValue(busyAtom);
   const go = useSetAtom(screenAtom);
+  const notice = useSetAtom(noticeAtom);
+  const [invitation, setInvitation] = useState<{ id: string; url: string } | null>(null);
+  async function invitationUrl(paymentId: string) {
+    if (invitation?.id === paymentId) return invitation.url;
+    const data = await request<{ invitationUrl: string }>("createInvitation", { id: paymentId });
+    setInvitation({ id: paymentId, url: data.invitationUrl });
+    return data.invitationUrl;
+  }
   const [actor, setActor] = useState<Actor | null>(null);
   useEffect(() => { onStepChange?.(id ? 4 : step); }, [step, id]);
   const { data: detail, isFetching } = useQuery({
@@ -171,7 +181,7 @@ export function Payments({ onStepChange }: { onStepChange?: (step: number) => vo
                     <Text className="text-lg font-semibold">
                       {payment.recipient?.displayName || payment.recipientLabel}
                     </Text>
-                    <Text className="text-sm text-muted">{payment.state}</Text>
+                    <PaymentStatus state={payment.state} />
                   </View>
                 </View>
                 <Text className="text-3xl font-semibold">
@@ -237,14 +247,14 @@ export function Payments({ onStepChange }: { onStepChange?: (step: number) => vo
                       tone="plain"
                       onPress={() =>
                         run(async () => {
-                          const data = await request<{ url: string }>(
-                            "createInvitation",
-                            { id: payment.id },
-                          );
-                          await Share.share({ message: data.url });
+                          await Share.share({ message: await invitationUrl(payment.id) });
                         })
                       }
                     />
+                    <Button title="Copy invitation link" tone="plain" onPress={() => run(async () => {
+                      await Clipboard.setStringAsync(await invitationUrl(payment.id));
+                      notice("Invitation link copied.");
+                    })} />
                     <Button
                       title="Cancel payment"
                       tone="plain"

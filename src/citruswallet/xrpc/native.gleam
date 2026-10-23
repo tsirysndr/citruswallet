@@ -36,7 +36,12 @@ pub fn start(server: Server, ctx: Context) {
   let query = url.query(parsed)
   let identifier =
     js.call(query, "get", [js.string("identifier")]) |> js.as_string
-  use identifier <- context.attempt(identity.normalize(identifier))
+  let creating =
+    js.call(query, "get", [js.string("create")]) |> js.as_string == Some("true")
+  use identifier <- context.attempt(case creating {
+    True -> Ok(server.settings.signup_provider)
+    False -> identity.normalize(identifier)
+  })
   let #(key, _) = context.open_session(server, ctx, None)
   store.put(
     server.settings.store,
@@ -46,7 +51,12 @@ pub fn start(server: Server, ctx: Context) {
     node.now() + 600_000,
   )
   use authorization <- promise.try_await(
-    oauth.authorize(server.settings.oauth, identifier, state)
+    {
+      case creating {
+        True -> oauth.create_account(server.settings.oauth, identifier, state)
+        False -> oauth.authorize(server.settings.oauth, identifier, state)
+      }
+    }
     |> promise.map(result.replace_error(
       _,
       error.bad_request("Could not start sign in."),

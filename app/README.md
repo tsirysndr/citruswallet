@@ -59,3 +59,9 @@ MetaMask deep links preserve the SDK connection request and relay response. Link
 SSE handles foreground updates and replays missed events using a per-user cursor. Expo push handles delivery while the app is closed. Tapping a push opens the payment, which the API still authorizes against the current user. Push bodies contain no sender identity or amount. iOS background push additionally requires APNs credentials and an iOS build.
 
 Notifications reflect verified incoming payments after the required chain confirmations. The notification API and worker must be deployed before native sign-in and payment notifications work against production. Firebase setup is required only for Android background push, not the SSE inbox.
+
+### Android invitation links
+
+Invitations use `https://citruswallet.app/invite#invite=<token>`. The fragment keeps the invitation token out of HTTP requests. Android verifies the release signing certificate against `/.well-known/assetlinks.json`; `app.config.js` restricts verified links to `/invite`. Keep the SHA-256 fingerprint synchronized with the release certificate. When enabling Play App Signing, add the **Play app signing certificate** fingerprint as well (not the upload certificate). Rebuild and reinstall after changing intent filters. iOS universal links are not configured yet.
+
+The app retains pending invitations in secure storage through sign-in. Recipients must explicitly choose a linked address; opening a link never accepts an invitation or sends funds. The website remains the fallback when the app is absent and provides an explicit app-opening link for older invitations.

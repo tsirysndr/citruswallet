@@ -112,3 +112,21 @@ test('reports each step to the shell so navigation can stay hidden during compos
   await fireEvent.press(screen.getByRole('button', { name: 'Go to recipient step' }));
   expect(changed).toHaveBeenLastCalledWith(1);
 });
+
+test('copy and share use the invitationUrl response without rotating the same link', async () => {
+  const Clipboard = require('expo-clipboard');
+  const Share = require('react-native').Share;
+  const url = 'https://citruswallet.app/invite#invite=' + 'a'.repeat(64);
+  const copy = jest.spyOn(Clipboard, 'setStringAsync').mockResolvedValue(true);
+  const share = jest.spyOn(Share, 'share').mockResolvedValue({ action: Share.sharedAction });
+  request.mockImplementation(async method => method === 'resolveRecipient' ? { did: alice.did, handle: alice.handle } :
+    method === 'createInvitation' ? { invitationUrl: url } : { payment });
+  mount(<Payments />);
+  await reviewPayment();
+  await fireEvent.press(screen.getByRole('button', { name: 'Copy invitation link' }));
+  expect(copy).toHaveBeenCalledWith(url);
+  await fireEvent.press(screen.getByRole('button', { name: 'Share payment invitation' }));
+  expect(share).toHaveBeenCalledWith({ message: url });
+  expect(request.mock.calls.filter(([method]) => method === 'createInvitation')).toHaveLength(1);
+  copy.mockRestore(); share.mockRestore();
+});

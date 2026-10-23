@@ -20,6 +20,10 @@ module.exports = {
         }
       : {}),
     package: "app.citruswallet",
+    intentFilters: [{ action: "VIEW", autoVerify: true,
+      data: [{ scheme: "https", host: "citruswallet.app", path: "/invite" }],
+      category: ["BROWSABLE", "DEFAULT"],
+    }],
     adaptiveIcon: {
       foregroundImage: "./assets/icon.png",
       backgroundColor: "#f2f1ed",

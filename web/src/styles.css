@@ -398,3 +398,13 @@ textarea:focus-visible { outline: none; }
 .notification-item { display: flex; flex-direction: column; gap: 8px; padding: 16px; border: 1px solid var(--edge-soft); background: var(--panel); text-align: left; border-radius: 8px; cursor: pointer; }
 .notification-item:hover { border-color: var(--accent-strong); }
 .notification-count { position: absolute; top: -4px; right: -6px; display: flex; align-items: center; justify-content: center; min-width: 19px; height: 19px; padding: 0 5px; border: 2px solid #f2f1ed; border-radius: 999px; background: #dc2626; color: white; font-size: 11px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+
+.payment-status-waiting { background-color: #fff0c2; color: #795600; border-color: transparent; }
+.payment-status-ready { background-color: #ddf4df; color: #23613b; border-color: transparent; }
+.payment-status-prepared { background-color: #d6f3f1; color: #176364; border-color: transparent; }
+.payment-status-submitted { background-color: #dce8ff; color: #284ea0; border-color: transparent; }
+.payment-status-confirming { background-color: #eaddff; color: #664098; border-color: transparent; }
+.payment-status-confirmed { background-color: #c5f277; color: #315417; border-color: transparent; }
+.payment-status-failed { background-color: #ffe0db; color: #a12d25; border-color: transparent; }
+.payment-status-cancelled { background-color: #f4ddeb; color: #85365e; border-color: transparent; }
+.payment-status-expired { background-color: #ffdfc1; color: #864713; border-color: transparent; }

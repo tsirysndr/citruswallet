@@ -5,3 +5,4 @@ export const reviewAtom = atom<string | null>(null);
 export const noticeAtom = atom("");
 export const busyAtom = atom(false);
 export const readyAtom = atom(false);
+export const inviteTokenAtom = atom<string | null>(null);

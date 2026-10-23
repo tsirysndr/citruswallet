@@ -155,7 +155,7 @@ test('payment and invitation IDs use XRPC inputs; DID and self-payment checks su
   assert.equal(resolved.did, bob);
   const created = await f.call('createPayment', { identifier: 'bob.test', expectedDid: bob, amount: '0.01' });
   assert.equal(created.payment.state, 'waiting');
-  assert.ok(created.invitationUrl.startsWith(origin));
+  assert.ok(created.invitationUrl.startsWith(origin + "/invite#invite="));
   const id = created.payment.id;
   assert.equal((await f.query('getPayment', { id })).payment.id, id);
   assert.equal((await f.query('listPayments')).payments.length, 1);
@@ -397,4 +397,28 @@ test('browser push endpoints require authentication and CSRF, and logout revokes
   await assert.rejects(f.call('registerWebPush', { ...subscription, endpoint: 'https://127.0.0.1/private' }), e => e.status === 400);
   await f.call('logout', {});
   assert.equal(f.store.client.prepare('SELECT count(*) AS n FROM push_devices').get().n, 0);
+});
+
+test('native signup uses the configured provider and create prompt with an app callback binding', async t => {
+  const f = fixture(t);
+  const calls = [];
+  f.oauth.authorize = async (identifier, options) => { calls.push({ identifier, options }); return new URL('https://bsky.social/oauth/authorize'); };
+  const response = await f.raw('/auth/native/start?create=true&challenge=' + 'a'.repeat(64) + '&state=' + 'b'.repeat(64));
+  assert.equal(response.status, 302);
+  assert.equal(calls[0].identifier, 'https://bsky.social');
+  assert.equal(calls[0].options.prompt, 'create');
+  assert.ok(f.store.client.prepare("SELECT value FROM kv WHERE namespace='native-binding' AND key=?").get(calls[0].options.state));
+});
+
+test('invitation fallback and Android association are publicly served', async t => {
+  const f = fixture(t);
+  const association = await f.raw('/.well-known/assetlinks.json');
+  assert.equal(association.status, 200);
+  assert.match(association.headers.get('content-type'), /application\/json/);
+  const [statement] = await association.json();
+  assert.equal(statement.target.package_name, 'app.citruswallet');
+  assert.match(statement.target.sha256_cert_fingerprints[0], /^(?:[A-F0-9]{2}:){31}[A-F0-9]{2}$/);
+  const page = await f.raw('/invite');
+  assert.equal(page.status, 200);
+  assert.match(page.headers.get('content-type'), /text\/html/);
 });

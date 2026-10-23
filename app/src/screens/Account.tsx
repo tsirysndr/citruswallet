@@ -78,7 +78,7 @@ export function Account() {
           <Text className="text-sm text-muted">
             Don't have an account?{" "}
             <Text accessibilityRole="link" className="text-sm underline"
-              onPress={() => void Linking.openURL("https://atmosphereaccount.com/signin?mode=create&next=%2Fapps")}>Create one</Text>
+              onPress={() => run(async () => { if (await signIn("", true)) await query.invalidateQueries(); })}>Create one</Text>
           </Text>
           <Text className="text-sm leading-6 text-muted">
             By continuing, you agree to the Terms and Conditions and Privacy
