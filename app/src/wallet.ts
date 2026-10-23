@@ -4,7 +4,9 @@ import { Buffer } from "buffer";
 import * as SecureStore from "expo-secure-store";
 import { request } from "./api";
 import type { Network, Payment, Attempt, Challenge } from "./types";
+import { nativeWalletUI, withWalletDeadline } from "./wallet-connection";
 let client: ReturnType<typeof createEVMClient> | undefined;
+let launchFailed: ((error: Error) => void) | undefined;
 export function getClient() {
   return (client ??= createEVMClient({
     dapp: {
@@ -18,18 +20,34 @@ export function getClient() {
       },
     },
     analytics: { enabled: false },
-    ui: { preferExtension: false },
+    ui: nativeWalletUI,
     mobile: {
       useDeeplink: true,
-      preferredOpenLink: (link) => Linking.openURL(link),
+      preferredOpenLink: (link) => {
+        // The SDK does not await this callback. Forward launch failures to the
+        // active connection instead of leaving an unhandled rejection.
+        void Linking.openURL(link).catch(() => {
+          launchFailed?.(new Error("Could not open MetaMask. Install the MetaMask app, then try again."));
+        });
+      },
     },
     skipAutoAnnounce: true,
   }));
 }
 export async function connect(network: Network) {
-  const sdk = await getClient();
-  if (sdk.status !== "connected")
-    await sdk.connect({ chainIds: [network.chainIdHex as `0x${string}`] });
+  const sdk = await withWalletDeadline(getClient(), 20_000,
+    "MetaMask could not initialize. Close and reopen Citrus Wallet, then try again.");
+  if (sdk.status !== "connected") {
+    const launchError = new Promise<never>((_, reject) => { launchFailed = reject; });
+    try {
+      await withWalletDeadline(Promise.race([
+        sdk.connect({ chainIds: [network.chainIdHex as `0x${string}`] }),
+        launchError,
+      ]), 60_000, "MetaMask connection timed out. Check your internet connection and try again. If MetaMask opened, finish connecting there first.");
+    } finally {
+      launchFailed = undefined;
+    }
+  }
   const wallet = sdk.getProvider();
   if ((await wallet.request({ method: "eth_chainId" })) !== network.chainIdHex)
     await wallet.request({
