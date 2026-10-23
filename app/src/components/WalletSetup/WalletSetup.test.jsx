@@ -4,15 +4,17 @@ import { renderComponent } from '../../../tests/render';
 import { WalletSetup } from './index';
 const mockAddress = '0x1111111111111111111111111111111111111111';
 const mockError = jest.fn();
-jest.mock('../../hooks', () => ({ useSession: () => ({ data: { did: 'did:plc:me', network: { chainId: 1 }, links: [] } }), useAction: () => fn => fn().catch(mockError) }));
+let mockDid = 'did:plc:me';
+jest.mock('../../hooks', () => ({ useSession: () => ({ data: { did: mockDid, network: { chainId: 1 }, links: [] } }), useAction: () => fn => fn().catch(mockError) }));
 jest.mock('../../local-wallet', () => ({ nativeVaultState: () => 'absent', subscribeNativeVault: () => () => {}, nativeBalanceAddress: () => null }));
 jest.mock('../../wallet-preferences', () => ({ configuredAddress: () => null, walletMode: () => 'metamask', selectWallet: jest.fn(), rememberExternalWallet: jest.fn() }));
 jest.mock('../../wallet', () => ({ connect: jest.fn(), linkWallet: jest.fn() }));
+jest.mock('../../auth', () => ({ signIn: jest.fn(async () => false) }));
 jest.mock('../../api', () => ({ request: jest.fn() }));
 jest.mock('../LocalWallet', () => ({ LocalWallet: () => null }));
 const { linkWallet, connect } = require('../../wallet');
 const { request } = require('../../api');
-beforeEach(() => { jest.clearAllMocks(); linkWallet.mockResolvedValue(mockAddress); request.mockResolvedValue({}); });
+beforeEach(() => { jest.clearAllMocks(); mockDid = 'did:plc:me'; connect.mockResolvedValue({ address: mockAddress }); linkWallet.mockResolvedValue(mockAddress); request.mockResolvedValue({}); });
 test('sets the verified account as default without opening a second connection', async () => {
   renderComponent(<WalletSetup onFinished={() => {}} />);
   await fireEvent.press(screen.getByRole('button', { name: 'Connect MetaMask' }));
@@ -29,4 +31,20 @@ test('keeps setup open when receiving-default update fails', async () => {
   await fireEvent.press(screen.getByRole('button', { name: 'Link my wallet' }));
   expect(mockError).toHaveBeenCalled();
   expect(screen.queryByRole('button', { name: 'Open Citrus Wallet' })).toBeNull();
+});
+
+test('anonymous connection ends with handle sign-in and does not finish onboarding', async () => {
+  mockDid = null;
+  const finished = jest.fn();
+  renderComponent(<WalletSetup onFinished={finished} />);
+  await fireEvent.press(screen.getByRole('button', { name: 'Connect MetaMask' }));
+  await fireEvent.press(screen.getByRole('button', { name: 'Connect MetaMask' }));
+  expect(screen.getByText(/using an @handle instead of a long wallet address/)).toBeTruthy();
+  expect(screen.queryByRole('button', { name: 'Open Citrus Wallet' })).toBeNull();
+  expect(screen.getByRole('button', { name: 'Sign In' })).toBeDisabled();
+  await fireEvent.changeText(screen.getByLabelText('Handle'), 'alice.test');
+  await fireEvent.press(screen.getByRole('button', { name: 'Sign In' }));
+  expect(require('../../auth').signIn).toHaveBeenCalledWith('alice.test', false);
+  expect(finished).not.toHaveBeenCalled();
+  expect(linkWallet).not.toHaveBeenCalled();
 });

@@ -125,7 +125,7 @@ function Shell() {
     const address = configuredAddress();
     const configured = vault !== 'absent' || !!address || data.links.length > 0;
     const linked = data.links.some(link => link.chain_id === data.network.chainId && link.public && link.is_default && (!address || link.address.toLowerCase() === address.toLowerCase()));
-    setNeedsSetup(!configured || Boolean(data.did && !linked));
+    setNeedsSetup(!configured || !data.did || !linked);
   }, [ready, session.data, needsSetup, vault]);
   const compactRecipient = screen === "Payments" && paymentStep === 1 && keyboardVisible;
   const feedback = <>

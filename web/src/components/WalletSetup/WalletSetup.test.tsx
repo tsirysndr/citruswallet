@@ -4,7 +4,7 @@ import { WalletSetup } from './index';
 import { renderComponent, screen, waitFor } from '../../test/render';
 import { server } from '../../test/mocks/server';
 import { xrpc } from '../../test/mocks/handlers';
-import { address } from '../../test/mocks/fixtures';
+import { address, signedOut } from '../../test/mocks/fixtures';
 
 function wallet() {
   window.ethereum = { isMetaMask: true, request: vi.fn(async ({ method }: { method: string }) => {
@@ -51,4 +51,20 @@ it('does not complete setup when setting the receiving default fails', async () 
   await waitFor(() => expect(attempted).toBe(true));
   expect(screen.queryByRole('button', { name: /Open Citrus Wallet/ })).not.toBeInTheDocument();
   expect(screen.getByRole('button', { name: 'Link my wallet' })).toBeVisible();
+});
+
+it('ends anonymous wallet connection at handle sign-in, and resumes there after reload', async () => {
+  wallet();
+  server.use(http.get(xrpc('getSession'), () => HttpResponse.json(signedOut)));
+  const finished = vi.fn();
+  const view = await renderComponent(<WalletSetup onFinished={finished} />);
+  await view.user.click(screen.getByRole('button', { name: /Connect MetaMask/ }));
+  await view.user.click(screen.getByRole('button', { name: 'Connect MetaMask' }));
+  expect(await screen.findByRole('button', { name: 'Sign In' })).toBeVisible();
+  expect(screen.getByText(/using an @handle instead of a long wallet address/)).toBeVisible();
+  expect(screen.queryByRole('button', { name: /Open Citrus Wallet/ })).not.toBeInTheDocument();
+  expect(finished).not.toHaveBeenCalled();
+  view.unmount();
+  await renderComponent(<WalletSetup onFinished={finished} />);
+  expect(await screen.findByRole('button', { name: 'Sign In' })).toBeVisible();
 });

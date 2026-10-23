@@ -98,7 +98,7 @@ export function App() {
     const address = configuredAddress();
     const configured = vaultState !== 'absent' || Boolean(address) || session.links.length > 0;
     const linkedDefault = session.links.some(link => link.chain_id === session.network.chainId && link.is_default && link.public && (!address || link.address.toLowerCase() === address.toLowerCase()));
-    setNeedsSetup(!configured || Boolean(session.did && !linkedDefault));
+    setNeedsSetup(!configured || !session.did || !linkedDefault);
   }, [session, needsSetup, vaultState]);
   if (needsSetup === null && !error && !['/privacy', '/terms'].includes(location.pathname)) return <div className="min-h-dvh bg-canvas p-8"><ContentSkeleton variant="card" label="Opening Citrus" /></div>;
   if (needsSetup && session && !['/privacy', '/terms'].includes(location.pathname)) return <div className="min-h-dvh bg-canvas px-5 py-8 font-sans md:py-12">

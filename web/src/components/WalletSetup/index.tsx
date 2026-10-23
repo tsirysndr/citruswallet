@@ -1,3 +1,4 @@
+import { OnboardingSignIn } from '../OnboardingSignIn';
 import { useState, useSyncExternalStore } from 'react';
 import { ArrowLeft, ArrowRight, Copy, Wallet, Link2 } from 'lucide-react';
 import { stringToHex } from 'viem';
@@ -22,12 +23,13 @@ export function WalletSetup({ onFinished, restart = false }: { onFinished?: () =
   const refresh = useRefresh(), run = useRun(), status = useStatus();
   const existing = vault !== 'absent' || Boolean(localStorage.getItem('citrus:metamask-address'));
   const [kind, setKind] = useState<'citrus' | 'metamask'>(() => vault !== 'absent' && localStorage.getItem('citrus:wallet-mode') !== 'metamask' ? 'citrus' : 'metamask');
-  const [stage, setStage] = useState<'choice' | 'create' | 'import' | 'link' | 'done'>(() => !restart && existing ? 'link' : 'choice');
+  const [stage, setStage] = useState<'choice' | 'create' | 'import' | 'link' | 'signin' | 'done'>(() => !restart && existing ? session?.did ? 'link' : 'signin' : 'choice');
   const [editing, setEditing] = useState(restart || Boolean(onFinished));
   const links = session?.links.filter(link => link.chain_id === session.network.chainId) || [];
   const current = configuredAddress();
   const linked = links.find(link => current && link.address.toLowerCase() === current.toLowerCase()) || (!existing ? links.find(link => link.is_default) || links[0] : undefined);
-  const ready = stage === 'done' || (!editing && Boolean(linked));
+  const ready = Boolean(session?.did) && (stage === 'done' || (!editing && Boolean(linked)));
+  const signingIn = !session?.did && stage === 'signin';
   const [address, setAddress] = useState(current || linked?.address || '');
   const choose = (selection: 'citrus' | 'metamask', action?: 'import') => {
     setKind(selection); setEditing(true);
@@ -50,15 +52,15 @@ export function WalletSetup({ onFinished, restart = false }: { onFinished?: () =
       await rpc.setDefaultAddress({ address: account });
       await refresh();
     }
-    setStage('done');
+    setStage(session.did ? 'done' : 'signin');
   });
-  const created = () => { setAddress(localBalanceAddress() || ''); setStage(session?.did ? 'link' : 'done'); };
+  const created = () => { setAddress(localBalanceAddress() || ''); setStage(session?.did ? 'link' : 'signin'); };
   const needsInstall = kind === 'metamask' && !detectedMetaMask() && !isMobileWalletBrowser();
   return <div className="mx-auto w-full max-w-[560px] font-sans">
     {!ready && <div className="mb-7 flex items-center justify-between text-xs text-ink-muted">
-      <span>WALLET SETUP</span><span>{stage === 'choice' ? '1 · Choose' : stage === 'link' ? '3 · Connect' : '2 · Secure'}</span>
+      <span>WALLET SETUP</span><span>{signingIn ? 'Final step · Sign in' : stage === 'choice' ? '1 · Choose' : stage === 'link' ? 'Connect your account' : '2 · Secure'}</span>
     </div>}
-    {ready ? <Panel className="text-center"><WalletIllustration variant="ready" className="mx-auto mb-4 w-60 max-w-full" />
+    {signingIn ? <OnboardingSignIn /> : ready ? <Panel className="text-center"><WalletIllustration variant="ready" className="mx-auto mb-4 w-60 max-w-full" />
       <h1 className="text-3xl font-semibold">{session?.did ? 'Your wallet is ready.' : 'A wallet of your own.'}</h1>
       <p className="mt-3 text-sm leading-6 text-ink-muted">{session?.did ? `Ready to receive on ${session.network.name}. Your wallet address is linked to your Atmosphere account.` : 'Sign in next to link this wallet to your Atmosphere account.'}</p>
       {(address || linked?.address) && <div className="mt-6 rounded-xl bg-sunken p-4 text-left"><p className="mb-2 text-xs text-ink-muted">Your address</p><div className="flex items-center gap-3"><p className="min-w-0 flex-1 break-all font-mono text-sm">{address || linked?.address}</p><button type="button" aria-label="Copy wallet address" className="p-2" onClick={() => run(async () => { await navigator.clipboard.writeText(address || linked!.address); status('Address copied.'); })}><Copy size={19} /></button></div></div>}
