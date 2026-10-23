@@ -1,0 +1,48 @@
+name: API tests
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "test/**"
+      - "drizzle/**"
+      - "gleam.toml"
+      - "manifest.toml"
+      - "package.json"
+      - "bun.lock"
+      - ".github/workflows/api-tests.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: api-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Gleam and API integration tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.4.3"
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: "28"
+          gleam-version: "1.19.2"
+      - name: Install locked dependencies
+        run: bun install --frozen-lockfile
+      - name: Check Gleam formatting
+        run: gleam format --check src test
+      - name: Run Gleam tests
+        run: gleam test
+      - name: Run API integration tests
+        run: node --test test/*.test.mjs
