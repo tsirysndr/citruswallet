@@ -1,0 +1,25 @@
+import React from 'react';
+import { screen, fireEventAsync as fireEvent, waitFor } from '@testing-library/react-native';
+import { renderComponent } from '../../../tests/render';
+import { LocalWallet } from './index';
+jest.mock('../../local-wallet', () => ({ nativeVaultState: () => 'absent', subscribeNativeVault: () => () => {}, nativeProtection: () => 'legacy-pin', deviceUnlockAvailable: jest.fn(async () => true), deviceAuthenticationActive: () => false, createProtectedNativeVault: jest.fn() }));
+const { createProtectedNativeVault } = require('../../local-wallet');
+const phrase = 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
+test('defaults to device unlock and validates optional password confirmation before saving', async () => {
+  renderComponent(<LocalWallet initialAction="import" />);
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Device PIN or biometrics · selected' })).toBeTruthy());
+  expect(screen.queryByLabelText('Wallet password')).toBeNull();
+  expect(screen.queryByLabelText('Create a wallet PIN (6–12 digits)')).toBeNull();
+  await fireEvent.changeText(screen.getByLabelText('Recovery words'), phrase);
+  await fireEvent.press(screen.getByRole('button', { name: 'Use a wallet password' }));
+  await fireEvent.changeText(screen.getByLabelText('Wallet password'), 'short');
+  await fireEvent.changeText(screen.getByLabelText('Repeat password'), 'different');
+  await fireEvent.press(screen.getByRole('button', { name: 'Save my wallet' }));
+  expect(screen.getByText('Use at least 12 characters.')).toBeTruthy();
+  expect(screen.getByText('Passwords do not match.')).toBeTruthy();
+  expect(createProtectedNativeVault).not.toHaveBeenCalled();
+  await fireEvent.changeText(screen.getByLabelText('Wallet password'), 'a long wallet password');
+  await fireEvent.changeText(screen.getByLabelText('Repeat password'), 'a long wallet password');
+  await fireEvent.press(screen.getByRole('button', { name: 'Save my wallet' }));
+  expect(createProtectedNativeVault).toHaveBeenCalledWith({ kind: 'mnemonic', value: phrase }, 'password', 'a long wallet password');
+});

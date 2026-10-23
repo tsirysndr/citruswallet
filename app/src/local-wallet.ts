@@ -1,3 +1,5 @@
+import { storeDeviceSecret, readDeviceSecret, removeDeviceSecret } from './device-vault';
+export { deviceUnlockAvailable } from './device-vault';
 import { deviceNetwork } from "./network";
 import * as SecureStore from 'expo-secure-store';
 import { AppState, Alert } from 'react-native';
@@ -8,6 +10,23 @@ const vaultKey = 'citrus-vault-v1', pepperKey = 'citrus-vault-device-key-v1', bi
 const options = { keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY };
 let secret: WalletSecret | null = null, state = 'loading', generation = 0;
 let balanceAddress: string | null = null;
+let protection: 'legacy-pin' | 'password' | 'device' = 'legacy-pin';
+let authenticating = false;
+export function nativeProtection() { return protection; }
+export function deviceAuthenticationActive() { return authenticating; }
+async function deviceAction<T>(action: () => Promise<T>): Promise<T> {
+  if (authenticating) throw new Error('Device authentication is already open.');
+  const ticket = generation; authenticating = true;
+  try {
+    const value = await action();
+    if (AppState.currentState !== 'active') await new Promise<void>((resolve, reject) => {
+      const timeout = setTimeout(() => { sub.remove(); reject(new Error('Return to Citrus to continue.')); }, 3000);
+      const sub = AppState.addEventListener('change', state => { if (state === 'active') { clearTimeout(timeout); sub.remove(); resolve(); } });
+    });
+    if (ticket !== generation) throw new Error('Wallet locked. Try again.');
+    return value;
+  } finally { authenticating = false; }
+}
 const addressKey = 'citrus-vault-public-address-v1';
 export function nativeBalanceAddress() { return balanceAddress; }
 let timer: ReturnType<typeof setTimeout> | undefined;
@@ -18,7 +37,11 @@ export function nativeVaultState() { return state; }
 export function subscribeNativeVault(fn: () => void) { listeners.add(fn); return () => { listeners.delete(fn); }; }
 export function lockNativeWallet() { generation++; secret = null; if (state === 'unlocked') state = 'locked'; clearTimeout(timer); emit(); }
 export async function loadNativeVault() {
-  state = await SecureStore.getItemAsync(vaultKey) ? 'locked' : 'absent';
+  const raw = await SecureStore.getItemAsync(vaultKey);
+  state = raw ? 'locked' : 'absent';
+  const record = raw ? JSON.parse(raw) : null;
+  protection = record?.version === 2 ? record.method : 'legacy-pin';
+  if (!['device', 'password', 'legacy-pin'].includes(protection)) throw new Error('Unsupported wallet protection.');
   const stored = state === 'locked' ? await SecureStore.getItemAsync(addressKey) : null;
   balanceAddress = stored && /^0x[0-9a-f]{40}$/i.test(stored) ? stored : null;
   emit();
@@ -44,18 +67,68 @@ export async function createNativeVault(value: WalletSecret, pin: string) {
   await rememberAddress(normalized);
   if (ticket === generation) accept(normalized); else { state = 'locked'; emit(); }
 }
-export async function readNativeSecret(pin: string) {
-  if (!/^\d{6,12}$/.test(pin)) throw new Error('Enter your wallet PIN.');
+export async function createProtectedNativeVault(value: WalletSecret, method: 'device' | 'password', password = '') {
+  if (state !== 'absent' || await SecureStore.getItemAsync(vaultKey)) throw new Error('A wallet already exists.');
+  if (method === 'password' && password.length < 12) throw new Error('Use at least 12 characters.');
+  const normalized = normalizeSecret(value.value, value.kind), ticket = generation;
+  if (method === 'device') {
+    await deviceAction(() => storeDeviceSecret(JSON.stringify(normalized)));
+    await SecureStore.setItemAsync(vaultKey, JSON.stringify({ version: 2, method }), options);
+  } else {
+    const pepper = hex(randomBytes(32));
+    const envelope = await encryptSecret(normalized, `${password}:${pepper}`);
+    if (ticket !== generation) throw new Error('Setup interrupted.');
+    await SecureStore.setItemAsync(pepperKey, pepper, options);
+    await SecureStore.setItemAsync(vaultKey, JSON.stringify({ version: 2, method, envelope }), options);
+  }
+  protection = method;
+  await rememberAddress(normalized);
+  if (ticket === generation && AppState.currentState === 'active') accept(normalized);
+  else { state = 'locked'; emit(); }
+}
+// Existing PIN wallets remain readable. Upgrade only after authenticating the old
+// vault, writing the protected copy, and verifying it can be read back.
+export async function upgradeNativeProtection(credential: string, method: 'device' | 'password', password = '') {
+  const value = await readNativeSecret(credential), ticket = generation;
+  if (method === 'device') {
+    await deviceAction(async () => {
+      await storeDeviceSecret(JSON.stringify(value));
+      const verified = JSON.parse(await readDeviceSecret());
+      if (verified.kind !== value.kind || verified.value !== value.value) throw new Error('Could not verify device protection.');
+    });
+    if (ticket !== generation) throw new Error('Upgrade interrupted.');
+    await SecureStore.setItemAsync(vaultKey, JSON.stringify({ version: 2, method }), options);
+  } else {
+    if (password.length < 12) throw new Error('Use at least 12 characters.');
+    const pepper = await SecureStore.getItemAsync(pepperKey) || hex(randomBytes(32));
+    await SecureStore.setItemAsync(pepperKey, pepper, options);
+    const envelope = await encryptSecret(value, `${password}:${pepper}`);
+    if (ticket !== generation) throw new Error('Upgrade interrupted.');
+    await SecureStore.setItemAsync(vaultKey, JSON.stringify({ version: 2, method, envelope }), options);
+  }
+  protection = method;
+  emit();
+  await SecureStore.deleteItemAsync('citrus-vault-attempts');
+  await SecureStore.deleteItemAsync(biometricKey, { keychainService: 'citrus-wallet-biometric-v1' });
+  if (method === 'device') await SecureStore.deleteItemAsync(pepperKey);
+  else await removeDeviceSecret();
+  await rememberAddress(value);
+  if (ticket === generation && AppState.currentState === 'active') accept(value);
+}
+export async function readNativeSecret(pin = '') {
+  if (protection === 'device') return deviceAction(async () => { const raw = JSON.parse(await readDeviceSecret()); return normalizeSecret(raw.value, raw.kind); });
+  if (protection === 'password' && !pin) throw new Error('Enter your wallet password.');
+  if (protection === 'legacy-pin' && !/^\d{6,12}$/.test(pin)) throw new Error('Enter your wallet PIN.');
   const ticket = generation;
   const attemptsKey = 'citrus-vault-attempts';
   const attempts = JSON.parse(await SecureStore.getItemAsync(attemptsKey) || '{"count":0,"next":0}');
-  if (Date.now() < attempts.next) throw new Error('Wait a moment before trying your PIN again.');
+  if (Date.now() < attempts.next) throw new Error('Wait a moment before trying to unlock again.');
   const count = Math.min(20, (Number(attempts.count) || 0) + 1);
   await SecureStore.setItemAsync(attemptsKey, JSON.stringify({ count, next: Date.now() + Math.min(300_000, 1000 * 2 ** count) }), options);
   const raw = await SecureStore.getItemAsync(vaultKey), pepper = await SecureStore.getItemAsync(pepperKey);
   if (!raw || !pepper) throw new Error('Wallet storage is unavailable. Restore your backup on a new installation.');
   let value: WalletSecret;
-  try { value = await decryptSecret(JSON.parse(raw), `${pin}:${pepper}`); }
+  try { const record = JSON.parse(raw); value = await decryptSecret(protection === 'password' ? record.envelope : record, `${pin}:${pepper}`); }
   catch (error) {
     await SecureStore.setItemAsync(attemptsKey, JSON.stringify({ count, next: Date.now() + Math.min(300_000, 1000 * 2 ** count) }), options);
     throw error;
@@ -73,12 +146,14 @@ export async function unlockNativeVault(pin: string) {
 }
 export const canUseBiometrics = () => SecureStore.canUseBiometricAuthentication();
 export async function enableNativeBiometrics(pin: string) {
+  if (protection !== 'legacy-pin') throw new Error('Use the wallet’s configured unlock method.');
   const value = await readNativeSecret(pin);
   // SecureStore gates the actual key material through the OS keystore; a UI-only
   // biometric boolean would not protect a wallet secret.
   await SecureStore.setItemAsync(biometricKey, JSON.stringify(value), { ...options, keychainService: "citrus-wallet-biometric-v1", requireAuthentication: true, authenticationPrompt: 'Protect Citrus Wallet' });
 }
 export async function unlockNativeBiometrics() {
+  if (protection !== 'legacy-pin') throw new Error('Use the wallet’s configured unlock method.');
   const raw = await SecureStore.getItemAsync(biometricKey, { ...options, keychainService: "citrus-wallet-biometric-v1", requireAuthentication: true, authenticationPrompt: 'Unlock Citrus Wallet' });
   if (!raw) throw new Error('Device unlock is unavailable or biometrics changed. Use your PIN.');
   if (AppState.currentState !== 'active') throw new Error('Return to Citrus to unlock.');
@@ -89,7 +164,10 @@ export async function unlockNativeBiometrics() {
   if (ticket !== generation || AppState.currentState !== 'active') throw new Error('Unlock interrupted.');
   accept(value);
 }
-AppState.addEventListener('change', state => { if (state !== 'active') lockNativeWallet(); });
+AppState.addEventListener('change', next => { if (next !== 'active') {
+  if (authenticating) { secret = null; if (state === 'unlocked') state = 'locked'; clearTimeout(timer); emit(); }
+  else lockNativeWallet();
+} });
 function confirm(message: string) { return new Promise<boolean>(resolve => Alert.alert('Confirm payment', message, [{ text: 'Cancel', style: 'cancel', onPress: () => resolve(false) }, { text: 'Send payment', onPress: () => resolve(true) }], { cancelable: true, onDismiss: () => resolve(false) })); }
 export function nativeProvider(selected: Network) {
   const network = deviceNetwork(selected);

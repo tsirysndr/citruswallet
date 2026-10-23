@@ -1,3 +1,6 @@
+import { useController, useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { signInForm } from '../validation';
 import { requestUnlock } from "../wallet-unlock";
 import { nativeBalanceAddress, nativeVaultState, subscribeNativeVault } from "../local-wallet";
 import { deviceNetwork } from "../network";
@@ -21,8 +24,10 @@ import { WalletAction } from "../components/WalletAction";
 export function Account() {
   const { data: session } = useSession(),
     { data: profile, isFetching: profileLoading } = useProfile();
-  const [handle, setHandle] = useState(""),
-    [hidden, setHidden] = useState(false);
+  const form = useForm({ resolver: zodResolver(signInForm), defaultValues: { identifier: '' } });
+  const { field } = useController({ control: form.control, name: 'identifier' });
+  const handle = field.value, setHandle = field.onChange;
+  const [hidden, setHidden] = useState(false);
   const run = useAction(),
     query = useQueryClient(),
     go = useSetAtom(screenAtom);
@@ -74,15 +79,12 @@ export function Account() {
           <Heading title="Welcome to Citrus" />
           <AtmosphereApps />
           <HandleInput value={handle} onChange={setHandle} />
+          {form.formState.errors.identifier && <Text accessibilityRole="alert" className="text-red-700">{form.formState.errors.identifier.message}</Text>}
           <Button
             title="Sign In"
             tone="black"
             disabled={!handle.trim()}
-            onPress={() =>
-              run(async () => {
-                if (await signIn(handle)) await query.invalidateQueries();
-              })
-            }
+            onPress={form.handleSubmit(({ identifier }) => run(async () => { if (await signIn(identifier)) await query.invalidateQueries(); }))}
           />
           <Text className="text-sm text-muted">
             Don't have an account?{" "}

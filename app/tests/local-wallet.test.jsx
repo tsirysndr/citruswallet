@@ -3,6 +3,7 @@ global.TextEncoder = TextEncoder;
 global.TextDecoder = TextDecoder;
 global.crypto = require('node:crypto').webcrypto;
 const mockStorage = new Map();
+Object.defineProperty(require('react-native').AppState, 'currentState', { configurable: true, writable: true, value: 'active' });
 jest.mock('expo-secure-store', () => ({
   WHEN_UNLOCKED_THIS_DEVICE_ONLY: 1,
   getItemAsync: jest.fn(async key => mockStorage.get(key) ?? null),
@@ -10,9 +11,11 @@ jest.mock('expo-secure-store', () => ({
   deleteItemAsync: jest.fn(async key => { mockStorage.delete(key); }),
   canUseBiometricAuthentication: () => false,
 }));
+jest.mock('../src/device-vault', () => ({ storeDeviceSecret: jest.fn(), readDeviceSecret: jest.fn(), removeDeviceSecret: jest.fn(), deviceUnlockAvailable: jest.fn(async () => true) }));
+const device = require('../src/device-vault');
 const vault = require('../src/local-wallet');
 const secret = { kind: 'mnemonic', value: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about' };
-beforeEach(async () => { vault.lockNativeWallet(); mockStorage.clear(); await vault.loadNativeVault(); });
+beforeEach(async () => { jest.clearAllMocks(); device.storeDeviceSecret.mockResolvedValue(undefined); device.readDeviceSecret.mockResolvedValue(JSON.stringify(secret)); vault.lockNativeWallet(); mockStorage.clear(); await vault.loadNativeVault(); });
 afterEach(() => vault.lockNativeWallet());
 test('native wallet encrypts storage with a separate device key and unlocks only with the PIN', async () => {
   await vault.createNativeVault(secret, '793184');
@@ -39,4 +42,58 @@ test('an interrupted native unlock cannot restore the in-memory signing key', as
   const unlocking = vault.unlockNativeVault('793184'); vault.lockNativeWallet();
   await expect(unlocking).rejects.toThrow('interrupted');
   expect(vault.nativeAddress()).toBeNull();
+});
+
+test('password protection encrypts the vault and unlocks with the chosen password', async () => {
+  await vault.createProtectedNativeVault(secret, 'password', 'a long wallet password');
+  expect(vault.nativeProtection()).toBe('password');
+  expect(mockStorage.get('citrus-vault-v1')).not.toContain(secret.value);
+  vault.lockNativeWallet(); await vault.loadNativeVault();
+  expect(vault.nativeProtection()).toBe('password');
+  await vault.unlockNativeVault('a long wallet password');
+  expect(vault.nativeAddress()).toBe('0x9858EfFD232B4033E47d90003D41EC34EcaEda94');
+});
+test('device unlock stores no plaintext or password key in SecureStore and cancellation stays locked', async () => {
+  await vault.createProtectedNativeVault(secret, 'device');
+  expect(device.storeDeviceSecret).toHaveBeenCalledWith(JSON.stringify(secret));
+  expect(mockStorage.has('citrus-vault-device-key-v1')).toBe(false);
+  expect(mockStorage.get('citrus-vault-v1')).not.toContain(secret.value);
+  vault.lockNativeWallet(); await vault.loadNativeVault();
+  device.readDeviceSecret.mockRejectedValueOnce(new Error('Cancelled'));
+  await expect(vault.unlockNativeVault('')).rejects.toThrow('Cancelled');
+  expect(vault.nativeAddress()).toBeNull();
+  expect(vault.nativeVaultState()).toBe('locked');
+  await vault.unlockNativeVault('');
+  expect(vault.nativeVaultState()).toBe('unlocked');
+});
+test('failed upgrade preserves the original PIN vault and successful upgrade removes its password key', async () => {
+  await vault.createNativeVault(secret, '793184');
+  const original = mockStorage.get('citrus-vault-v1');
+  device.storeDeviceSecret.mockRejectedValueOnce(new Error('Cancelled'));
+  await expect(vault.upgradeNativeProtection('793184', 'device')).rejects.toThrow('Cancelled');
+  expect(mockStorage.get('citrus-vault-v1')).toBe(original);
+  expect(vault.nativeProtection()).toBe('legacy-pin');
+  await vault.upgradeNativeProtection('793184', 'device');
+  expect(vault.nativeProtection()).toBe('device');
+  expect(mockStorage.has('citrus-vault-device-key-v1')).toBe(false);
+  vault.lockNativeWallet(); await vault.unlockNativeVault('');
+  expect(vault.nativeVaultState()).toBe('unlocked');
+});
+test('a manual lock during system authentication prevents late unlock', async () => {
+  await vault.createProtectedNativeVault(secret, 'device'); vault.lockNativeWallet();
+  let resolve;
+  device.readDeviceSecret.mockImplementationOnce(() => new Promise(done => { resolve = done; }));
+  const unlocking = vault.unlockNativeVault(''); vault.lockNativeWallet(); resolve(JSON.stringify(secret));
+  await expect(unlocking).rejects.toThrow('locked');
+  expect(vault.nativeAddress()).toBeNull();
+});
+test('device-protected wallets can switch to an independently encrypted password vault', async () => {
+  await vault.createProtectedNativeVault(secret, 'device');
+  await vault.upgradeNativeProtection('', 'password', 'another long password');
+  expect(vault.nativeProtection()).toBe('password');
+  expect(device.removeDeviceSecret).toHaveBeenCalled();
+  expect(mockStorage.get('citrus-vault-v1')).not.toContain(secret.value);
+  vault.lockNativeWallet();
+  await vault.unlockNativeVault('another long password');
+  expect(vault.nativeAddress()).toBe('0x9858EfFD232B4033E47d90003D41EC34EcaEda94');
 });
