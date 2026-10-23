@@ -1,10 +1,23 @@
 import { useEffect, useState } from "react";
 import { provider } from "./wallet";
 
-export const metamaskStoreUrl = "https://chromewebstore.google.com/detail/metamask/nkbihfbeogaeaoehlefnkodbefgpgknn?hl=en";
+export const metamaskFirefoxUrl =
+  "https://addons.mozilla.org/en-US/firefox/addon/ether-metamask";
+export const metamaskChromeUrl =
+  "https://chromewebstore.google.com/detail/metamask/nkbihfbeogaeaoehlefnkodbefgpgknn?hl=en";
+
+export function metamaskStoreUrl() {
+  return /Firefox\//i.test(navigator.userAgent)
+    ? metamaskFirefoxUrl
+    : metamaskChromeUrl;
+}
 
 function available() {
-  try { return Boolean(provider()); } catch { return false; }
+  try {
+    return Boolean(provider());
+  } catch {
+    return false;
+  }
 }
 
 export function useMetaMask() {

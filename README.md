@@ -196,7 +196,9 @@ bun run build     # vite build, then gleam build
 bun run start
 ```
 
-`bun run test` covers identifier and amount validation, network configuration, the expiring key/value table, challenge issuance, link listing and receiving defaults, payment creation and pinning, invitation scoping and rotation, cancellation, preparation without an RPC, suggestion vetting and avatar allow-listing, and rate limiting, using an in-memory database migrated by drizzle-kit and an injected identity resolver.
+`bun run test:web` runs the Vitest component suite with React Testing Library and MSW. Use `bun run test:web:watch` while developing. Every component has a directory containing its implementation, colocated test, and public index. See [frontend testing](web/src/test/README.md) for provider setup, fixtures, and request overrides. The full `bun run test` command includes this suite.
+
+The backend tests cover identifier and amount validation, network configuration, the expiring key/value table, challenge issuance, link listing and receiving defaults, payment creation and pinning, invitation scoping and rotation, cancellation, preparation without an RPC, suggestion vetting and avatar allow-listing, and rate limiting, using an in-memory database migrated by drizzle-kit and an injected identity resolver.
 
 `foundry.toml` reserves the `contracts/` workspace and an `anvil` RPC alias. Anvil is included as a dev dependency. For future Solidity work, install the full [Foundry toolchain](https://getfoundry.sh/introduction/installation/) and add contracts/tests before running `forge build` / `forge test`. Wallet linking and these payments need no deployed contract.
 
@@ -221,7 +223,7 @@ The layout is mobile-first: one column with a bottom tab bar on a phone, and a w
 - `src/citruswallet/store.gleam`, `src/citruswallet/drizzle/`: schema, migrations, typed queries, and session state.
 - `src/citruswallet/network.gleam`, `src/citruswallet/validate.gleam`, `src/citruswallet/rate_limit.gleam`, `src/citruswallet/error.gleam`: chain configuration, input shapes, request limits, and failures.
 - `src/citruswallet/ffi/`: Gleam bindings for Hono, Drizzle, better-sqlite3, viem, the AT Protocol SDKs, Node, `fetch`, and `URL`.
-- `web/src/`: the React frontend — `pages/` for the four screens, `components/` for the panels and primitives, `queries.ts` for server state, `atoms.ts` for page state, `validation.ts` for the input schemas, `wallet.ts` for MetaMask.
+- `web/src/`: the React frontend — `pages/` for the four screens, `components/Name/` for each panel or primitive module, its index, and colocated tests, `queries.ts` for server state, `atoms.ts` for page state, `validation.ts` for the input schemas, `wallet.ts` for MetaMask.
 - `vite.config.ts`: the frontend build, and the dev proxy to `VITE_API_URL`.
 - `scripts/`: Anvil + app launcher.
 
