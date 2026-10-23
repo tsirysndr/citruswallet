@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { rpc, rememberCsrf } from "./api";
 import type { Session } from "./types";
 import { readBalances } from "./wallet";
@@ -31,11 +31,23 @@ export function useProfile(did: string | null | undefined) {
 
 export type PaymentFilters = NonNullable<Parameters<typeof rpc.listPayments>[0]>;
 
-export function usePayments(session: Session | undefined, filters: PaymentFilters = {}) {
+export function usePayments(session: Session | undefined, filters: PaymentFilters = {}, enabled = true) {
   return useQuery({
     queryKey: ["payments", session?.did, filters],
-    enabled: Boolean(session?.did),
+    enabled: Boolean(session?.did) && enabled,
     queryFn: ({ signal }) => rpc.listPayments(filters, { signal }),
+  });
+}
+
+export function useInfinitePayments(session: Session | undefined, filters: PaymentFilters, enabled: boolean) {
+  const { page: _page, ...queryFilters } = filters;
+  const size = queryFilters.pageSize ?? 20;
+  return useInfiniteQuery({
+    queryKey: ["payments", session?.did, "infinite", queryFilters],
+    enabled: Boolean(session?.did) && enabled,
+    initialPageParam: 1,
+    queryFn: ({ pageParam, signal }) => rpc.listPayments({ ...queryFilters, page: pageParam }, { signal }),
+    getNextPageParam: (last, _pages, page) => last.payments.length > 0 && page * size < last.total ? page + 1 : undefined,
   });
 }
 

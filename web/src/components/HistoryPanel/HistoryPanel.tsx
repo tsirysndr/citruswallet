@@ -6,7 +6,7 @@ import { ArrowDownLeft, ArrowUpRight, Search, RefreshCw, X, Trash2 } from "lucid
 import { reviewIdAtom } from "../../atoms";
 import { label } from "../../format";
 import { useRefresh, useRun, useStatus } from "../../hooks";
-import { usePayments, useSession, type PaymentFilters } from "../../queries";
+import { useInfinitePayments, usePayments, useSession, type PaymentFilters } from "../../queries";
 import { rpc } from "../../api";
 import { useQueryClient } from "@tanstack/react-query";
 import type { Payment } from "../../types";
@@ -22,8 +22,23 @@ export function HistoryPanel({ className, advanced = false }: { className?: stri
   const [from, setFrom] = useState("");
   const [until, setUntil] = useState("");
   const [filters, setFilters] = useState<PaymentFilters>({ page: 1, pageSize: advanced ? 20 : 5 });
+  const [mobile, setMobile] = useState(() => window.matchMedia("(max-width: 767px)").matches);
+  const mobileHistory = advanced && mobile;
+  const loadMore = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 767px)");
+    const changed = () => setMobile(media.matches);
+    media.addEventListener("change", changed);
+    return () => media.removeEventListener("change", changed);
+  }, []);
   const invalidDates = Boolean(from && until && from > until);
-  const { data, isPending, isFetching, error, refetch } = usePayments(session, filters);
+  const paged = usePayments(session, filters, !mobileHistory);
+  const infinite = useInfinitePayments(session, { ...filters, pageSize: 20 }, mobileHistory);
+  const { isPending, isFetching, error, refetch } = mobileHistory ? infinite : paged;
+  const accumulated = infinite.data?.pages.flatMap(page => page.payments) ?? [];
+  const data = mobileHistory ? { total: infinite.data?.pages[0]?.total ?? 0,
+    payments: accumulated.filter((payment, index) => accumulated.findIndex(item => item.id === payment.id) === index) } : paged.data;
+  const fatalError = error && (!mobileHistory || !data?.payments.length);
   const status = useStatus();
   const [reviewId, setReviewId] = useAtom(reviewIdAtom);
   const [deleteError, setDeleteError] = useState("");
@@ -56,14 +71,22 @@ export function HistoryPanel({ className, advanced = false }: { className?: stri
   }, [from, until]);
 
   const page = filters.page ?? 1;
-  const size = filters.pageSize ?? 20;
+  const size = mobileHistory ? 20 : filters.pageSize ?? 20;
   const pages = Math.max(1, Math.ceil((data?.total ?? 0) / size));
   useEffect(() => {
-    if (data && page > pages) setFilters(current => ({ ...current, page: pages }));
-  }, [data, page, pages]);
+    if (!mobileHistory && data && page > pages) setFilters(current => ({ ...current, page: pages }));
+  }, [data, page, pages, mobileHistory]);
 
-  if (!session?.did) return null;
   const searching = search.trim() !== (filters.q ?? "");
+  useEffect(() => {
+    if (!mobileHistory || !infinite.hasNextPage || isFetching || error || searching || invalidDates || filtersOpen || !loadMore.current) return;
+    const observer = new IntersectionObserver(entries => {
+      if (entries.some(entry => entry.isIntersecting)) void infinite.fetchNextPage({ cancelRefetch: false });
+    }, { rootMargin: "0px 0px 280px 0px" });
+    observer.observe(loadMore.current);
+    return () => observer.disconnect();
+  }, [mobileHistory, infinite.hasNextPage, infinite.fetchNextPage, isFetching, error, searching, invalidDates, filtersOpen]);
+  if (!session?.did) return null;
   const filterCount = [Boolean(from || until), Boolean(filters.direction && filters.direction !== "all"), Boolean(filters.status && filters.status !== "all"), filters.sort === "oldest", size !== 20].filter(Boolean).length;
   const activeFilters = Boolean(search || filterCount);
   const clear = () => {
@@ -102,17 +125,17 @@ export function HistoryPanel({ className, advanced = false }: { className?: stri
               <div><Label>Date range</Label><DateRangePicker value={{ from, until }} onChange={range => { setFrom(range.from); setUntil(range.until); }} /></div>
               {invalidDates && <p role="alert" className="text-xs text-bad">The start date must be before the end date.</p>}
               <div><Label htmlFor="activity-sort">Sort</Label><Select id="activity-sort" className="m-0! w-full" value={filters.sort ?? "newest"} onChange={e => update({ sort: e.target.value as PaymentFilters["sort"] })}><option value="newest">Newest first</option><option value="oldest">Oldest first</option></Select></div>
-              <div><Label htmlFor="activity-size">Per page</Label><Select id="activity-size" className="m-0! w-full" value={size} onChange={e => update({ pageSize: Number(e.target.value) })}>{[10, 20, 50].map(n => <option key={n} value={n}>{n}</option>)}</Select></div>
+              {!mobileHistory && <div><Label htmlFor="activity-size">Per page</Label><Select id="activity-size" className="m-0! w-full" value={size} onChange={e => update({ pageSize: Number(e.target.value) })}>{[10, 20, 50].map(n => <option key={n} value={n}>{n}</option>)}</Select></div>}
             </div>
             <footer><button type="button" className="drawer-reset" disabled={!filterCount} onClick={clear}>Reset filters</button><Button disabled={invalidDates} onClick={() => filterDialog.current?.close()}>Show results</Button></footer>
           </dialog>
         </div>
       )}
       <p role="status" aria-live="polite" className="mb-2 min-h-5 text-xs text-ink-muted">
-        {invalidDates ? "Choose a valid date range to update results." : isFetching || searching ? "Searching payments…" : error ? "Could not load payment history. Try refreshing." : `${data?.total ?? 0} payment${data?.total === 1 ? "" : "s"}${activeFilters ? " matching your filters" : ""}`}
+        {invalidDates ? "Choose a valid date range to update results." : mobileHistory && infinite.isFetchingNextPage ? "Loading more payments…" : isFetching || searching ? "Searching payments…" : fatalError ? "Could not load payment history. Try refreshing." : `${data?.total ?? 0} payment${data?.total === 1 ? "" : "s"}${activeFilters ? " matching your filters" : ""}`}
       </p>
       <div aria-busy={isFetching || searching}>
-        {!invalidDates && !error && (data?.payments ?? []).map(payment => {
+        {!invalidDates && !fatalError && (data?.payments ?? []).map(payment => {
           const outgoing = payment.senderDid === session.did;
           const actor = (outgoing ? payment.recipient : payment.sender) ?? {
             did: outgoing ? payment.recipientDid : payment.senderDid,
@@ -137,14 +160,20 @@ export function HistoryPanel({ className, advanced = false }: { className?: stri
             </div>
           );
         })}
-        {!invalidDates && !isPending && !error && !data?.payments.length && <Hint>{activeFilters ? "No payments match these filters." : "No payment intents yet."}</Hint>}
+        {!invalidDates && !isPending && !fatalError && !data?.payments.length && <Hint>{activeFilters ? "No payments match these filters." : "No payment intents yet."}</Hint>}
       </div>
-      {advanced && !invalidDates && !error && (
+      {advanced && !mobileHistory && !invalidDates && !error && (
         <nav aria-label="Payment history pagination" className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-edge-soft pt-4">
           <Hint>{data?.total ? `${(page - 1) * size + 1}–${Math.min(page * size, data.total)} of ${data.total}` : "0 results"} · Page {page} of {pages}</Hint>
           <div className="flex gap-2"><Button variant="subtle" disabled={page <= 1 || isFetching || searching} onClick={() => setFilters(current => ({ ...current, page: page - 1 }))}>Previous</Button><Button variant="subtle" disabled={page >= pages || isFetching || searching} onClick={() => setFilters(current => ({ ...current, page: page + 1 }))}>Next</Button></div>
         </nav>
       )}
+      {mobileHistory && !invalidDates && <div className="mt-4 text-center">
+        <div ref={loadMore} data-testid="activity-load-more" aria-hidden="true" className="h-px" />
+        {infinite.isFetchingNextPage && <Hint>Loading more payments…</Hint>}
+        {infinite.isFetchNextPageError && <Button variant="subtle" onClick={() => void infinite.fetchNextPage()}>Retry loading more</Button>}
+        {!infinite.hasNextPage && !isFetching && !error && Boolean(data?.payments.length) && <Hint>You're all caught up.</Hint>}
+      </div>}
       {!advanced && <Link to="/activity" className="mt-4 inline-block text-xs font-semibold text-info underline underline-offset-2">View all activity</Link>}
       <dialog ref={deleteDialog} className="date-dialog max-w-md" aria-labelledby="delete-intent-title">
         <div className="date-dialog-inner">
