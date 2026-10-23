@@ -8,6 +8,7 @@ it('opens the password/device unlock dialog directly from the balance card', asy
   localStorage.setItem('citrus:encrypted-wallet:v1', '{}');
   const refresh = vi.fn(async () => {});
   const { user } = await renderComponent(<><BalanceAccess session={session} available={false} loading={false} refresh={refresh} /><WalletUnlock /></>);
+  await user.click(screen.getByRole('button', { name: 'Cancel' }));
   await user.click(screen.getByRole('button', { name: 'Unlock wallet' }));
   expect(screen.getByRole('dialog', { name: 'Unlock Citrus wallet' })).toBeVisible();
   expect(screen.getByLabelText('Wallet password')).toBeVisible();

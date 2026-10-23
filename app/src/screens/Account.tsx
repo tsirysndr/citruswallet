@@ -1,3 +1,4 @@
+import { walletMode } from "../wallet-preferences";
 import { useController, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { signInForm } from '../validation';
@@ -38,6 +39,7 @@ export function Account() {
     ...(session?.links.filter(l => l.chain_id === session.network.chainId).map(l => l.address.toLowerCase()) ?? []),
     ...(localAddress ? [localAddress.toLowerCase()] : []),
   ])];
+  const walletLocked = vaultState === 'locked' && walletMode() !== 'metamask';
   const needsUnlock = addresses.length === 0 && vaultState !== 'absent' && !localAddress;
   const { data: balance, isFetching: balanceLoading, isError: balanceFailed } = useQuery({
     queryKey: ["balance", session?.did, session?.network.chainId, addresses],
@@ -140,7 +142,14 @@ export function Account() {
         >
           {hidden ? "•••••• ETH" : needsUnlock ? "Unlock to load balance" : balanceFailed ? "Balance unavailable" : balance !== undefined ? `${balance} ETH` : "Loading balance…"}
         </Text>}
-        {!hidden && (needsUnlock || balanceFailed) && <Pressable accessibilityRole="button" accessibilityLabel={needsUnlock ? 'Unlock wallet' : 'Retry balance'} onPress={() => needsUnlock ? void run(requestUnlock) : void query.invalidateQueries({ queryKey: ['balance'] })}><Text className="text-sm text-white underline">{needsUnlock ? 'Unlock wallet' : 'Try again'}</Text></Pressable>}
+        {walletLocked && <Button title="Unlock wallet" tone="plain" onPress={() => run(async () => {
+          await requestUnlock();
+          await Promise.all([
+            query.invalidateQueries({ queryKey: ['balance'] }),
+            query.invalidateQueries({ queryKey: ['assets'] }),
+          ]);
+        })} />}
+        {!hidden && balanceFailed && <Pressable accessibilityRole="button" accessibilityLabel="Retry balance" onPress={() => void query.invalidateQueries({ queryKey: ['balance'] })}><Text className="text-sm text-white underline">Try again</Text></Pressable>}
         <Text className="text-sm text-accent">● {session.network.name}</Text>
       </View>
       <View className="flex-row gap-3">

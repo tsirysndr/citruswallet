@@ -1,12 +1,28 @@
-import { useEffect, useRef, useSyncExternalStore } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { localWalletState, subscribeWallet, lockLocalWallet } from '../../local-wallet';
-import { finishUnlock, subscribeUnlock, unlockSnapshot } from '../../wallet-unlock';
+import { finishUnlock, requestUnlock, subscribeUnlock, unlockSnapshot } from '../../wallet-unlock';
 import { LocalWallet } from '../LocalWallet';
 import { Button } from '../ui';
 export function WalletUnlock() {
   const open = useSyncExternalStore(subscribeUnlock, unlockSnapshot);
   const state = useSyncExternalStore(subscribeWallet, localWalletState);
+  const [visible, setVisible] = useState(() => !document.hidden);
+  const prompted = useRef(false);
   const dialog = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    const changed = () => { if (document.hidden) prompted.current = false; setVisible(!document.hidden); };
+    document.addEventListener('visibilitychange', changed);
+    return () => document.removeEventListener('visibilitychange', changed);
+  }, []);
+  useEffect(() => {
+    if (state !== 'locked') { prompted.current = false; return; }
+    if (!visible || localStorage.getItem('citrus:wallet-mode') === 'metamask') return;
+    if (open) { prompted.current = true; return; }
+    if (prompted.current) return;
+    prompted.current = true;
+    // Cancellation leaves the wallet locked; the balance-card action can retry.
+    void requestUnlock().catch(() => {});
+  }, [state, open, visible]);
   useEffect(() => {
     if (open && state === 'unlocked') finishUnlock(true);
     else if (open) dialog.current?.showModal(); else dialog.current?.close();
