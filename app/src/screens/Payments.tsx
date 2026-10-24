@@ -12,7 +12,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { request } from "../api";
 import { useAction, useSession } from "../hooks";
 import { busyAtom, noticeAtom, reviewAtom, screenAtom } from "../state";
-import { Ionicons } from "@expo/vector-icons";
+import { BackButton } from "../components/BackButton";
 import { pending, recover, sendPayment } from "../wallet";
 import type { Actor, Payment, PaymentMedia, Recipient } from "../types";
 import { Avatar, Button, Empty, Field, Heading } from "../components/ui";
@@ -119,10 +119,8 @@ export function Payments({ onStepChange, keyboardVisible = false }: { onStepChan
     <View className="gap-5">
       {!compact && <>
       <View className="flex-row items-center justify-between">
-        {currentStep > 1 ? <Pressable accessibilityRole="button" accessibilityLabel={`Back to ${id && !canEdit ? 'activity' : currentStep === 2 ? 'recipient' : currentStep === 3 ? 'amount' : 'description'}`}
-          disabled={busy} onPress={() => id && !canEdit ? go('Activity') : navigateBack((currentStep - 1) as 1 | 2 | 3)} className="min-h-12 flex-row items-center gap-2 pr-4">
-          <Ionicons name="arrow-back" size={24} color="#191916" /><Text className="text-base">Back</Text>
-        </Pressable> : <Text className="text-base font-medium">Send assets</Text>}
+        {currentStep > 1 ? <BackButton label={`Back to ${id && !canEdit ? 'activity' : currentStep === 2 ? 'recipient' : currentStep === 3 ? 'amount' : 'description'}`}
+          disabled={busy} onPress={() => id && !canEdit ? go('Activity') : navigateBack((currentStep - 1) as 1 | 2 | 3)} /> : <Text className="text-base font-medium">Send assets</Text>}
         <Text accessibilityLabel={`Step ${currentStep} of 4`} className="text-sm text-muted">Step {currentStep} of 4</Text>
       </View>
       <View className="flex-row gap-2">

@@ -1,3 +1,4 @@
+import { BackButton } from "../components/BackButton";
 import { nativeVaultState, subscribeNativeVault } from "../local-wallet";
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { BackHandler, Pressable, View } from 'react-native';
@@ -18,7 +19,7 @@ export function Settings() {
   const go = useSetAtom(screenAtom), setup = useSetAtom(walletSetupAtom);
   const back = () => section ? setSection(null) : go('Account');
   useEffect(() => { const sub = BackHandler.addEventListener('hardwareBackPress', () => { back(); return true; }); return () => sub.remove(); }, [section]);
-  return <View className="gap-5"><Button title={section ? 'Back to settings' : 'Back'} tone="plain" onPress={back} />
+  return <View className="gap-5"><BackButton label={section ? 'Back to settings' : 'Back'} onPress={back} />
     <Heading title="Settings" subtitle="Make Citrus feel like yours." />
     {!section ? <><View className="overflow-hidden rounded-3xl bg-white">{[
       { id: 'security', title: 'Security & backup', detail: 'Unlock, biometrics, and recovery', Icon: Shield, color: '#ddd7ff' },
