@@ -81,7 +81,6 @@ export function Account() {
           <Heading title="Welcome to Peachlet" />
           <Text className="my-1 text-left text-base leading-6 text-muted">Sign in with your Atmosphere Account</Text>
           <AtmosphereApps />
-          <Pressable accessibilityRole="link" onPress={() => void Linking.openURL("https://atproto.com/")}><Text className="text-center text-sm leading-6 text-muted underline">What is an atmosphere account?</Text></Pressable>
           <HandleInput value={handle} onChange={setHandle} onSubmit={form.handleSubmit(({ identifier }) => run(async () => { if (await signIn(identifier)) await query.invalidateQueries(); }))} />
           {form.formState.errors.identifier && <Text accessibilityRole="alert" className="text-red-700">{form.formState.errors.identifier.message}</Text>}
           <Button

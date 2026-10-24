@@ -19,7 +19,6 @@ export function OnboardingSignIn() {
     <h1 className="text-center text-3xl font-semibold">Your handle. Your wallet.</h1>
     <p className="my-6 text-center text-base leading-6 text-ink-muted">Sign in with your Atmosphere Account</p>
     <AtmosphereApps />
-    <p className="my-5 text-center text-sm text-ink-muted"><a href="https://atproto.com/" target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">What is an atmosphere account?</a></p>
     <form className="mt-5 flex flex-col gap-3" noValidate onSubmit={form.handleSubmit(start)}>
       <Label htmlFor="onboarding-handle">Handle</Label>
       <Controller control={form.control} name="identifier" render={({ field, fieldState }) => <Typeahead id="onboarding-handle" value={field.value} onChange={field.onChange} onBlur={field.onBlur} onPick={() => {}} placeholder="you.bsky.social" maxLength={253} invalid={!!fieldState.error} />} />

@@ -77,7 +77,6 @@ export function IdentityPanel({ className }: { className?: string }) {
         >
           <p className="my-6 text-center text-base leading-6 text-ink-muted">Sign in with your Atmosphere Account</p>
           <AtmosphereApps />
-          <p className="my-5 text-center text-sm text-ink-muted"><a href="https://atproto.com/" target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">What is an atmosphere account?</a></p>
           <Label htmlFor="identifier">Handle</Label>
           <Row>
             <Controller

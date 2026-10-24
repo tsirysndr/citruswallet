@@ -43,6 +43,7 @@ test('anonymous connection ends with handle sign-in and does not finish onboardi
   await fireEvent.press(screen.getByRole('button', { name: 'Connect MetaMask' }));
   await fireEvent.press(screen.getByRole('button', { name: 'Connect MetaMask' }));
   expect(screen.queryByText(/One last step:/)).toBeNull();
+  expect(screen.getAllByRole('link', { name: 'What is an atmosphere account?' })).toHaveLength(1);
   expect(screen.queryByRole('button', { name: 'Open Peachlet' })).toBeNull();
   expect(screen.getByRole('button', { name: 'Sign In' })).toBeDisabled();
   await fireEvent.changeText(screen.getByLabelText('Handle'), 'alice.test');

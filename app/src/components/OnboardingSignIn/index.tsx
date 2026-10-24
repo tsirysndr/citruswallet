@@ -1,7 +1,7 @@
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { signInForm } from '../../validation';
-import { Linking, Pressable, View } from 'react-native';
+import { Linking, View } from 'react-native';
 import { useQueryClient } from '@tanstack/react-query';
 import { signIn } from '../../auth';
 import { useAction } from '../../hooks';
@@ -21,7 +21,6 @@ export function OnboardingSignIn({ returning = false }: { returning?: boolean })
     <Text className="text-center text-3xl font-semibold">{returning ? 'Welcome back.' : 'Your handle. Your wallet.'}</Text>
     <Text className="my-1 text-left text-base leading-6 text-muted">Sign in with your Atmosphere Account</Text>
     <AtmosphereApps />
-    <Pressable accessibilityRole="link" onPress={() => void Linking.openURL("https://atproto.com/")}><Text className="text-center text-sm leading-6 text-muted underline">What is an atmosphere account?</Text></Pressable>
     <Controller control={form.control} name="identifier" render={({ field }) => <HandleInput value={field.value} onChange={field.onChange} onSubmit={submit} />} />
     {form.formState.errors.identifier && <Text accessibilityRole="alert" className="text-sm text-red-700">{form.formState.errors.identifier.message}</Text>}
     <Button title="Sign In" tone="black" disabled={!form.watch('identifier').trim()} onPress={submit} />
