@@ -617,3 +617,13 @@ test('ETH quotes require login, cache valid prices and reject upstream failures'
   globalThis.fetch = async () => new Response('Unavailable', { status: 503 });
   await assert.rejects(f.query('getEthPrice'), e => e.status === 503);
 });
+
+test('background requests cannot exhaust the payment action limit and remain rate limited', async t => {
+  const f = fixture(t); await f.login();
+  let response;
+  for (let i = 0; i < 245; i++) response = await f.raw('/xrpc/app.peachlet.getSession');
+  assert.equal(response.status, 429);
+  assert.ok(Number(response.headers.get('Retry-After')) > 0);
+  const payment = await f.raw('/xrpc/app.peachlet.createPayment', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+  assert.equal(payment.status, 400); // Schema rejection, not throttling; payment budget is intact.
+});

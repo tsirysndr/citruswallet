@@ -41,3 +41,15 @@ it('uses API native balances when the wallet provider is unavailable on testnet'
   await renderComponent(<Summary chainId={6343} native={null} />);
   expect(await screen.findByText('$4,000.00 complete')).toBeVisible();
 });
+
+it('shares asset requests between the portfolio card and asset list', async () => {
+  let calls = 0;
+  server.use(http.get(xrpc('getEthPrice'), () => HttpResponse.json({ usd: '2000', updatedAt: Date.now(), source: 'Coinbase' })),
+    http.get(xrpc('getAssets'), () => { calls++; return HttpResponse.json({ assets: [token], discoveryAvailable: true }); }));
+  const { useAssets } = await import('./assets');
+  function AssetList() { const result = useAssets(session.did, 1, linkedAddress.address); return <p>{result.data ? 'Assets loaded' : 'Loading assets'}</p>; }
+  await renderComponent(<><Summary /><AssetList /></>);
+  expect(await screen.findByText('$2,010.00 complete')).toBeVisible();
+  expect(await screen.findByText('Assets loaded')).toBeVisible();
+  expect(calls).toBe(1);
+});

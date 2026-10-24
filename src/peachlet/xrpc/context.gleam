@@ -19,7 +19,7 @@ import peachlet/identity.{type Lookup}
 import peachlet/linking.{type Links}
 import peachlet/network.{type Network}
 import peachlet/payments.{type Payments}
-import peachlet/rate_limit.{type Limiter}
+import peachlet/rate_limit.{type Limiter, Limiter}
 import peachlet/store.{type Store}
 import peachlet/validate
 
@@ -218,6 +218,23 @@ pub fn limiting(limiter: Limiter) -> hono.Middleware {
       limiter.namespace == "rate"
       && hono.path(ctx) == "/xrpc/app.peachlet.searchActors",
     )
+    // Background polling and portfolio pages must not consume the payment budget.
+    let limiter = case
+      limiter.namespace == "rate"
+      && list.contains(
+        [
+          "/xrpc/app.peachlet.getSession", "/xrpc/app.peachlet.getProfile",
+          "/xrpc/app.peachlet.getAssets", "/xrpc/app.peachlet.getAsset",
+          "/xrpc/app.peachlet.getEthPrice", "/xrpc/app.peachlet.listPayments",
+          "/xrpc/app.peachlet.listNotifications",
+          "/xrpc/app.peachlet.subscribeNotifications",
+        ],
+        hono.path(ctx),
+      )
+    {
+      True -> Limiter(..limiter, namespace: "rate-background", limit: 240)
+      False -> limiter
+    }
     let client =
       rate_limit.client(
         limiter,
