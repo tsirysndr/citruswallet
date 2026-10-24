@@ -16,6 +16,7 @@ app/android/
 app/ios/
 *.tsbuildinfo
 *service-account*.json
+*firebase-adminsdk*.json
 credentials.json
 *.jks
 *.keystore

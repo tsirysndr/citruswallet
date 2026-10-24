@@ -7,8 +7,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSetAtom } from "jotai";
 import { request } from "../../api";
 import { useAction, useSession } from "../../hooks";
-import { type Notice, enablePush, disablePush } from "../../notifications";
-import { noticeAtom, reviewAtom, screenAtom } from "../../state";
+import { type Notice } from "../../notifications";
+import { reviewAtom, screenAtom } from "../../state";
 import { Button, Empty, Heading } from "../ui";
 export function NotificationsInbox() {
   const [open, setOpen] = useState(false),
@@ -16,8 +16,7 @@ export function NotificationsInbox() {
     query = useQueryClient(),
     run = useAction();
   const review = useSetAtom(reviewAtom),
-    screen = useSetAtom(screenAtom),
-    notice = useSetAtom(noticeAtom);
+    screen = useSetAtom(screenAtom);
   const { data, isPending, error, refetch } = useQuery({
     queryKey: ["notifications", session?.did],
     enabled: !!session?.did,
@@ -79,27 +78,11 @@ export function NotificationsInbox() {
             {!isPending && !error && !data?.notifications.length && (
               <Empty text="Your confirmed incoming payments will appear here." />
             )}
-            <Button
-              title="Enable push notifications"
-              onPress={() =>
-                run(async () => {
-                  await enablePush();
-                  setOpen(false);
-                  notice("Push notifications enabled.");
-                })
-              }
-            />
-            <Button
-              title="Disable push notifications"
-              tone="ghost"
-              onPress={() =>
-                run(async () => {
-                  await disablePush();
-                  setOpen(false);
-                  notice("Push notifications disabled.");
-                })
-              }
-            />
+            <Button title="Mark all as read" tone="ghost" disabled={!data?.unread} onPress={() => run(async () => {
+              await request('markAllNotificationsRead', {});
+              await query.invalidateQueries({ queryKey: ['notifications'] });
+            })} />
+            <Button title="Notification settings" tone="ghost" onPress={() => { setOpen(false); screen('Settings'); }} />
           </ScrollView>
         </View>
       </Modal>

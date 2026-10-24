@@ -13,3 +13,4 @@ klipy.config.json
 credentials.json
 *.jks
 *.keystore
+*firebase-adminsdk*.json

@@ -28,3 +28,10 @@ test('marks an opened notification read and navigates to its payment', async () 
   expect(store.get(screenAtom)).toBe('Payments');
   expect(screen.queryByText('View payment →')).toBeNull();
 });
+
+test('marks all notifications as read', async () => {
+  renderComponent(<NotificationsInbox />);
+  await fireEvent.press(await screen.findByLabelText('Notifications, 1 unread'));
+  await fireEvent.press(screen.getByText('Mark all as read'));
+  expect(request).toHaveBeenCalledWith('markAllNotificationsRead', {});
+});

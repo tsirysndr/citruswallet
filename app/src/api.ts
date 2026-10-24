@@ -1,3 +1,4 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { selectedChain } from "./network";
 import { lockNativeWallet } from "./local-wallet";
 import * as SecureStore from "expo-secure-store";
@@ -27,7 +28,7 @@ export async function saveToken(value: string | null) {
   await SecureStore.setItemAsync('citrus-has-signed-in', 'true');
   returningUser = true;
   if (value) await SecureStore.setItemAsync("citrus-session", value);
-  else { lockNativeWallet(); await SecureStore.deleteItemAsync("citrus-session"); }
+  else { lockNativeWallet(); await SecureStore.deleteItemAsync("citrus-session"); await AsyncStorage.removeItem("citrus-push-token"); }
   token = value;
 }
 export class ApiError extends Error {

@@ -23,6 +23,12 @@ export type Notice = {
   createdAt: string;
   read: boolean;
 };
+export async function pushStatus() {
+  const [permissions, token] = await Promise.all([
+    Notifications.getPermissionsAsync(), AsyncStorage.getItem("citrus-push-token"),
+  ]);
+  return { enabled: permissions.granted && Boolean(token), registered: Boolean(token), blocked: !permissions.granted && !permissions.canAskAgain };
+}
 export async function enablePush() {
   if (Platform.OS === "android")
     await Notifications.setNotificationChannelAsync("payments", {
@@ -103,6 +109,12 @@ export function useNotifications(did?: string | null) {
         opening = false;
       }
     };
+    const refreshPush = async () => {
+      const status = await pushStatus();
+      if (!disposed && status.enabled) await enablePush();
+    };
+    void refreshPush().catch(() => {});
+    const tokenChanged = Notifications.addPushTokenListener(() => { void refreshPush().catch(() => {}); });
     void connect();
     const state = AppState.addEventListener("change", (value) => {
       if (value === "active") void connect();
@@ -142,6 +154,7 @@ export function useNotifications(did?: string | null) {
       source?.close();
       state.remove();
       received.remove();
+      tokenChanged.remove();
     };
   }, [did, query, notice, review, screen]);
 }

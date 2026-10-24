@@ -2,7 +2,7 @@
 
 Expo SDK 54, React Native, NativeWind 4, Jotai, TanStack Query and MetaMask Connect. The app has Account, Wallet, Payments and Activity tabs, a decimal-safe custom amount keypad, payment review/recovery, recipient suggestions, FTS activity search, filters and a notification inbox.
 
-The dedicated Expo project is `@tsirysndr/peachlet` (`4111c93c-f70b-4ed0-b80e-efdb725dd710`), with native identifier `app.peachlet` and callback scheme `peachlet://auth`. It uses dedicated signing credentials.
+The dedicated Expo project is `@tsirysndr/citruswallet` (display name Peachlet) (`4111c93c-f70b-4ed0-b80e-efdb725dd710`), with native identifier `app.peachlet` and callback scheme `peachlet://auth`. It uses dedicated signing credentials.
 
 ## Run
 
@@ -54,7 +54,9 @@ MetaMask deep links preserve the SDK connection request and relay response. Link
    The root `.easignore` includes this client configuration in EAS build archives while excluding service-account keys and signing credentials.
 3. Generate a Firebase service-account key and upload it to the Peachlet Wallet Expo project's Android FCM V1 credentials. Keep this private key outside the repository and the APK.
 4. Rebuild and install the APK after adding Firebase configuration.
-5. Sign in, open the notification bell, and choose **Enable push notifications**. Grant the Android permission.
+5. Sign in, open **Settings → Notifications**, and turn on **Push notifications**. Grant the Android permission. If permission is blocked, use **Open device settings**.
+
+The EAS project has a `GOOGLE_SERVICES_JSON` secret file variable for development, preview, and production builds. Its Firebase client must match `app.peachlet`; a configuration for the previous package will not enable Firebase. The FCM v1 service-account credential is managed separately in EAS.
 
 SSE handles foreground updates and replays missed events using a per-user cursor. Expo push handles delivery while the app is closed. Tapping a push opens the payment, which the API still authorizes against the current user. Push bodies contain no sender identity or amount. iOS background push additionally requires APNs credentials and an iOS build.
 
