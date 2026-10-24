@@ -17,8 +17,9 @@ export function OnboardingSignIn() {
   });
   return <Panel className="font-sans">
     <h1 className="text-center text-3xl font-semibold">Your handle. Your wallet.</h1>
-    <div className="my-6 text-center text-ink-muted"><p className="text-base leading-6">Sign in with your Atmosphere Account</p><details className="mt-3"><summary className="cursor-pointer text-sm leading-6 underline underline-offset-4">What is an Atmosphere Account?</summary><p className="mt-3 text-sm leading-6">An account on the AT Protocol network, such as Bluesky or selfhosted.social. Use the same handle you already have.</p></details></div>
+    <p className="my-6 text-center text-base leading-6 text-ink-muted">Sign in with your Atmosphere Account</p>
     <AtmosphereApps />
+    <details className="my-5 text-center text-ink-muted"><summary className="cursor-pointer text-sm leading-6 underline underline-offset-4">What is an Atmosphere Account?</summary><p className="mt-3 text-sm leading-6">An account on the AT Protocol network, such as Bluesky or selfhosted.social. Use the same handle you already have.</p></details>
     <form className="mt-5 flex flex-col gap-3" noValidate onSubmit={form.handleSubmit(start)}>
       <Label htmlFor="onboarding-handle">Handle</Label>
       <Controller control={form.control} name="identifier" render={({ field, fieldState }) => <Typeahead id="onboarding-handle" value={field.value} onChange={field.onChange} onBlur={field.onBlur} onPick={() => {}} placeholder="you.bsky.social" maxLength={253} invalid={!!fieldState.error} />} />

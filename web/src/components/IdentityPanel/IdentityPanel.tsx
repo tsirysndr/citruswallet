@@ -75,8 +75,9 @@ export function IdentityPanel({ className }: { className?: string }) {
             start({ identifier }, "Finding your account provider…"),
           )}
         >
-          <div className="my-6 text-center text-ink-muted"><p className="text-base leading-6">Sign in with your Atmosphere Account</p><details className="mt-3"><summary className="cursor-pointer text-sm leading-6 underline underline-offset-4">What is an Atmosphere Account?</summary><p className="mt-3 text-sm leading-6">An account on the AT Protocol network, such as Bluesky or selfhosted.social. Use the same handle you already have.</p></details></div>
+          <p className="my-6 text-center text-base leading-6 text-ink-muted">Sign in with your Atmosphere Account</p>
           <AtmosphereApps />
+          <details className="my-5 text-center text-ink-muted"><summary className="cursor-pointer text-sm leading-6 underline underline-offset-4">What is an Atmosphere Account?</summary><p className="mt-3 text-sm leading-6">An account on the AT Protocol network, such as Bluesky or selfhosted.social. Use the same handle you already have.</p></details>
           <Label htmlFor="identifier">Handle</Label>
           <Row>
             <Controller
