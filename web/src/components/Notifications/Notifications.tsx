@@ -6,6 +6,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSetAtom } from "jotai";
 import { useNavigate } from "@tanstack/react-router";
 import { rpc } from "../../api";
+import { notificationLabel } from "../../format";
 import { useSession } from "../../queries";
 import { reviewIdAtom } from "../../atoms";
 import { useRun } from "../../hooks";
@@ -90,10 +91,12 @@ export function Notifications() {
         try {
           sessionStorage.setItem(key, notification.id);
         } catch {}
-        setMessage("Payment received");
+        setMessage(notificationLabel(notification.kind));
         void queries.invalidateQueries({ queryKey: ["notifications"] });
         void queries.invalidateQueries({ queryKey: ["payments"] });
-        void queries.invalidateQueries({ queryKey: ["balances"] });
+        // Only an incoming payment can have moved funds.
+        if (notification.kind !== "recipient_ready")
+          void queries.invalidateQueries({ queryKey: ["balances"] });
       } catch {}
     });
     source.addEventListener("session-expired", () => {
@@ -210,7 +213,8 @@ export function Notifications() {
                   }
                 >
                   <span className="font-semibold">
-                    {item.read ? "" : "● "}Payment received
+                    {item.read ? "" : "● "}
+                    {notificationLabel(item.kind)}
                   </span>
                   <span className="text-xs text-ink-muted">
                     {new Date(Number(item.createdAt)).toLocaleString()}

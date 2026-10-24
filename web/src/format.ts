@@ -15,6 +15,16 @@ export const stateLabels: Record<PaymentState, string> = {
 
 export const label = (state: PaymentState) => stateLabels[state] ?? state;
 
+/* Both notification kinds a sender or recipient can receive. An unknown kind
+   from a newer server still renders as something truthful. */
+export const notificationLabels: Record<string, string> = {
+  payment_received: "Payment received",
+  recipient_ready: "Invitation accepted · ready to send",
+};
+
+export const notificationLabel = (kind: string) =>
+  notificationLabels[kind] ?? "Payment update";
+
 export function formatUnits(wei: string, decimals: number, places = 6) {
   return formatBalance(BigInt(wei).toString(), decimals, places).replaceAll(
     ",",

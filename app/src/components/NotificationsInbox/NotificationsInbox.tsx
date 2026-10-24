@@ -7,7 +7,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSetAtom } from "jotai";
 import { request } from "../../api";
 import { useAction, useSession } from "../../hooks";
-import { type Notice } from "../../notifications";
+import { noticeLabel, type Notice } from "../../notices";
 import { reviewAtom, screenAtom } from "../../state";
 import { Button, Empty, Heading } from "../ui";
 export function NotificationsInbox() {
@@ -73,7 +73,8 @@ export function NotificationsInbox() {
                 }
               >
                 <Text className="text-base font-semibold">
-                  {item.read ? "" : "● "}Payment received
+                  {item.read ? "" : "● "}
+                  {noticeLabel(item.kind)}
                 </Text>
                 <Text className="text-sm text-muted">
                   {new Date(Number(item.createdAt)).toLocaleString()}

@@ -1,7 +1,7 @@
 import gleam/dynamic/decode
 import peachlet/drizzle/orm.{
-  asc, composite_primary_key, index, integer, not_null, primary_key, table, text,
-  unique_index,
+  asc, composite_primary_key, default_text, index, integer, not_null,
+  primary_key, table, text, unique_index,
 }
 
 pub fn notifications() {
@@ -12,6 +12,9 @@ pub fn notifications() {
       text("did") |> not_null,
       text("payment_id") |> not_null,
       integer("chain_id") |> not_null,
+      // Why this notification exists. Rows written before this column existed
+      // are all incoming payments, which is what the default records.
+      text("kind") |> not_null |> default_text("payment_received"),
       integer("created_at") |> not_null,
       integer("read_at"),
     ],

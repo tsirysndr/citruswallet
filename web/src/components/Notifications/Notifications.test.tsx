@@ -10,7 +10,13 @@ it("opens a received payment and marks its notification read", async () => {
     http.get(xrpc("listNotifications"), () =>
       HttpResponse.json({
         notifications: [
-          { id: "1", paymentId: "received", createdAt: "1790000000000", read },
+          {
+            id: "1",
+            paymentId: "received",
+            kind: "payment_received",
+            createdAt: "1790000000000",
+            read,
+          },
         ],
         unread: read ? 0 : 1,
       }),
@@ -74,3 +80,41 @@ it("opens a non-modal popover, clears all unread notifications and dismisses on 
   ).not.toBeInTheDocument();
   expect(bell).toHaveFocus();
 }, 20000);
+
+/* The sender's own notification: their invited recipient linked a wallet, so
+   the payment is now theirs to send. */
+it("tells the sender when an invited recipient becomes payable", async () => {
+  let read = false;
+  server.use(
+    http.get(xrpc("listNotifications"), () =>
+      HttpResponse.json({
+        notifications: [
+          {
+            id: "7",
+            paymentId: "invited",
+            kind: "recipient_ready",
+            createdAt: "1790000000000",
+            read,
+          },
+        ],
+        unread: read ? 0 : 1,
+      }),
+    ),
+    http.post(xrpc("markNotificationRead"), async ({ request }) => {
+      expect(await request.json()).toEqual({ id: "7" });
+      read = true;
+      return HttpResponse.json({ ok: true });
+    }),
+  );
+  const { user, router } = await renderComponent(<Notifications />);
+  await user.click(
+    await screen.findByRole(
+      "button",
+      { name: "Notifications, 1 unread" },
+      { timeout: 10000 },
+    ),
+  );
+  await user.click(screen.getByRole("button", { name: /Invitation accepted/ }));
+  await waitFor(() => expect(router.state.location.pathname).toBe("/payments"));
+  expect(read).toBe(true);
+});

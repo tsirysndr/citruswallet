@@ -27,6 +27,7 @@ beforeEach(() => {
       {
         id: "notice1",
         paymentId: "payment1",
+        kind: "payment_received",
         createdAt: "1700000000000",
         read: false,
       },
@@ -61,4 +62,26 @@ test("marks all notifications as read", async () => {
   );
   await fireEvent.press(screen.getByText("Mark all as read"));
   expect(request).toHaveBeenCalledWith("markAllNotificationsRead", {});
+});
+
+/* The sender's own notification: their invited recipient linked a wallet. */
+test("labels a recipient becoming payable as an accepted invitation", async () => {
+  request.mockResolvedValue({
+    unread: 1,
+    notifications: [
+      {
+        id: "notice2",
+        paymentId: "invited",
+        kind: "recipient_ready",
+        createdAt: "1700000000000",
+        read: false,
+      },
+    ],
+  });
+  renderComponent(<NotificationsInbox />);
+  await fireEvent.press(
+    await screen.findByLabelText("Notifications, 1 unread"),
+  );
+  expect(screen.getByText(/Invitation accepted/)).toBeTruthy();
+  expect(screen.queryByText(/Payment received/)).toBeNull();
 });

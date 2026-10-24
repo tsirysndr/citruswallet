@@ -1298,6 +1298,7 @@ export const schemas = [
         "required": [
           "id",
           "paymentId",
+          "kind",
           "createdAt",
           "read"
         ],
@@ -1313,6 +1314,14 @@ export const schemas = [
           "createdAt": {
             "type": "string",
             "maxLength": 256
+          },
+          "kind": {
+            "type": "string",
+            "maxLength": 64,
+            "knownValues": [
+              "payment_received",
+              "recipient_ready"
+            ]
           },
           "read": {
             "type": "boolean"

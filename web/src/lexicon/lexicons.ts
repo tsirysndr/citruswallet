@@ -1165,7 +1165,7 @@ export const schemaDict = {
       },
       notification: {
         type: 'object',
-        required: ['id', 'paymentId', 'createdAt', 'read'],
+        required: ['id', 'paymentId', 'kind', 'createdAt', 'read'],
         properties: {
           id: {
             type: 'string',
@@ -1178,6 +1178,11 @@ export const schemaDict = {
           createdAt: {
             type: 'string',
             maxLength: 256,
+          },
+          kind: {
+            type: 'string',
+            maxLength: 64,
+            knownValues: ['payment_received', 'recipient_ready'],
           },
           read: {
             type: 'boolean',

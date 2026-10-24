@@ -30,6 +30,7 @@ pub fn encode(row: Js) -> Js {
   js.object([
     #("id", js.string(int.to_string(number(row, "id")))),
     #("paymentId", js.get(row, "payment_id")),
+    #("kind", js.string(text(row, "kind"))),
     #("createdAt", js.string(int.to_string(number(row, "created_at")))),
     #("read", js.bool(!js.is_nullish(js.get(row, "read_at")))),
   ])
@@ -176,6 +177,8 @@ pub fn stream(db: Client, ctx: Js, did: String, key: String, chain: Int) -> Js {
                 let id = js.string(int.to_string(number(row, "id")))
                 js.cell_set(cursor, id)
                 js.object([
+                  // One channel for every kind: a tab opened before this
+                  // change keeps receiving, and the data carries the kind.
                   #("event", js.string("payment-received")),
                   #("id", id),
                   #("data", js.string(js.stringify(encode(row)))),

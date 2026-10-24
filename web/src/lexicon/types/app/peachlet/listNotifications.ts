@@ -35,6 +35,7 @@ export interface Notification {
   id: string
   paymentId: string
   createdAt: string
+  kind: 'payment_received' | 'recipient_ready' | (string & {})
   read: boolean
   [k: string]: unknown
 }

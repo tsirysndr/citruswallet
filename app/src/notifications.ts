@@ -17,12 +17,8 @@ Notifications.setNotificationHandler({
     shouldSetBadge: false,
   }),
 });
-export type Notice = {
-  id: string;
-  paymentId: string;
-  createdAt: string;
-  read: boolean;
-};
+import type { Notice } from "./notices";
+export { noticeLabel, type Notice, type NoticeKind } from "./notices";
 export async function pushStatus() {
   const [permissions, token] = await Promise.all([
     Notifications.getPermissionsAsync(),
@@ -105,8 +101,14 @@ export function useNotifications(did?: string | null) {
             void AsyncStorage.setItem(key, data.id);
             void query.invalidateQueries({ queryKey: ["notifications"] });
             void query.invalidateQueries({ queryKey: ["activity"] });
-            void query.invalidateQueries({ queryKey: ["balance"] });
-            notice("Payment received. Open your notifications to view it.");
+            // Only an incoming payment can have moved funds.
+            if (data.kind !== "recipient_ready")
+              void query.invalidateQueries({ queryKey: ["balance"] });
+            notice(
+              data.kind === "recipient_ready"
+                ? "Your recipient linked a wallet. You can send this payment now."
+                : "Payment received. Open your notifications to view it.",
+            );
           } catch {}
         });
         source.addEventListener("session-expired", () => {

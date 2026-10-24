@@ -42,20 +42,28 @@ self.addEventListener("push", (event) => {
   const valid =
     typeof data.paymentId === "string" &&
     /^[A-Za-z0-9_-]{1,128}$/.test(data.paymentId);
+  const ready = data.kind === "recipient_ready";
   event.waitUntil(
-    self.registration.showNotification("Payment received", {
-      body: "Open Peachlet to view your payment.",
-      icon: "/icons/icon-192.png",
-      badge: "/icons/icon-192.png",
-      tag: valid ? "payment-" + data.paymentId : "peachlet-payment",
-      data: valid
-        ? {
-            paymentId: data.paymentId,
-            notificationId: String(data.notificationId || ""),
-            chainId: [1, 4326].includes(data.chainId) ? data.chainId : 1,
-          }
-        : {},
-    }),
+    self.registration.showNotification(
+      ready ? "Invitation accepted" : "Payment received",
+      {
+        body: ready
+          ? "Your recipient linked a wallet. Open Peachlet to send the payment."
+          : "Open Peachlet to view your payment.",
+        icon: "/icons/icon-192.png",
+        badge: "/icons/icon-192.png",
+        tag: valid
+          ? (ready ? "ready-" : "payment-") + data.paymentId
+          : "peachlet-payment",
+        data: valid
+          ? {
+              paymentId: data.paymentId,
+              notificationId: String(data.notificationId || ""),
+              chainId: [1, 4326].includes(data.chainId) ? data.chainId : 1,
+            }
+          : {},
+      },
+    ),
   );
 });
 self.addEventListener("notificationclick", (event) => {
