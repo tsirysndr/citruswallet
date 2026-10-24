@@ -80,9 +80,8 @@ export function Account() {
         />
         <View className="gap-5 rounded-3xl bg-white p-6">
           <Heading title="Welcome to Peachlet" />
-          <Text className="my-1 text-center text-base leading-6 text-muted">Sign in with your Atmosphere Account</Text>
+          <View className="my-1 gap-3"><Pressable accessibilityRole="button" accessibilityState={{ expanded: explain }} onPress={() => setExplain(!explain)}><Text className="text-center text-base leading-6 text-muted underline">What is an atmosphere account?</Text></Pressable>{explain && <Text className="text-center text-sm leading-6 text-muted">An account on the AT Protocol network, such as Bluesky or selfhosted.social. Use the same handle you already have.</Text>}</View>
           <AtmosphereApps />
-          <View className="gap-3"><Pressable accessibilityRole="button" accessibilityState={{ expanded: explain }} onPress={() => setExplain(!explain)}><Text className="text-center text-sm leading-6 text-muted underline">What is an Atmosphere Account?</Text></Pressable>{explain && <Text className="text-center text-sm leading-6 text-muted">An account on the AT Protocol network, such as Bluesky or selfhosted.social. Use the same handle you already have.</Text>}</View>
           <HandleInput value={handle} onChange={setHandle} onSubmit={form.handleSubmit(({ identifier }) => run(async () => { if (await signIn(identifier)) await query.invalidateQueries(); }))} />
           {form.formState.errors.identifier && <Text accessibilityRole="alert" className="text-red-700">{form.formState.errors.identifier.message}</Text>}
           <Button
