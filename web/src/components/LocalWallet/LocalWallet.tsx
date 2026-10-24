@@ -70,6 +70,7 @@ export function LocalWallet({ allowWhileBusy = false, initialAction, onCreated, 
       {mode === 'backup' && <form noValidate className="flex flex-col gap-3" onSubmit={event => { event.preventDefault(); if (!busy) void validated(async () => { const value = await backupLocalWallet(password); setPhrase(value.value); setPassword(''); }); }}>
         <Label htmlFor="wallet-security-password">Confirm your password</Label><Input id="wallet-security-password" type="password" {...passwordField} aria-invalid={!!form.formState.errors.password} autoComplete="current-password" />
         <Button keepEnabled={allowWhileBusy} type="submit" disabled={busy}>Show my recovery information</Button>
+        {passkeys && <Hint>Choose a passkey provider that supports wallet encryption, such as Google Password Manager or iCloud Passwords. Touch ID confirms your identity; support also depends on where the passkey is saved.</Hint>}
         {passkeys && <Button keepEnabled={allowWhileBusy} disabled={busy} variant="subtle" onClick={() => validated(async () => { await enableWalletPasskey(password); clear(); })}>Enable device unlock</Button>}
         {phrase && <p className="break-all rounded-md bg-sunken p-4 font-sans">{phrase}</p>}
         <Hint>Device unlock depends on your browser and authenticator. Keep your password and recovery backup.</Hint>
