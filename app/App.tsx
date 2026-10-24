@@ -1,4 +1,5 @@
 import { useWalletOnboarding } from "./src/useWalletOnboarding";
+import { Landing } from './src/components/Landing';
 import { Settings } from './src/screens/Settings';
 import SettingsIcon from 'lucide-react-native/icons/settings';
 import { WalletEntry } from './src/components/WalletEntry';
@@ -54,6 +55,7 @@ function Shell() {
   const scroll = useRef<ScrollView>(null);
   const [invite, setInvite] = useAtom(inviteTokenAtom);
   const [refreshing, setRefreshing] = useState(false);
+  const [entryStarted, setEntryStarted] = useState(false);
   const [paymentStep, setPaymentStep] = useState(1);
   const [keyboardVisible, setKeyboardVisible] = useState(false);
   useEffect(() => {
@@ -148,6 +150,7 @@ function Shell() {
             </Pressable>
           )}
   </>;
+  if (ready && !session.isPending && !session.data?.did && !entryStarted && !invite) return <Landing onGetStarted={() => setEntryStarted(true)} />;
   if (needsSetup === null || needsSetup) return <SafeAreaView className="flex-1 bg-canvas" edges={['top', 'bottom']}>
     {session.data?.did && <WalletUnlock />}<StatusBar style="dark" />
     <View className="flex-row items-center gap-3 px-5 py-4"><Image source={require('./assets/icon.png')} style={{ width: 42, height: 42 }} /><Text className="text-xl font-bold">Peachlet</Text></View>

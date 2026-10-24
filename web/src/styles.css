@@ -426,3 +426,17 @@ dialog .date-icon-button:hover,
 dialog .command-search-field button:hover,
 dialog .klipy-pagination button:hover:not(:disabled),
 dialog .klipy-empty button { background: transparent; }
+
+.peachlet-landing { min-height: 100svh; display: flex; flex-direction: column; background: #ffb995; color: #191916; padding: clamp(20px, 4vw, 56px); }
+.landing-header, .landing-footer { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.landing-start { display: inline-flex; align-items: center; gap: 10px; padding: 14px 20px; background: #191916; color: white; border: 0; border-radius: 8px; font-weight: 600; cursor: pointer; }
+.landing-start:hover { background: #482719; }
+.landing-start:focus-visible { outline: 2px solid #191916; outline-offset: 4px; }
+.landing-hero { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: clamp(48px, 8vh, 100px) 0; max-width: 1100px; width: 100%; margin: auto; }
+.landing-hero h1 { font-size: clamp(64px, 9vw, 128px); line-height: .98; font-weight: 700; letter-spacing: -.055em; margin: 0; }
+.landing-description { max-width: 490px; font-size: clamp(18px, 2vw, 22px); line-height: 1.5; margin-top: 28px; color: #482719; }
+.landing-example { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 36px; font-family: var(--font-mono); font-size: clamp(14px, 2vw, 20px); }
+.landing-footer { font-size: 13px; color: #482719; }
+.landing-footer nav { display: flex; gap: 24px; }
+.landing-footer a:hover { text-decoration: underline; }
+@media (max-width: 480px) { .landing-footer > span { display: none; } .landing-start { padding: 12px 14px; } }

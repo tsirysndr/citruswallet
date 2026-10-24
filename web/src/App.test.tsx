@@ -90,3 +90,15 @@ it('leaves onboarding when a link arrives for the same signed-in account', async
   await act(async () => { await client.invalidateQueries({ queryKey: ['session'] }); });
   expect(await screen.findByRole('button', { name: 'Collapse sidebar' })).toBeVisible();
 });
+
+it.each([false, true])('opens the right entry screen from the landing (configured=%s)', async configured => {
+  server.use(http.get(xrpc('getSession'), () => HttpResponse.json(signedOut)));
+  if (configured) {
+    localStorage.setItem('citrus:wallet-mode', 'metamask');
+    localStorage.setItem('citrus:metamask-address', linkedAddress.address);
+  }
+  const { user } = await renderComponent(<App />);
+  await user.click(await screen.findByRole('button', { name: 'Get started' }));
+  expect(await screen.findByRole('button', { name: configured ? 'Sign In' : /Create a Peachlet wallet/ })).toBeVisible();
+  expect(screen.queryByRole('button', { name: 'Get started' })).not.toBeInTheDocument();
+});

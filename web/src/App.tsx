@@ -1,4 +1,5 @@
 import { Settings as SettingsIcon } from "lucide-react";
+import { Landing } from './components/Landing';
 import { WalletSetup, configuredAddress } from "./components/WalletSetup";
 import { localWalletState, subscribeWallet } from "./local-wallet";
 import { WalletUnlock } from "./components/WalletUnlock";
@@ -89,6 +90,7 @@ export function App() {
 
   const vaultState = useSyncExternalStore(subscribeWallet, localWalletState);
   const [needsSetup, setNeedsSetup] = useState<boolean | null>(null);
+  const [entryStarted, setEntryStarted] = useState(false);
   const checkedAccount = useRef<string | null | undefined>(undefined);
   const navigate = useNavigate();
   const location = useLocation();
@@ -99,6 +101,7 @@ export function App() {
     const configured = vaultState !== 'absent' || Boolean(address) || session.links.length > 0;
     setNeedsSetup(!configured || !session.did);
   }, [session, needsSetup, vaultState]);
+  if (!isPending && !session?.did && !entryStarted && !invite && location.pathname === '/') return <Landing onGetStarted={() => setEntryStarted(true)} />;
   if (needsSetup === null && !error && !['/privacy', '/terms'].includes(location.pathname)) return <div className="min-h-dvh bg-canvas p-8"><ContentSkeleton variant="card" label="Opening Peachlet" /></div>;
   if (needsSetup && session && !['/privacy', '/terms'].includes(location.pathname)) return <div className="min-h-dvh bg-canvas px-5 py-8 font-sans md:py-12">
     <div className="mx-auto mb-10 flex max-w-[560px] items-center gap-2 text-lg font-semibold"><PeachletMark className="size-9" />Peachlet</div>
