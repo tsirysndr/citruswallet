@@ -186,7 +186,7 @@ function Shell() {
         {ready && screen === "Activity" ? <Activity header={feedback} /> : <ScrollView
           ref={scroll}
           key={screen}
-          contentContainerStyle={{ padding: 20, paddingTop: hideHeader ? 8 : 20, paddingBottom: hideHeader ? 12 : 32 }}
+          contentContainerStyle={{ flexGrow: screen === "Payments" && paymentStep === 2 ? 1 : undefined, padding: 20, paddingTop: hideHeader ? 8 : 20, paddingBottom: hideHeader ? 12 : 32 }}
           keyboardShouldPersistTaps="handled"
           refreshControl={
             <RefreshControl

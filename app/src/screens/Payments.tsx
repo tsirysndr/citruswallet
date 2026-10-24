@@ -139,7 +139,7 @@ export function Payments({ onStepChange, keyboardVisible = false }: { onStepChan
   const recoverPayment = () => run(async () => { await recover(session.did!, hash || undefined); await reload(); });
   const compact = keyboardVisible && currentStep === 1;
   return (
-    <View className={currentStep > 1 ? "gap-3" : "gap-5"}>
+    <View className={currentStep === 2 ? "flex-1 gap-3" : currentStep > 1 ? "gap-3" : "gap-5"}>
       {!compact && <>
       <View className="flex-row items-center justify-between">
         {currentStep > 1 ? <Pressable accessibilityRole="button" accessibilityLabel={`Back to ${id && !canEdit ? 'activity' : currentStep === 2 ? 'recipient' : currentStep === 3 ? 'amount' : 'description'}`}

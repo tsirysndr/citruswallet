@@ -13,7 +13,7 @@ export function AmountStep({ actor, handle, amount, onAmount, onContinue, decima
 }) {
   let valid = false;
   try { parseAmount(amount.replace(/\.$/, ""), decimals); valid = true; } catch {}
-  return <View className="gap-4">
+  return <View className="flex-1 gap-3">
     <View className="flex-row items-center gap-3 rounded-2xl bg-surface p-3">
       <Avatar actor={actor} size={64} /><View className="min-w-0 flex-1">
         <Text className="text-sm text-muted">Sending to</Text>
@@ -22,7 +22,7 @@ export function AmountStep({ actor, handle, amount, onAmount, onContinue, decima
       </View>
     </View>
     {assetPicker}
-    <AmountPad compact value={amount} onChange={onAmount} decimals={decimals} symbol={symbol} />
-    <Button title="Continue" disabled={!valid} onPress={onContinue} />
+    <AmountPad compact value={amount} onChange={onAmount} decimals={decimals} symbol={symbol}
+      action={<Button title="Continue" disabled={!valid} onPress={onContinue} />} />
   </View>;
 }
