@@ -29,7 +29,6 @@ export function Account() {
   const { field } = useController({ control: form.control, name: 'identifier' });
   const handle = field.value, setHandle = field.onChange;
   const [hidden, setHidden] = useState(false);
-  const [explain, setExplain] = useState(false);
   const run = useAction(),
     query = useQueryClient(),
     go = useSetAtom(screenAtom);
@@ -80,8 +79,9 @@ export function Account() {
         />
         <View className="gap-5 rounded-3xl bg-white p-6">
           <Heading title="Welcome to Peachlet" />
-          <View className="my-1 gap-3"><Pressable accessibilityRole="button" accessibilityState={{ expanded: explain }} onPress={() => setExplain(!explain)}><Text className="text-center text-base leading-6 text-muted underline">What is an atmosphere account?</Text></Pressable>{explain && <Text className="text-center text-sm leading-6 text-muted">An account on the AT Protocol network, such as Bluesky or selfhosted.social. Use the same handle you already have.</Text>}</View>
+          <Text className="my-1 text-left text-base leading-6 text-muted">Sign in with your Atmosphere Account</Text>
           <AtmosphereApps />
+          <Pressable accessibilityRole="link" onPress={() => void Linking.openURL("https://atproto.com/")}><Text className="text-center text-sm leading-6 text-muted underline">What is an atmosphere account?</Text></Pressable>
           <HandleInput value={handle} onChange={setHandle} onSubmit={form.handleSubmit(({ identifier }) => run(async () => { if (await signIn(identifier)) await query.invalidateQueries(); }))} />
           {form.formState.errors.identifier && <Text accessibilityRole="alert" className="text-red-700">{form.formState.errors.identifier.message}</Text>}
           <Button
