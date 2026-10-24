@@ -122,7 +122,7 @@ export function Payments({ onStepChange, keyboardVisible = false }: { onStepChan
         {currentStep > 1 ? <Pressable accessibilityRole="button" accessibilityLabel={`Back to ${id && !canEdit ? 'activity' : currentStep === 2 ? 'recipient' : currentStep === 3 ? 'amount' : 'description'}`}
           disabled={busy} onPress={() => id && !canEdit ? go('Activity') : navigateBack((currentStep - 1) as 1 | 2 | 3)} className="min-h-12 flex-row items-center gap-2 pr-4">
           <ArrowLeft size={24} color="#191916" accessible={false} /><Text className="text-base">Back</Text>
-        </Pressable> : <Text className="text-base font-medium">Send assets</Text>}
+        </Pressable> : <Text className="text-base font-medium">Send</Text>}
         <Text accessibilityLabel={`Step ${currentStep} of 4`} className="text-sm text-muted">Step {currentStep} of 4</Text>
       </View>
       <View className="flex-row gap-2">

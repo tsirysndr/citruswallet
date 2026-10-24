@@ -33,7 +33,7 @@ export function Account() {
       </div></div>
       <div className="quick-actions">
         <Link to="/wallet" search={{ setup: true }} className="action-tile action-link"><Plus /><span>Link wallet</span></Link>
-        <Link to="/payments" className="action-tile action-send"><ArrowUpRight /><span>Send assets</span></Link>
+        <Link to="/payments" className="action-tile action-send"><ArrowUpRight /><span>Send</span></Link>
         <Link to="/wallet" className="action-tile action-receive"><ArrowDownLeft /><span>Receive</span></Link>
       </div>
       {session?.did && <AssetBalances session={session} hidden={hidden} />}
