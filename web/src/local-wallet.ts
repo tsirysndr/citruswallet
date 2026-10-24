@@ -26,7 +26,7 @@ function changed() { for (const listener of listeners) listener(); window.dispat
 export function subscribeWallet(listener: () => void) { listeners.add(listener); return () => { listeners.delete(listener); }; }
 export function localWalletState() { return secret ? 'unlocked' : localStorage.getItem(storageKey) ? 'locked' : 'absent'; }
 export function lockLocalWallet() { answerApproval(false); epoch++; secret = null; clearTimeout(timeout); changed(); }
-function touch() { clearTimeout(timeout); timeout = setTimeout(lockLocalWallet, 5 * 60_000); }
+function touch() { clearTimeout(timeout); timeout = setTimeout(lockLocalWallet, 15 * 60_000); }
 export function configureLocalNetwork(network: Network) { configuredNetwork = deviceNetwork(network); }
 export async function saveLocalWallet(value: WalletSecret, password: string) {
   if (localWalletState() !== 'absent') throw new Error('A wallet already exists on this device.');

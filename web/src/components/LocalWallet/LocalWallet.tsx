@@ -65,7 +65,7 @@ export function LocalWallet({ allowWhileBusy = false, initialAction, onCreated, 
     </form>}
     {state === 'unlocked' && <div className="mt-4 flex flex-col gap-3">
       <p className="break-all font-mono text-sm">{localAddress()}</p>
-      <Hint>Locks when you leave this tab or after 5 minutes without a wallet action.</Hint>
+      <Hint>Locks when you leave this tab or after 15 minutes without a wallet action.</Hint>
       <div className="flex flex-wrap gap-3"><Button keepEnabled={allowWhileBusy} variant="subtle" onClick={() => { clear(); lockLocalWallet(); }}>Lock wallet</Button><Button keepEnabled={allowWhileBusy} variant="subtle" onClick={() => setMode('backup')}>Backup & security</Button></div>
       {mode === 'backup' && <form noValidate className="flex flex-col gap-3" onSubmit={event => { event.preventDefault(); if (!busy) void validated(async () => { const value = await backupLocalWallet(password); setPhrase(value.value); setPassword(''); }); }}>
         <Label htmlFor="wallet-security-password">Confirm your password</Label><Input id="wallet-security-password" type="password" {...passwordField} aria-invalid={!!form.formState.errors.password} autoComplete="current-password" />

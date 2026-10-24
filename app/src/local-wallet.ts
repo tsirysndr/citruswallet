@@ -34,7 +34,7 @@ export function nativeBalanceAddress() { return balanceAddress; }
 let timer: ReturnType<typeof setTimeout> | undefined;
 const listeners = new Set<() => void>();
 function emit() { for (const listener of listeners) listener(); }
-function touch() { clearTimeout(timer); timer = setTimeout(lockNativeWallet, 300_000); }
+function touch() { clearTimeout(timer); timer = setTimeout(lockNativeWallet, 15 * 60_000); }
 export function nativeVaultState() { return state; }
 export function subscribeNativeVault(fn: () => void) { listeners.add(fn); return () => { listeners.delete(fn); }; }
 export function lockNativeWallet() { generation++; secret = null; if (state === 'unlocked') state = 'locked'; clearTimeout(timer); emit(); }
