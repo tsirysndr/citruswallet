@@ -1,7 +1,9 @@
-import { Fragment, useEffect, useId, useState } from "react";
+import { Fragment, useEffect, useId, useState, useSyncExternalStore } from "react";
 import ContentLoader from "react-content-loader";
+import { theme } from "../../theme";
 export function ContentSkeleton({ variant = "rows", rows = 3, label = "Loading content", inverse = false }: { variant?: "rows" | "card" | "media" | "line"; rows?: number; label?: string; inverse?: boolean }) {
   const id = useId();
+  const dark = useSyncExternalStore(theme.subscribe, theme.current) === "dark";
   const [reduced, setReduced] = useState(true);
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -18,7 +20,7 @@ export function ContentSkeleton({ variant = "rows", rows = 3, label = "Loading c
   return <div role="status" aria-label={label} aria-busy="true" className="w-full min-w-0" style={{ maxWidth: variant === "line" ? 360 : 560 }}>
     <ContentLoader uniqueKey={id} title="" aria-hidden="true" animate={!reduced} speed={1.6}
       width="100%" viewBox={`0 0 360 ${height}`} style={{ display: "block", width: "100%", height: "auto" }}
-      backgroundColor={inverse ? "#3c4332" : "#e4e5dc"} foregroundColor={inverse ? "#61704a" : "#f5f7ee"}>
+      backgroundColor={dark || inverse ? "#292929" : "#e4e5dc"} foregroundColor={dark || inverse ? "#404040" : "#f5f7ee"}>
       {shapes}
     </ContentLoader>
   </div>;
