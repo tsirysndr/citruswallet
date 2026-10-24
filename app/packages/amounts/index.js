@@ -98,17 +98,25 @@ export function portfolioUsd(nativeAtomic, ethPrice, assets, chainId) {
       total = total.plus(quantity.shiftedBy(-decimals).times(price)); priced = true;
     } catch { missing++; }
   };
-  if (nativeAtomic !== null) add(nativeAtomic, 18, ethPrice); else missing++;
+  if (nativeAtomic !== null) add(nativeAtomic, 18, ethPrice);
+  let nativeFound = false;
   const seen = new Set();
   for (const row of assets) {
     const asset = row.asset;
-    if (asset.kind === 'native') continue; // Already counted from on-chain native balances.
     const key = `${row.address.toLowerCase()}:${asset.id}`;
     if (seen.has(key)) continue;
     seen.add(key);
+    if (asset.kind === 'native') {
+      if (nativeAtomic !== null) continue; // Provider total already includes these wallets.
+      if (asset.chainId === chainId && asset.id === `eip155:${chainId}/slip44:60` && asset.decimals === 18) {
+        nativeFound = true; add(row.balanceAtomic, 18, ethPrice);
+      } else missing++;
+      continue;
+    }
     if (asset.chainId !== chainId || asset.id !== `eip155:${chainId}/erc20:${asset.contractAddress?.toLowerCase()}`) { missing++; continue; }
     add(row.balanceAtomic, asset.decimals, row.usdPrice);
   }
+  if (nativeAtomic === null && !nativeFound) missing++;
   return { usd: priced ? total.toFixed(2, Decimal.ROUND_HALF_UP) : null, missing };
 }
 export function formatUsd(value) {
