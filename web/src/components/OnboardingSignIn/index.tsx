@@ -17,7 +17,7 @@ export function OnboardingSignIn() {
   });
   return <Panel className="font-sans">
     <h1 className="text-center text-3xl font-semibold">Your handle. Your wallet.</h1>
-    <p className="my-6 text-center text-base leading-6 text-ink-muted">Sign in with your Atmosphere Account</p>
+    <details className="my-6 text-center text-ink-muted"><summary className="cursor-pointer text-base leading-6 underline underline-offset-4">Sign in with your Atmosphere Account</summary><p className="mt-3 text-sm leading-6">An account on the AT Protocol network, such as Bluesky or selfhosted.social. Use the same handle you already have.</p></details>
     <AtmosphereApps />
     <form className="mt-5 flex flex-col gap-3" noValidate onSubmit={form.handleSubmit(start)}>
       <Label htmlFor="onboarding-handle">Handle</Label>
@@ -25,7 +25,6 @@ export function OnboardingSignIn() {
       <FieldError>{form.formState.errors.identifier?.message}</FieldError>
       <Button type="submit" className="w-full !bg-black !text-white" disabled={!form.watch('identifier').trim()}>Sign In</Button>
     </form>
-    <details className="mt-5 text-sm text-ink-muted"><summary className="cursor-pointer underline underline-offset-4">What is an Atmosphere account?</summary><p className="mt-2 leading-6">An account on the AT Protocol network, such as Bluesky or selfhosted.social. Use the same handle you already have.</p></details>
     <p className="mt-4 text-sm text-ink-muted">Don’t have an account? <LinkButton onClick={() => start({ create: true })}>Create one</LinkButton></p>
     <p className="mt-4 text-xs leading-5 text-ink-muted">By continuing, you agree to our <Link to="/terms" className="underline">Terms</Link> and <Link to="/privacy" className="underline">Privacy Policy</Link>. You’ll sign in securely with your account provider.</p>
   </Panel>;
