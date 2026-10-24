@@ -41,6 +41,6 @@ test('portfolio totals include native ETH and tokens once, rounding only the fin
   assert.deepEqual(portfolioUsd('0', undefined, [], 1), { usd: '0.00', missing: 0 });
   assert.deepEqual(portfolioUsd('1000000000000000000', '2000', [ { ...row, usdPrice: undefined } ], 1), { usd: '2000.00', missing: 1 });
   assert.deepEqual(portfolioUsd('1000000000000000000', undefined, [], 1), { usd: null, missing: 1 });
-  assert.equal(portfolioUsd('1000000000000000000', '2000', [row], 6343).usd, null);
+  assert.equal(portfolioUsd('1000000000000000000', '2000', [], 6343).usd, '2000.00');
   assert.equal(portfolioUsd('0', '2000', [{ ...row, asset: { ...row.asset, chainId: 4326 } }], 1).missing, 1);
 });

@@ -88,7 +88,7 @@ export function expectedTransfer(payment) {
 
 // Sum full-precision valuations, then round once for display. Never value by ticker.
 export function portfolioUsd(nativeAtomic, ethPrice, assets, chainId) {
-  if (![1, 4326].includes(chainId)) return { usd: null, missing: 0 };
+  if (![1, 4326, 6343].includes(chainId)) return { usd: null, missing: 0 };
   let total = new Decimal(0), priced = false, missing = 0;
   const add = (value, decimals, price) => {
     try {

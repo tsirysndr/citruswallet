@@ -6,7 +6,7 @@ import { request } from './api';
 
 export function usePortfolio(session: Session | null | undefined, nativeAtomic: string | null, extraAddress?: string | null) {
   const chainId = session?.network.chainId ?? 0;
-  const supported = [1, 4326].includes(chainId) && session?.network.nativeCurrency.symbol === 'ETH';
+  const supported = [1, 4326, 6343].includes(chainId) && session?.network.nativeCurrency.symbol === 'ETH';
   const addresses = [...new Set(session?.links.filter(link => link.chain_id === chainId).map(link => link.address.toLowerCase()) ?? [])];
   const price = useQuery({ queryKey: ['eth-usd'], enabled: !!session?.did && supported,
     queryFn: () => request<{ usd: string; updatedAt: number; source: string }>('getEthPrice'), staleTime: 60_000, refetchInterval: 60_000, retry: false });

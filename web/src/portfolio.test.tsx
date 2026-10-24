@@ -23,8 +23,10 @@ it('marks totals partial when discovery or token pricing is unavailable', async 
     http.get(xrpc('getAssets'), () => HttpResponse.json({ assets: [{ ...token, usdPrice: undefined }], discoveryAvailable: false })));
   await renderComponent(<Summary />); expect(await screen.findByText('$2,000.00 partial')).toBeVisible();
 });
-it('does not assign a market value to testnet holdings', async () => {
-  await renderComponent(<Summary chainId={6343} />); expect(await screen.findByText('No USD value')).toBeVisible();
+it('estimates testnet ETH using the same market rate', async () => {
+  server.use(http.get(xrpc('getEthPrice'), () => HttpResponse.json({ usd: '2000', updatedAt: Date.now(), source: 'Coinbase' })),
+    http.get(xrpc('getAssets'), () => HttpResponse.json({ assets: [], discoveryAvailable: true })));
+  await renderComponent(<Summary chainId={6343} />); expect(await screen.findByText('$2,000.00 complete')).toBeVisible();
 });
 it('shows unavailable instead of zero when both pricing and discovery fail', async () => {
   server.use(http.get(xrpc('getEthPrice'), () => HttpResponse.json({ error: 'Unavailable' }, { status: 503 })),

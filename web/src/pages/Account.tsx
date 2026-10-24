@@ -29,8 +29,8 @@ export function Account() {
       <div className="balance-stack"><div className="balance-card">
         <div className="balance-label">Total balance <button type="button" onClick={() => setHidden(!hidden)} aria-label={hidden ? "Show balance" : "Hide balance"}>{hidden ? <EyeOff size={17} /> : <Eye size={17} />}</button></div>
         {(portfolio.loading || balanceLoading && !balances) && !hidden ? <ContentSkeleton variant="line" label="Loading balance" inverse /> : <p className="balance-amount">{hidden ? "••••••" : portfolio.supported ? portfolio.formatted ?? "USD unavailable" : amount ?? (session?.did ? "Balance unavailable" : "—")}</p>}
-        {!hidden && <p className="font-mono text-sm font-semibold">{portfolio.supported ? amount : "Testnet or unsupported network · no USD value"}</p>}
-        {!hidden && portfolio.supported && portfolio.formatted && <p className="balance-note">{portfolio.partial ? "Partial estimate · some assets could not be valued" : "Estimated USD value · ETH + tokens"}</p>}
+        {!hidden && <p className="font-mono text-sm font-semibold">{portfolio.supported ? amount : "USD pricing unavailable for this network"}</p>}
+        {!hidden && portfolio.supported && portfolio.formatted && <p className="balance-note">{portfolio.partial ? session?.network.chainId === 6343 ? "Partial testnet estimate · some assets have no price" : "Partial estimate · some assets could not be valued" : session?.network.chainId === 6343 ? "Testnet estimate · not redeemable USD" : "Estimated USD value · ETH + tokens"}</p>}
         <div className="balance-bottom"><span className="network-pill"><i />{session?.network.name ?? "Ethereum"}</span></div>
         <p className="balance-note">{session?.did ? detail ? `Across ${detail}` : balanceLoading ? "Loading your balance…" : "Your balance could not be loaded." : "Sign in to see your balance"}</p>
         {session?.did && <BalanceAccess session={session} balances={balances} available={total !== null} loading={balanceLoading} refresh={refreshBalance} />}

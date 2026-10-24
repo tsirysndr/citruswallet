@@ -146,8 +146,8 @@ export function Account() {
         >
           {hidden ? "••••••" : needsUnlock ? "Unlock to load balance" : portfolio.supported ? portfolio.formatted ?? "USD unavailable" : balanceFailed ? "Balance unavailable" : balance !== undefined ? `${formatWei(BigInt(balance))} ETH` : "Loading balance…"}
         </Text>}
-        {!hidden && <Text className="font-mono text-sm font-semibold text-white">{portfolio.supported ? balance !== undefined && !balanceFailed && !needsUnlock ? `${formatWei(BigInt(balance))} ETH` : 'ETH balance unavailable' : 'Testnet or unsupported network · no USD value'}</Text>}
-        {!hidden && portfolio.supported && portfolio.formatted && <Text className="text-xs text-white/70">{portfolio.partial ? 'Partial estimate · some assets could not be valued' : 'Estimated USD value · ETH + tokens'}</Text>}
+        {!hidden && <Text className="font-mono text-sm font-semibold text-white">{portfolio.supported ? balance !== undefined && !balanceFailed && !needsUnlock ? `${formatWei(BigInt(balance))} ETH` : 'ETH balance unavailable' : 'USD pricing unavailable for this network'}</Text>}
+        {!hidden && portfolio.supported && portfolio.formatted && <Text className="text-xs text-white/70">{portfolio.partial ? session.network.chainId === 6343 ? 'Partial testnet estimate · some assets have no price' : 'Partial estimate · some assets could not be valued' : session.network.chainId === 6343 ? 'Testnet estimate · not redeemable USD' : 'Estimated USD value · ETH + tokens'}</Text>}
         {walletLocked && <Button title="Unlock wallet" tone="plain" onPress={() => run(async () => {
           await requestUnlock();
           await Promise.all([
