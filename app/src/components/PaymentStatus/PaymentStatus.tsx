@@ -6,13 +6,13 @@ const colors = {
   prepared: { backgroundColor: "#d6f3f1", color: "#176364" },
   submitted: { backgroundColor: "#dce8ff", color: "#284ea0" },
   confirming: { backgroundColor: "#eaddff", color: "#664098" },
-  confirmed: { backgroundColor: "#c5f277", color: "#315417" },
+  confirmed: { backgroundColor: "#ffb995", color: "#315417" },
   failed: { backgroundColor: "#ffe0db", color: "#a12d25" },
   cancelled: { backgroundColor: "#f4ddeb", color: "#85365e" },
   expired: { backgroundColor: "#ffdfc1", color: "#864713" },
 };
 export function PaymentStatus({ state }: { state: string }) {
-  const palette = colors[state as keyof typeof colors] ?? { backgroundColor: "#f2f1ed", color: "#696b63" };
+  const palette = colors[state as keyof typeof colors] ?? { backgroundColor: "#f7f3f0", color: "#696b63" };
   return <View style={{ alignSelf: "flex-start", borderRadius: 16, paddingHorizontal: 10, paddingVertical: 5, backgroundColor: palette.backgroundColor }}>
     <Text className="text-sm font-medium" style={{ color: palette.color }}>{state.charAt(0).toUpperCase() + state.slice(1)}</Text>
   </View>;

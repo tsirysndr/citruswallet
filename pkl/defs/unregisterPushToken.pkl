@@ -1,5 +1,5 @@
 lexicon = 1
-id = "app.citruswallet.unregisterPushToken"
+id = "app.peachlet.unregisterPushToken"
 defs = new Dynamic {
   `main` = new Dynamic {
     `type` = "procedure"

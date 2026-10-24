@@ -1,5 +1,5 @@
 import api/fixtures as f
-import citruswallet/store
+import peachlet/store
 import gleam/option.{None, Some}
 
 pub fn transaction_error_rolls_back_every_write_test() {

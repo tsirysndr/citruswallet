@@ -5,7 +5,7 @@
 @font-face { font-family: "Rockford"; src: url("/fonts/RockfordSans-Medium.otf") format("opentype"); font-weight: 500; font-style: normal; font-display: swap; }
 @font-face { font-family: "Rockford"; src: url("/fonts/RockfordSans-Bold.otf") format("opentype"); font-weight: 600 900; font-style: normal; font-display: swap; }
 
-/* Citrus: warm neutrals, lime, lilac, peach, and electric blue. */
+/* Peachlet: warm neutrals, apricot, lilac, peach, and electric blue. */
 @theme {
   --font-sans: "Rockford", system-ui, sans-serif;
   --font-mono: "Roboto Mono Variable", "SF Mono", "Fira Code", "Fira Mono", "Roboto Mono", monospace;
@@ -38,23 +38,23 @@
 :root { font-synthesis: none; }
 :root, :root[data-theme="light"] {
   color-scheme: light;
-  --canvas: #f2f1ed; --raised: #fff; --sunken: #fafaf7;
-  --edge: #d9dad2; --edge-soft: #e9e9e2; --rule: #d2d3ca;
+  --canvas: #f7f3f0; --raised: #fff; --sunken: #fffbf8;
+  --edge: #e4d9d2; --edge-soft: #eee5df; --rule: #dfd2ca;
   --ink: #191916; --ink-soft: #50514b; --ink-muted: #696b63; --ink-faint: #73756c;
-  --accent: #c5f277; --accent-ink: #19220d; --accent-quiet: #e9f5d6; --accent-strong: #415a20;
+  --accent: #ffb995; --accent-ink: #482719; --accent-quiet: #fff0e7; --accent-strong: #96502f;
   --info: #365d38; --highlight: #4e3f63; --highlight-bg: #ebe1f8;
   --good: #365d38; --good-bg: #e7f3d9; --good-edge: #c8dbaf; --bad: #b33242;
-  --focus: #4c6c2a; --shadow: #20211a18; --surface: #f7f7f2; --panel: #fff;
+  --focus: #a65d3c; --shadow: #20211a18; --surface: #fcf8f5; --panel: #fff;
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
   --canvas: #20211e; --raised: #34362f; --sunken: #23251f;
   --edge: #4b4e42; --edge-soft: #3b3e34; --rule: #414439;
   --ink: #f5f5ed; --ink-soft: #d2d4c9; --ink-muted: #b4b8a9; --ink-faint: #a5ab98;
-  --accent: #c5f277; --accent-ink: #19220d; --accent-quiet: #384729; --accent-strong: #c5f277;
+  --accent: #ffb995; --accent-ink: #482719; --accent-quiet: #54372c; --accent-strong: #ffb995;
   --info: #c5dfaa; --highlight: #e6d5fc; --highlight-bg: #44374e;
   --good: #c5dfaa; --good-bg: #35452b; --good-edge: #536747; --bad: #ff9aa6;
-  --focus: #c5f277; --shadow: #0003; --surface: #2a2c25; --panel: #32352c;
+  --focus: #ffb995; --shadow: #0003; --surface: #2a2c25; --panel: #32352c;
 }
 @layer base {
   body { margin: 0; background: var(--canvas); color: var(--ink); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
@@ -62,7 +62,7 @@
   button, a, input, select { -webkit-tap-highlight-color: transparent; }
   button, a { transition: background-color .18s, transform .18s, color .18s; }
   button { font-size: 13px; }
-  ::selection { background: #c5f277; color: #191916; }
+  ::selection { background: #ffb995; color: #191916; }
 }
 @utility surface { background: var(--panel); }
 @utility popover-shadow { box-shadow: 0 18px 40px var(--shadow); }
@@ -105,30 +105,30 @@ textarea:focus-visible { outline: none; }
 .mobile-brand { display: none !important; }
 .app-header { display: flex; align-items: center; justify-content: flex-end; gap: 20px; min-height: 100px; padding: 24px 0; }
 .brand-logo { display: flex; align-items: center; gap: 10px; font-size: 22px; font-weight: 650; letter-spacing: -.9px; text-decoration: none; color: var(--ink); }
-.logo-mark { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; background: #c5f277; color: #191916; padding: 4px; }
+.logo-mark { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; background: transparent; color: #191916; padding: 0; }
 .logo-mark svg { width: 100%; height: 100%; }
 .logo-wallet { font-weight: 400; }
-.nav-active { background: #c5f277; color: #191916; }
+.nav-active { background: #ffb995; color: #191916; }
 .app-main { padding: 14px 0 12px; }
 .app-footer { display: flex; justify-content: space-between; gap: 16px; padding: 18px 4px 28px; font-size: 12px; color: var(--ink-muted); }
 .home-grid { max-width: 960px; margin: 0 auto; }
-.brand-cta { display: flex; align-items: center; justify-content: space-between; gap: 20px; border-radius: 100px; padding: 18px 22px; background: #c5f277; color: #191916; text-decoration: none; font-size: 14px; font-weight: 600; margin-top: auto; }
-.brand-cta:hover { background: #d4ff8d; transform: translateY(-2px); }
+.brand-cta { display: flex; align-items: center; justify-content: space-between; gap: 20px; border-radius: 100px; padding: 18px 22px; background: #ffb995; color: #191916; text-decoration: none; font-size: 14px; font-weight: 600; margin-top: auto; }
+.brand-cta:hover { background: #ffcbae; transform: translateY(-2px); }
 .dashboard { min-width: 0; padding: 16px 0 0; }
 .dashboard-greeting { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 30px; }
 .eyebrow { font-size: 12px; font-weight: 600; letter-spacing: .15em; color: var(--ink-muted); margin: 0 0 10px; }
 .dashboard-greeting h2 { font-size: 32px; font-weight: 450; line-height: 1.2; letter-spacing: -1.3px; overflow-wrap: anywhere; }
-.greeting-dot { color: #7f9c49; }
+.greeting-dot { color: #b7704f; }
 .greeting-icon { display: grid; place-items: center; width: 47px; height: 47px; flex-shrink: 0; border-radius: 50%; background: #e3d1fc; color: #191916; }
 .balance-stack { position: relative; }
-.balance-card { border-radius: 24px; background: #171612; color: #f7f7f2; padding: 30px 32px 24px; background-image: repeating-radial-gradient(ellipse at 110% 110%, transparent 0 24px, #ffffff08 25px 26px, transparent 27px 42px); }
+.balance-card { border-radius: 24px; background: #171612; color: #fcf8f5; padding: 30px 32px 24px; background-image: repeating-radial-gradient(ellipse at 110% 110%, transparent 0 24px, #ffffff08 25px 26px, transparent 27px 42px); }
 .balance-label { display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 500; }
 .balance-label button { cursor: pointer; color: #c3c3ba; border: 0; background: none; padding: 4px; }
 .balance-amount { font-family: var(--font-mono); font-weight: 700; font-size: clamp(28px, 3.2vw, 42px); line-height: 1.4; letter-spacing: -0.03em; margin: 7px 0 12px; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
 .balance-bottom { display: flex; align-items: center; justify-content: space-between; height: 38px; }
 .network-pill { display: inline-flex; align-items: center; gap: 8px; background: #ffffff18; color: #eef2df; padding: 9px 12px; border-radius: 10px; font-size: 12px; font-weight: 600; }
-.network-pill i { width: 6px; height: 6px; border-radius: 50%; background: #c5f277; }
-.balance-seal { width: 45px; height: 45px; color: #c5f277; opacity: .8; }
+.network-pill i { width: 6px; height: 6px; border-radius: 50%; background: #ffb995; }
+.balance-seal { width: 45px; height: 45px; color: #ffb995; opacity: .8; }
 .balance-note { font-size: 12px; color: #bcbdb3; margin: 12px 0 0; }
 .quick-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 18px 0 32px; }
 .action-tile { display: flex; align-items: center; justify-content: center; gap: 9px; min-height: 58px; border-radius: 100px; color: var(--ink); border: 1px solid var(--edge); text-decoration: none; font-size: 14px; font-weight: 500; background: var(--surface); }
@@ -145,7 +145,7 @@ textarea:focus-visible { outline: none; }
 .identity-card button[type=submit] { background: var(--ink); color: var(--surface); }
 .identity-card label { font-size: 12px; }
 .welcome-note { display: flex; align-items: center; gap: 12px; margin-top: 26px; padding-top: 22px; border-top: 1px solid var(--edge-soft); }
-.welcome-symbol { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 14px; background: #e7eedb; color: #40532a; font-size: 23px; }
+.welcome-symbol { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 14px; background: #ffeadc; color: #85462e; font-size: 23px; }
 .welcome-note h3 { font-size: 12px; font-weight: 600; margin-bottom: 4px; }.welcome-note p { font-size: 12px; color: var(--ink-muted); }.welcome-note > svg { margin-left: auto; }
 .home-history { padding: 22px 0 0; margin-top: 24px; border-top: 1px solid var(--edge-soft); border-radius: 0; background: transparent; }
 .page-content { max-width: 860px; margin: 0 auto; border-radius: 38px; background: var(--surface); padding: 40px; }
@@ -401,14 +401,14 @@ textarea:focus-visible { outline: none; }
 @media (max-width: 639px) { .notification-popover { position: fixed; top: 74px; right: 16px; } }
 .notification-item { display: flex; flex-direction: column; gap: 8px; padding: 16px; border: 1px solid var(--edge-soft); background: var(--panel); text-align: left; border-radius: 8px; cursor: pointer; }
 .notification-item:hover { border-color: var(--accent-strong); }
-.notification-count { position: absolute; top: -4px; right: -6px; display: flex; align-items: center; justify-content: center; min-width: 19px; height: 19px; padding: 0 5px; border: 2px solid #f2f1ed; border-radius: 999px; background: #dc2626; color: white; font-size: 11px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.notification-count { position: absolute; top: -4px; right: -6px; display: flex; align-items: center; justify-content: center; min-width: 19px; height: 19px; padding: 0 5px; border: 2px solid #f7f3f0; border-radius: 999px; background: #dc2626; color: white; font-size: 11px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
 
 .payment-status-waiting { background-color: #fff0c2; color: #795600; border-color: transparent; }
 .payment-status-ready { background-color: #ddf4df; color: #23613b; border-color: transparent; }
 .payment-status-prepared { background-color: #d6f3f1; color: #176364; border-color: transparent; }
 .payment-status-submitted { background-color: #dce8ff; color: #284ea0; border-color: transparent; }
 .payment-status-confirming { background-color: #eaddff; color: #664098; border-color: transparent; }
-.payment-status-confirmed { background-color: #c5f277; color: #315417; border-color: transparent; }
+.payment-status-confirmed { background-color: #ffb995; color: #315417; border-color: transparent; }
 .payment-status-failed { background-color: #ffe0db; color: #a12d25; border-color: transparent; }
 .payment-status-cancelled { background-color: #f4ddeb; color: #85365e; border-color: transparent; }
 .payment-status-expired { background-color: #ffdfc1; color: #864713; border-color: transparent; }

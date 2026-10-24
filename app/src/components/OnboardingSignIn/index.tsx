@@ -30,6 +30,6 @@ export function OnboardingSignIn({ returning = false }: { returning?: boolean })
     <Pressable accessibilityRole="button" accessibilityState={{ expanded: explain }} onPress={() => setExplain(!explain)}><Text className="text-sm text-muted underline">What is an Atmosphere account?</Text></Pressable>
     {explain && <Text className="text-sm leading-6 text-muted">An account on the AT Protocol network, such as Bluesky or selfhosted.social. Use the same handle you already have.</Text>}
     <Text className="text-sm text-muted">Don’t have an account? <Text accessibilityRole="link" className="underline" onPress={() => start('', true)}>Create one</Text></Text>
-    <Text className="text-sm leading-6 text-muted">By continuing, you agree to our <Text accessibilityRole="link" className="underline" onPress={() => void Linking.openURL('https://citruswallet.app/terms')}>Terms</Text> and <Text accessibilityRole="link" className="underline" onPress={() => void Linking.openURL('https://citruswallet.app/privacy')}>Privacy Policy</Text>. You’ll sign in securely with your account provider.</Text>
+    <Text className="text-sm leading-6 text-muted">By continuing, you agree to our <Text accessibilityRole="link" className="underline" onPress={() => void Linking.openURL('https://peachlet.app/terms')}>Terms</Text> and <Text accessibilityRole="link" className="underline" onPress={() => void Linking.openURL('https://peachlet.app/privacy')}>Privacy Policy</Text>. You’ll sign in securely with your account provider.</Text>
   </View>;
 }

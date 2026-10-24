@@ -1,11 +1,11 @@
-import { feeQuoteParameters } from '@citruswallet/wallet-core';
+import { feeQuoteParameters } from '@peachlet/wallet-core';
 import { estimateFees } from './fee-quote';
 import { storeDeviceSecret, readDeviceSecret, removeDeviceSecret } from './device-vault';
 export { deviceUnlockAvailable } from './device-vault';
 import { deviceNetwork } from "./network";
 import * as SecureStore from 'expo-secure-store';
 import { AppState, Alert } from 'react-native';
-import { accountFromSecret, decryptSecret, encryptSecret, normalizeSecret, randomBytes, type WalletSecret } from '@citruswallet/wallet-core';
+import { accountFromSecret, decryptSecret, encryptSecret, normalizeSecret, randomBytes, type WalletSecret } from '@peachlet/wallet-core';
 import { createPublicClient, createWalletClient, defineChain, http, formatEther, type Hex } from 'viem';
 import type { Network } from './types';
 const vaultKey = 'citrus-vault-v1', pepperKey = 'citrus-vault-device-key-v1', biometricKey = 'citrus-vault-biometric-v1';
@@ -22,7 +22,7 @@ async function deviceAction<T>(action: () => Promise<T>): Promise<T> {
   try {
     const value = await action();
     if (AppState.currentState !== 'active') await new Promise<void>((resolve, reject) => {
-      const timeout = setTimeout(() => { sub.remove(); reject(new Error('Return to Citrus to continue.')); }, 3000);
+      const timeout = setTimeout(() => { sub.remove(); reject(new Error('Return to Peachlet to continue.')); }, 3000);
       const sub = AppState.addEventListener('change', state => { if (state === 'active') { clearTimeout(timeout); sub.remove(); resolve(); } });
     });
     if (ticket !== generation) throw new Error('Wallet locked. Try again.');
@@ -152,13 +152,13 @@ export async function enableNativeBiometrics(pin: string) {
   const value = await readNativeSecret(pin);
   // SecureStore gates the actual key material through the OS keystore; a UI-only
   // biometric boolean would not protect a wallet secret.
-  await SecureStore.setItemAsync(biometricKey, JSON.stringify(value), { ...options, keychainService: "citrus-wallet-biometric-v1", requireAuthentication: true, authenticationPrompt: 'Protect Citrus Wallet' });
+  await SecureStore.setItemAsync(biometricKey, JSON.stringify(value), { ...options, keychainService: "citrus-wallet-biometric-v1", requireAuthentication: true, authenticationPrompt: 'Protect Peachlet' });
 }
 export async function unlockNativeBiometrics() {
   if (protection !== 'legacy-pin') throw new Error('Use the wallet’s configured unlock method.');
-  const raw = await SecureStore.getItemAsync(biometricKey, { ...options, keychainService: "citrus-wallet-biometric-v1", requireAuthentication: true, authenticationPrompt: 'Unlock Citrus Wallet' });
+  const raw = await SecureStore.getItemAsync(biometricKey, { ...options, keychainService: "citrus-wallet-biometric-v1", requireAuthentication: true, authenticationPrompt: 'Unlock Peachlet' });
   if (!raw) throw new Error('Device unlock is unavailable or biometrics changed. Use your PIN.');
-  if (AppState.currentState !== 'active') throw new Error('Return to Citrus to unlock.');
+  if (AppState.currentState !== 'active') throw new Error('Return to Peachlet to unlock.');
   const parsed = JSON.parse(raw);
   const value = normalizeSecret(parsed.value, parsed.kind);
   const ticket = generation;
@@ -176,7 +176,7 @@ export function nativeProvider(selected: Network) {
   return { async request({ method, params }: { method: string; params?: any[] }): Promise<any> {
     if (method === 'eth_chainId') return network.chainIdHex;
     if (method === 'eth_accounts') return nativeAddress() ? [nativeAddress()] : [];
-    if (!secret) throw new Error('Unlock Citrus Wallet from the Wallet screen first.');
+    if (!secret) throw new Error('Unlock Peachlet from the Wallet screen first.');
     const account = accountFromSecret(secret), ticket = generation; touch();
     if (method === 'eth_requestAccounts') return [account.address];
     if (method === 'personal_sign') {

@@ -1,4 +1,4 @@
-import type { PaymentMedia } from "./lexicon/types/app/citruswallet/defs";
+import type { PaymentMedia } from "./lexicon/types/app/peachlet/defs";
 
 export type MediaKind = "gifs" | "stickers" | "static-memes" | "clips";
 export const mediaKinds: { value: MediaKind; label: string }[] = [

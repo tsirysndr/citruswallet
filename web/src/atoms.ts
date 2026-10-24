@@ -8,7 +8,7 @@ export const reviewIdAtom = atom<string | null>(null);
 export const acknowledgedAtom = atom(false);
 export const invitationUrlAtom = atom<string | null>(null);
 
-const inviteKey = "citruswallet-invite";
+const inviteKey = "peachlet-invite";
 
 function openingInvite(): string | null {
   const fragment = new URLSearchParams(window.location.hash.slice(1)).get("invite");

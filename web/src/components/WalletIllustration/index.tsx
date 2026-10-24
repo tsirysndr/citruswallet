@@ -6,11 +6,11 @@ export function WalletIllustration({ variant = 'create', className = '' }: { var
       <path d="M45 104l5-9 5 9-5 9z" fill="#ffb1a2" stroke="#292d26" strokeWidth="2" strokeLinejoin="round" />
       <path d="M221 36v12m-6-6h12M47 63v8m-4-4h8" stroke="#292d26" strokeWidth="2" strokeLinecap="round" />
       <g transform="rotate(-8 140 90)">
-        <rect x="79" y="48" width="125" height="96" rx="16" fill="#c5f277" stroke="#292d26" strokeWidth="2.5" />
+        <rect x="79" y="48" width="125" height="96" rx="16" fill="#ffb995" stroke="#292d26" strokeWidth="2.5" />
         <path d="M81 68h120" stroke="#292d26" strokeWidth="2" />
         <rect x="100" y="32" width="77" height="40" rx="7" fill="#ffe5b3" stroke="#292d26" strokeWidth="2" />
         <path d="M112 45h35m-35 10h20" stroke="#292d26" strokeWidth="2" strokeLinecap="round" />
-        <path d="M80 70h121v59a15 15 0 0 1-15 15H95a15 15 0 0 1-15-15z" fill="#c5f277" stroke="#292d26" strokeWidth="2.5" />
+        <path d="M80 70h121v59a15 15 0 0 1-15 15H95a15 15 0 0 1-15-15z" fill="#ffb995" stroke="#292d26" strokeWidth="2.5" />
         <rect x="169" y="90" width="43" height="30" rx="9" fill="#faf9f5" stroke="#292d26" strokeWidth="2" />
         <circle cx="182" cy="105" r="3" fill="#292d26" />
         <path d="M101 122h25" stroke="#292d26" strokeWidth="2" strokeLinecap="round" />

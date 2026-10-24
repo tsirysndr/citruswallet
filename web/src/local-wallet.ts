@@ -1,8 +1,8 @@
-import { feeQuoteParameters } from '@citruswallet/wallet-core';
+import { feeQuoteParameters } from '@peachlet/wallet-core';
 import { estimateFees } from './fee-quote';
 import { answerApproval, requestApproval } from "./wallet-approval";
 import { deviceNetwork } from "./network";
-import { accountFromSecret, normalizeSecret, decryptSecret, encryptSecret, validateEnvelope, validatePassword, type WalletSecret, type VaultEnvelope } from '@citruswallet/wallet-core';
+import { accountFromSecret, normalizeSecret, decryptSecret, encryptSecret, validateEnvelope, validatePassword, type WalletSecret, type VaultEnvelope } from '@peachlet/wallet-core';
 import { createPublicClient, createWalletClient, defineChain, http, formatEther, type Hex } from 'viem';
 import type { Network } from './types';
 
@@ -63,7 +63,7 @@ export function encryptedLocalWallet(): VaultEnvelope {
   return validateEnvelope(JSON.parse(localStorage.getItem(storageKey) || 'null'));
 }
 
-// Only the reviewed Citrus flows call this adapter. There is no injected provider
+// Only the reviewed Peachlet flows call this adapter. There is no injected provider
 // exposed to third-party sites and no generic arbitrary-RPC signing endpoint.
 export const localProvider: Eip1193Provider = {
   async request({ method, params }: { method: string; params?: any[] }) {
@@ -78,7 +78,7 @@ export const localProvider: Eip1193Provider = {
       if (await reader.getChainId() !== network.chainId) throw new Error('RPC network mismatch.');
       return `0x${(await reader.getBalance({ address: params![0] })).toString(16)}`;
     }
-    if (!secret) throw new Error('Unlock your Citrus wallet on the Wallet screen first.');
+    if (!secret) throw new Error('Unlock your Peachlet wallet on the Wallet screen first.');
     const account = accountFromSecret(secret);
     const generation = epoch;
     touch();
@@ -92,7 +92,7 @@ export const localProvider: Eip1193Provider = {
     const chain = defineChain({ id: network.chainId, name: network.name, nativeCurrency: network.nativeCurrency, rpcUrls: { default: { http: [url] } } });
     const publicClient = createPublicClient({ chain, transport: http(url) });
     if (await publicClient.getChainId() !== network.chainId) throw new Error('RPC returned a different network.');
-    if (method !== 'eth_sendTransaction') throw new Error('Unsupported Citrus wallet operation.');
+    if (method !== 'eth_sendTransaction') throw new Error('Unsupported Peachlet wallet operation.');
     const tx = params?.[0];
     if (!tx || tx.from?.toLowerCase() !== account.address.toLowerCase() || tx.chainId !== network.chainIdHex) throw new Error('Transaction network or sender changed.');
     const client = createWalletClient({ account, chain, transport: http(url) });

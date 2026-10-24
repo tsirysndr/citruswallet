@@ -60,7 +60,7 @@ it("collapses the desktop sidebar and remembers the preference", async () => {
 
 it("requires full-screen wallet setup when no wallet is configured", async () => {
   await renderComponent(<App />);
-  expect(await screen.findByRole('button', { name: /Create a Citrus wallet/ })).toBeVisible();
+  expect(await screen.findByRole('button', { name: /Create a Peachlet wallet/ })).toBeVisible();
   expect(screen.queryByRole('button', { name: 'Collapse sidebar' })).not.toBeInTheDocument();
   expect(screen.queryByRole('button', { name: 'Search activity' })).not.toBeInTheDocument();
 });

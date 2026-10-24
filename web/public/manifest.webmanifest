@@ -1,13 +1,13 @@
 {
   "id": "/",
-  "name": "Citrus Wallet",
-  "short_name": "Citrus",
+  "name": "Peachlet",
+  "short_name": "Peachlet",
   "description": "Connect your AT Protocol identity and send ETH by handle.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#f2f1ed",
-  "theme_color": "#f2f1ed",
+  "background_color": "#f7f3f0",
+  "theme_color": "#f7f3f0",
   "lang": "en",
   "icons": [
     { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },

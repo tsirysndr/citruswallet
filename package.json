@@ -1,9 +1,9 @@
 {
-  "name": "citruswallet",
+  "name": "peachlet",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Citrus Wallet — self-custody EVM payments with AT Protocol identity",
+  "description": "Peachlet — self-custody EVM payments with AT Protocol identity",
   "engines": {
     "node": ">=24"
   },
@@ -29,7 +29,7 @@
     "@atproto/oauth-client-node": "^0.5.12",
     "@atproto/syntax": "^0.7.7",
     "@atproto/xrpc": "0.7.7",
-    "@citruswallet/amounts": "file:app/packages/amounts",
+    "@peachlet/amounts": "file:app/packages/amounts",
     "@fontsource-variable/roboto-mono": "^5.3.0",
     "@hono/node-server": "^2.1.5",
     "@hookform/resolvers": "^6.0.0",
@@ -48,7 +48,7 @@
     "viem": "^2.0.0",
     "web-push": "^3.6.7",
     "zod": "^4.6.7",
-    "@citruswallet/wallet-core": "file:app/packages/wallet-core"
+    "@peachlet/wallet-core": "file:app/packages/wallet-core"
   },
   "devDependencies": {
     "@atproto/lex-cli": "0.5.7",

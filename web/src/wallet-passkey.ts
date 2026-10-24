@@ -1,4 +1,4 @@
-import { decryptSecret, encryptSecret, randomBytes, type VaultEnvelope } from '@citruswallet/wallet-core';
+import { decryptSecret, encryptSecret, randomBytes, type VaultEnvelope } from '@peachlet/wallet-core';
 import { backupLocalWallet, encryptedLocalWallet, saveUnlockedSecret } from './local-wallet';
 const key = 'citrus:wallet-passkey:v1';
 const encode = (bytes: Uint8Array) => Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
@@ -27,8 +27,8 @@ export async function enableWalletPasskey(password: string) {
   const secret = await backupLocalWallet(password);
   const credential = await navigator.credentials.create({ publicKey: {
     challenge: randomBytes(32) as Uint8Array<ArrayBuffer>,
-    rp: { name: 'Citrus Wallet' },
-    user: { id: randomBytes(32) as Uint8Array<ArrayBuffer>, name: 'Citrus wallet', displayName: 'Unlock Citrus Wallet' },
+    rp: { name: 'Peachlet' },
+    user: { id: randomBytes(32) as Uint8Array<ArrayBuffer>, name: 'Peachlet wallet', displayName: 'Unlock Peachlet' },
     pubKeyCredParams: [{ type: 'public-key', alg: -7 }, { type: 'public-key', alg: -257 }],
     authenticatorSelection: { userVerification: 'required', residentKey: 'preferred' },
     extensions: { prf: { eval: { first: salt } } } as AuthenticationExtensionsClientInputs,
@@ -47,6 +47,6 @@ export async function unlockWithPasskey() {
   if (!entry || !/^[0-9a-f]{2,4096}$/.test(entry.id)) throw new Error('No wallet passkey is configured.');
   if (entry.vaultCiphertext !== encryptedLocalWallet().ciphertext) throw new Error("Device unlock belongs to a different vault. Use your password.");
   const secret = await decryptSecret(entry.envelope, await evaluate(decode(entry.id)));
-  if (document.hidden) throw new Error("Return to Citrus Wallet to unlock.");
+  if (document.hidden) throw new Error("Return to Peachlet to unlock.");
   saveUnlockedSecret(secret);
 }

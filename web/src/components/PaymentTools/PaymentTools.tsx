@@ -15,7 +15,7 @@ import { amountForm, assetAmountForm, recipientForm } from "../../validation";
 import { Typeahead } from "../Typeahead";
 import { KlipyPicker } from "../KlipyPicker";
 import { recordShare } from "../../klipy";
-import type { PaymentMedia } from "../../lexicon/types/app/citruswallet/defs";
+import type { PaymentMedia } from "../../lexicon/types/app/peachlet/defs";
 import { Avatar } from "../Avatar";
 import {
   Badge,
@@ -197,7 +197,7 @@ export function PaymentTools({ className }: { className?: string }) {
                 {...amount.register("description")}
               />
             </KlipyPicker>
-            <p id="description-hint" className="mt-1 text-xs leading-relaxed text-ink-faint">Visible to you and the recipient in Citrus Wallet. Never published on-chain or to AT Protocol. Up to 500 characters.</p>
+            <p id="description-hint" className="mt-1 text-xs leading-relaxed text-ink-faint">Visible to you and the recipient in Peachlet. Never published on-chain or to AT Protocol. Up to 500 characters.</p>
             <FieldError>{amount.formState.errors.description?.message}</FieldError>
           </div>
           <AssetPicker session={session} value={asset} onChange={value => { setSelectedAsset(value); amount.setValue("amount", ""); amount.clearErrors("amount"); }} />

@@ -1,7 +1,7 @@
-name = "citruswallet"
+name = "peachlet"
 version = "0.1.0"
 target = "javascript"
-description = "Citrus Wallet — AT Protocol OAuth and MetaMask wallet linking, in Gleam on Node.js"
+description = "Peachlet — AT Protocol OAuth and MetaMask wallet linking, in Gleam on Node.js"
 
 [javascript]
 runtime = "nodejs"

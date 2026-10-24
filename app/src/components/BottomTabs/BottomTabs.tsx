@@ -17,7 +17,7 @@ export function BottomTabs({ screen, onChange }: { screen: Screen; onChange: (sc
     {tabs.map(({ name, icon: Icon }) => <Pressable key={name} accessibilityRole="tab" accessibilityLabel={name}
       accessibilityState={{ selected: screen === name }} onPress={() => onChange(name)}
       style={{ flex: 1, minWidth: 0, minHeight: 62, borderRadius: 32, alignItems: 'center', justifyContent: 'center', gap: 4,
-        backgroundColor: screen === name ? '#c5f277' : 'transparent' }}>
+        backgroundColor: screen === name ? '#ffb995' : 'transparent' }}>
       <Icon size={24} strokeWidth={1.75} color="#191916" />
       <Text numberOfLines={1} adjustsFontSizeToFit className="text-xs font-medium text-ink">{name}</Text>
     </Pressable>)}

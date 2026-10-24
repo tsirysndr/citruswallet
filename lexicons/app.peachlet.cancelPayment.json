@@ -1,0 +1,31 @@
+{
+  "lexicon": 1,
+  "id": "app.peachlet.cancelPayment",
+  "defs": {
+    "main": {
+      "type": "procedure",
+      "input": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": [
+            "id"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "maxLength": 64
+            }
+          }
+        }
+      },
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "ref",
+          "ref": "app.peachlet.defs#paymentResult"
+        }
+      }
+    }
+  }
+}

@@ -1,11 +1,11 @@
-import citruswallet/chain
-import citruswallet/drizzle/orm.{insert, run, set}
-import citruswallet/drizzle/schema/links as schema
-import citruswallet/ffi/viem
-import citruswallet/identity.{Identity}
-import citruswallet/linking
-import citruswallet/payments
-import citruswallet/store
+import peachlet/chain
+import peachlet/drizzle/orm.{insert, run, set}
+import peachlet/drizzle/schema/links as schema
+import peachlet/ffi/viem
+import peachlet/identity.{Identity}
+import peachlet/linking
+import peachlet/payments
+import peachlet/store
 import gleam/dynamic/decode
 import gleam/javascript/promise
 import gleam/option.{None, Some}
@@ -38,13 +38,13 @@ pub fn call_count(client: viem.Client) -> Int
 
 pub fn open() -> payments.Payments {
   let assert Ok(store) = store.open(":memory:", migrations: "./drizzle")
-  let links = linking.Links(store, "https://citruswallet.app", 1, fn() { now })
+  let links = linking.Links(store, "https://peachlet.app", 1, fn() { now })
   payments.Payments(
     ..payments.new(
       store,
       links,
       fn(_) { promise.resolve(Ok(Identity(bob, Some("bob.test")))) },
-      "https://citruswallet.app",
+      "https://peachlet.app",
       1,
       Some(chain.Chain(client())),
     ),

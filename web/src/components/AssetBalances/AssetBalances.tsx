@@ -1,5 +1,5 @@
 import { AssetLogo } from "../AssetLogo";
-import { formatBalance } from "@citruswallet/amounts";
+import { formatBalance } from "@peachlet/amounts";
 import { useAssets } from "../../assets";
 import type { Session } from "../../types";
 import { ContentSkeleton } from "../ContentSkeleton";

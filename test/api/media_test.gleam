@@ -1,4 +1,4 @@
-import citruswallet/payment_media
+import peachlet/payment_media
 import gleam/json
 import gleam/list
 import gleam/option.{None, Some}

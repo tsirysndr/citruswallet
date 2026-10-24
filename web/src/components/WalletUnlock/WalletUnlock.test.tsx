@@ -10,12 +10,12 @@ it('does not disable unlock or cancellation while a payment awaits the wallet', 
   localStorage.setItem('citrus:encrypted-wallet:v1', '{}');
   const store = createStore(); store.set(busyAtom, true);
   const { user } = await renderComponent(<WalletUnlock />, { store });
-  expect(screen.getByRole('dialog', { name: 'Unlock Citrus wallet' })).toBeVisible();
+  expect(screen.getByRole('dialog', { name: 'Unlock Peachlet wallet' })).toBeVisible();
   expect(screen.getByRole('button', { name: 'Unlock wallet' })).toBeEnabled();
   expect(screen.getByRole('button', { name: 'Cancel' }).parentElement).toBe(screen.getByRole('button', { name: 'Unlock wallet' }).parentElement);
   await user.click(screen.getByRole('button', { name: 'Cancel' }));
   expect(unlockSnapshot()).toBe(false);
-  expect(screen.queryByRole('dialog', { name: 'Unlock Citrus wallet' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('dialog', { name: 'Unlock Peachlet wallet' })).not.toBeInTheDocument();
 });
 
 it('does not automatically prompt for the local wallet when MetaMask is selected', async () => {
@@ -23,7 +23,7 @@ it('does not automatically prompt for the local wallet when MetaMask is selected
   localStorage.setItem('citrus:wallet-mode', 'metamask');
   await renderComponent(<WalletUnlock />);
   expect(unlockSnapshot()).toBe(false);
-  expect(screen.queryByRole('dialog', { name: 'Unlock Citrus wallet' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('dialog', { name: 'Unlock Peachlet wallet' })).not.toBeInTheDocument();
 });
 it('shares the same unlock request between automatic unlock and a wallet action', async () => {
   const { requestUnlock, finishUnlock } = await import('../../wallet-unlock');

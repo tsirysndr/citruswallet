@@ -11,7 +11,7 @@ import {
   links,
   payments,
   user_profiles,
-} from "../build/dev/javascript/citruswallet/citruswallet/drizzle/tables.mjs";
+} from "../build/dev/javascript/peachlet/peachlet/drizzle/tables.mjs";
 
 export const kvTable = kv();
 export const challengesTable = challenges();

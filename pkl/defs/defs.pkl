@@ -1,6 +1,6 @@
 // Authoritative Lexicon source. Generate with bun run lex:generate.
 lexicon = 1
-id = "app.citruswallet.defs"
+id = "app.peachlet.defs"
 defs = new Dynamic {
   `actor` = new Dynamic {
     `type` = "object"
@@ -51,7 +51,7 @@ defs = new Dynamic {
       }
       `nativeCurrency` = new Dynamic {
         `type` = "ref"
-        `ref` = "app.citruswallet.defs#currency"
+        `ref` = "app.peachlet.defs#currency"
       }
       `rpcUrls` = new Dynamic {
         `type` = "array"
@@ -97,7 +97,7 @@ defs = new Dynamic {
     `properties` = new Dynamic {
       `network` = new Dynamic {
         `type` = "ref"
-        `ref` = "app.citruswallet.defs#network"
+        `ref` = "app.peachlet.defs#network"
       }
       `paymentsEnabled` = new Dynamic {
         `type` = "boolean"
@@ -112,7 +112,7 @@ defs = new Dynamic {
         `type` = "array"
         `items` = new Dynamic {
           `type` = "ref"
-          `ref` = "app.citruswallet.defs#link"
+          `ref` = "app.peachlet.defs#link"
         }
       }
       `addressSyncPending` = new Dynamic {
@@ -150,7 +150,7 @@ defs = new Dynamic {
     `required` = List("asset", "balanceAtomic", "address")
     `properties` = new Dynamic {
       `asset` = new Dynamic { `type` = "ref"
-        `ref` = "app.citruswallet.defs#asset" }
+        `ref` = "app.peachlet.defs#asset" }
       `balanceAtomic` = new Dynamic { `type` = "string" }
       `address` = new Dynamic { `type` = "string" }
     }
@@ -182,7 +182,7 @@ defs = new Dynamic {
       }
       `media` = new Dynamic {
         `type` = "ref"
-        `ref` = "app.citruswallet.defs#paymentMedia"
+        `ref` = "app.peachlet.defs#paymentMedia"
       }
       `description` = new Dynamic {
         `type` = "string"
@@ -191,22 +191,22 @@ defs = new Dynamic {
       }
       `sender` = new Dynamic {
         `type` = "ref"
-        `ref` = "app.citruswallet.defs#actor"
+        `ref` = "app.peachlet.defs#actor"
       }
       `recipient` = new Dynamic {
         `type` = "ref"
-        `ref` = "app.citruswallet.defs#actor"
+        `ref` = "app.peachlet.defs#actor"
       }
       `assetId` = new Dynamic { `type` = "string" }
       `assetDetails` = new Dynamic { `type` = "ref"
-        `ref` = "app.citruswallet.defs#asset" }
+        `ref` = "app.peachlet.defs#asset" }
       `amountAtomic` = new Dynamic { `type` = "string" }
       `amountWei` = new Dynamic {
         `type` = "string"
       }
       `state` = new Dynamic {
         `type` = "ref"
-        `ref` = "app.citruswallet.defs#paymentState"
+        `ref` = "app.peachlet.defs#paymentState"
       }
       `address` = new Dynamic {
         `type` = "string"
@@ -274,14 +274,14 @@ defs = new Dynamic {
     `properties` = new Dynamic {
       `payment` = new Dynamic {
         `type` = "ref"
-        `ref` = "app.citruswallet.defs#payment"
+        `ref` = "app.peachlet.defs#payment"
       }
       `attemptId` = new Dynamic {
         `type` = "string"
       }
       `transaction` = new Dynamic {
         `type` = "ref"
-        `ref` = "app.citruswallet.defs#transaction"
+        `ref` = "app.peachlet.defs#transaction"
       }
     }
   }
@@ -333,7 +333,7 @@ defs = new Dynamic {
         `type` = "array"
         `items` = new Dynamic {
           `type` = "ref"
-          `ref` = "app.citruswallet.defs#link"
+          `ref` = "app.peachlet.defs#link"
         }
       }
       `addressSyncPending` = new Dynamic {
@@ -347,7 +347,7 @@ defs = new Dynamic {
     `properties` = new Dynamic {
       `payment` = new Dynamic {
         `type` = "ref"
-        `ref` = "app.citruswallet.defs#payment"
+        `ref` = "app.peachlet.defs#payment"
       }
     }
   }

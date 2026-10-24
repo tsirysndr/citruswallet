@@ -38,7 +38,7 @@ test('real native MetaMask SDK opens a session deep link without mounting an ins
     let opened;
     const launch = new Promise(resolve => { opened = resolve; });
     sdk = await createMultichainClient({
-      dapp: { name: 'Citrus test', url: 'https://citruswallet.app' },
+      dapp: { name: 'Peachlet test', url: 'https://peachlet.app' },
       api: { supportedNetworks: {} }, analytics: { enabled: false },
       ui: nativeWalletUI,
       mobile: { useDeeplink: true, preferredOpenLink: opened },

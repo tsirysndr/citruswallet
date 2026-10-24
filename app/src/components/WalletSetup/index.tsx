@@ -54,7 +54,7 @@ export function WalletSetup({ onFinished, restart = false }: { onFinished?: () =
     setStage(value === 'metamask' || vault !== 'absent' ? 'link' : restore ? 'import' : 'create');
   });
   const finish = () => run(async () => {
-    if (!session) throw new Error('Reconnect to Citrus and try again.');
+    if (!session) throw new Error('Reconnect to Peachlet and try again.');
     await selectWallet(kind === 'metamask' ? 'metamask' : 'citrus');
     const account = session.did ? await linkWallet(session.network, true) : (await connect(session.network)).address;
     if (kind === 'metamask') await rememberExternalWallet(account);
@@ -69,10 +69,10 @@ export function WalletSetup({ onFinished, restart = false }: { onFinished?: () =
     {session?.did && !onFinished && <View className="gap-2">
       <Text className="text-sm font-semibold">Wallet to use</Text>
       <View accessibilityRole="radiogroup" accessibilityLabel="Wallet to use" className="flex-row gap-1 rounded-xl bg-canvas p-1">
-        {(['citrus', 'metamask'] as const).map(value => <Pressable key={value} accessibilityRole="radio" accessibilityLabel={value === 'citrus' ? 'Citrus Wallet' : 'MetaMask'} accessibilityState={{ checked: kind === value, disabled: busy }} disabled={busy} onPress={() => switchWallet(value)}
+        {(['citrus', 'metamask'] as const).map(value => <Pressable key={value} accessibilityRole="radio" accessibilityLabel={value === 'citrus' ? 'Peachlet' : 'MetaMask'} accessibilityState={{ checked: kind === value, disabled: busy }} disabled={busy} onPress={() => switchWallet(value)}
           className={`min-h-12 flex-1 flex-row items-center justify-center gap-2 rounded-lg px-3 py-3 ${kind === value ? 'bg-accent' : ''} ${busy ? 'opacity-60' : ''}`}>
           {value === 'citrus' ? <WalletIcon size={18} color="#292d26" /> : <Link2 size={18} color="#292d26" />}
-          <Text className={`text-sm font-semibold ${kind === value ? 'text-ink' : 'text-muted'}`}>{value === 'citrus' ? 'Citrus Wallet' : 'MetaMask'}</Text>
+          <Text className={`text-sm font-semibold ${kind === value ? 'text-ink' : 'text-muted'}`}>{value === 'citrus' ? 'Peachlet' : 'MetaMask'}</Text>
         </Pressable>)}
       </View>
       <Text className="text-xs leading-5 text-muted">Choose which wallet to pay with. Switching does not move funds or change your receiving address.</Text>
@@ -82,12 +82,12 @@ export function WalletSetup({ onFinished, restart = false }: { onFinished?: () =
       <Text className="text-center text-3xl font-semibold">{session?.did ? 'Your wallet is ready.' : 'A wallet of your own.'}</Text>
       <Text className="text-center text-base leading-6 text-muted">{session?.did ? `Ready to receive on ${session.network.name}. Your wallet address is linked to your Atmosphere account.` : 'Sign in next to link this wallet to your Atmosphere account.'}</Text>
       {!!(address || linked?.address) && <View className="gap-2 rounded-xl bg-canvas p-4"><Text className="text-xs text-muted">Your address</Text><View className="flex-row items-center gap-3"><Text selectable className="flex-1 font-mono text-sm">{address || linked?.address}</Text><Pressable accessibilityRole="button" accessibilityLabel="Copy wallet address" hitSlop={12} onPress={() => run(() => Clipboard.setStringAsync(address || linked!.address))}><Copy size={20} color="#292d26" /></Pressable></View></View>}
-      {onFinished && <Button title="Open Citrus Wallet" onPress={onFinished} />}
+      {onFinished && <Button title="Open Peachlet" onPress={onFinished} />}
     </View> : stage === 'choice' ? <>
       <View className="items-center"><WalletIllustration size={260} /></View>
       <View className="gap-3"><Text className="text-center text-3xl font-semibold">Make yourself at home.</Text><Text className="text-center text-base leading-6 text-muted">Choose how you’d like to use your wallet. Your keys always stay with you.</Text></View>
       <View className="gap-3">{([
-        { id: 'citrus' as const, title: vault === 'absent' ? 'Create a Citrus wallet' : 'Use my Citrus wallet', subtitle: vault === 'absent' ? 'A fresh start. No extension needed.' : 'Continue with the wallet on this device.', Icon: WalletIcon, color: '#c5f277' },
+        { id: 'citrus' as const, title: vault === 'absent' ? 'Create a Peachlet wallet' : 'Use my Peachlet wallet', subtitle: vault === 'absent' ? 'A fresh start. No extension needed.' : 'Continue with the wallet on this device.', Icon: WalletIcon, color: '#ffb995' },
         { id: 'metamask' as const, title: 'Connect MetaMask', subtitle: 'Keep using the wallet you already know.', Icon: Link2, color: '#ffe0d7' },
       ]).map(({ id, title, subtitle, Icon, color }) => <Pressable key={id} accessibilityRole="button" accessibilityLabel={title} onPress={() => choose(id)} className="flex-row items-center gap-3 rounded-2xl border border-edge bg-white p-4"><View style={{ backgroundColor: color, padding: 12, borderRadius: 12 }}><Icon size={24} color="#292d26" /></View><View className="flex-1 gap-1"><Text className="text-base font-semibold">{title}</Text><Text className="text-sm leading-5 text-muted">{subtitle}</Text></View><ArrowRight size={18} color="#292d26" /></Pressable>)}</View>
       {vault === 'absent' && <Pressable accessibilityRole="button" accessibilityLabel="Restore a wallet" onPress={() => choose('citrus', true)}><Text className="text-center text-sm text-muted">Have a recovery phrase? <Text className="font-semibold text-ink underline">Restore a wallet</Text></Text></Pressable>}

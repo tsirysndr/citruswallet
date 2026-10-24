@@ -77,7 +77,7 @@ export function useNotifications(did?: string | null) {
         const cursor = (await AsyncStorage.getItem(key)) || "0";
         if (disposed) return;
         source = new EventSource(
-          `${origin}/xrpc/app.citruswallet.subscribeNotifications?cursor=${cursor}${selectedChain() ? `&chainId=${selectedChain()}` : ""}`,
+          `${origin}/xrpc/app.peachlet.subscribeNotifications?cursor=${cursor}${selectedChain() ? `&chainId=${selectedChain()}` : ""}`,
           {
             headers: { Authorization: `Bearer ${currentToken()}` },
             pollingInterval: 5000,

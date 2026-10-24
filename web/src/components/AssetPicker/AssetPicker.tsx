@@ -1,7 +1,7 @@
 import { AssetLogo } from "../AssetLogo";
 import { ChevronDown, Search, X } from "lucide-react";
 import { useState, useRef, useId } from "react";
-import { formatBalance } from "@citruswallet/amounts";
+import { formatBalance } from "@peachlet/amounts";
 import { useAssets, readAsset, type Asset, nativeAsset } from "../../assets";
 import type { Session } from "../../types";
 import { ContentSkeleton } from "../ContentSkeleton";

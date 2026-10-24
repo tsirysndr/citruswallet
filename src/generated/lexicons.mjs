@@ -2,7 +2,7 @@
 export const schemas = [
   {
     "lexicon": 1,
-    "id": "app.citruswallet.acceptInvitation",
+    "id": "app.peachlet.acceptInvitation",
     "defs": {
       "main": {
         "type": "procedure",
@@ -30,7 +30,7 @@ export const schemas = [
           "encoding": "application/json",
           "schema": {
             "type": "ref",
-            "ref": "lex:app.citruswallet.defs#paymentResult"
+            "ref": "lex:app.peachlet.defs#paymentResult"
           }
         }
       }
@@ -38,7 +38,7 @@ export const schemas = [
   },
   {
     "lexicon": 1,
-    "id": "app.citruswallet.address",
+    "id": "app.peachlet.address",
     "defs": {
       "main": {
         "type": "record",
@@ -83,7 +83,7 @@ export const schemas = [
   },
   {
     "lexicon": 1,
-    "id": "app.citruswallet.cancelPayment",
+    "id": "app.peachlet.cancelPayment",
     "defs": {
       "main": {
         "type": "procedure",
@@ -106,7 +106,7 @@ export const schemas = [
           "encoding": "application/json",
           "schema": {
             "type": "ref",
-            "ref": "lex:app.citruswallet.defs#paymentResult"
+            "ref": "lex:app.peachlet.defs#paymentResult"
           }
         }
       }
@@ -114,7 +114,7 @@ export const schemas = [
   },
   {
     "lexicon": 1,
-    "id": "app.citruswallet.createChallenge",
+    "id": "app.peachlet.createChallenge",
     "defs": {
       "main": {
         "type": "procedure",
@@ -141,7 +141,7 @@ export const schemas = [
           "encoding": "application/json",
           "schema": {
             "type": "ref",
-            "ref": "lex:app.citruswallet.defs#challenge"
+            "ref": "lex:app.peachlet.defs#challenge"
           }
         }
       }
@@ -149,7 +149,7 @@ export const schemas = [
   },
   {
     "lexicon": 1,
-    "id": "app.citruswallet.createInvitation",
+    "id": "app.peachlet.createInvitation",
     "defs": {
       "main": {
         "type": "procedure",
@@ -172,7 +172,7 @@ export const schemas = [
           "encoding": "application/json",
           "schema": {
             "type": "ref",
-            "ref": "lex:app.citruswallet.defs#invitationResult"
+            "ref": "lex:app.peachlet.defs#invitationResult"
           }
         }
       }
@@ -180,7 +180,7 @@ export const schemas = [
   },
   {
     "lexicon": 1,
-    "id": "app.citruswallet.createPayment",
+    "id": "app.peachlet.createPayment",
     "defs": {
       "main": {
         "type": "procedure",
@@ -204,7 +204,7 @@ export const schemas = [
               },
               "media": {
                 "type": "ref",
-                "ref": "lex:app.citruswallet.defs#paymentMedia"
+                "ref": "lex:app.peachlet.defs#paymentMedia"
               },
               "description": {
                 "type": "string",
@@ -233,7 +233,7 @@ export const schemas = [
             "properties": {
               "payment": {
                 "type": "ref",
-                "ref": "lex:app.citruswallet.defs#payment"
+                "ref": "lex:app.peachlet.defs#payment"
               },
               "invitationUrl": {
                 "type": "string"
@@ -246,7 +246,7 @@ export const schemas = [
   },
   {
     "lexicon": 1,
-    "id": "app.citruswallet.defs",
+    "id": "app.peachlet.defs",
     "defs": {
       "actor": {
         "type": "object",
@@ -314,7 +314,7 @@ export const schemas = [
           },
           "nativeCurrency": {
             "type": "ref",
-            "ref": "lex:app.citruswallet.defs#currency"
+            "ref": "lex:app.peachlet.defs#currency"
           },
           "rpcUrls": {
             "type": "array",
@@ -376,7 +376,7 @@ export const schemas = [
         "properties": {
           "network": {
             "type": "ref",
-            "ref": "lex:app.citruswallet.defs#network"
+            "ref": "lex:app.peachlet.defs#network"
           },
           "paymentsEnabled": {
             "type": "boolean"
@@ -391,7 +391,7 @@ export const schemas = [
             "type": "array",
             "items": {
               "type": "ref",
-              "ref": "lex:app.citruswallet.defs#link"
+              "ref": "lex:app.peachlet.defs#link"
             }
           },
           "addressSyncPending": {
@@ -476,7 +476,7 @@ export const schemas = [
         "properties": {
           "asset": {
             "type": "ref",
-            "ref": "lex:app.citruswallet.defs#asset"
+            "ref": "lex:app.peachlet.defs#asset"
           },
           "balanceAtomic": {
             "type": "string"
@@ -531,7 +531,7 @@ export const schemas = [
           },
           "media": {
             "type": "ref",
-            "ref": "lex:app.citruswallet.defs#paymentMedia"
+            "ref": "lex:app.peachlet.defs#paymentMedia"
           },
           "description": {
             "type": "string",
@@ -540,18 +540,18 @@ export const schemas = [
           },
           "sender": {
             "type": "ref",
-            "ref": "lex:app.citruswallet.defs#actor"
+            "ref": "lex:app.peachlet.defs#actor"
           },
           "recipient": {
             "type": "ref",
-            "ref": "lex:app.citruswallet.defs#actor"
+            "ref": "lex:app.peachlet.defs#actor"
           },
           "assetId": {
             "type": "string"
           },
           "assetDetails": {
             "type": "ref",
-            "ref": "lex:app.citruswallet.defs#asset"
+            "ref": "lex:app.peachlet.defs#asset"
           },
           "amountAtomic": {
             "type": "string"
@@ -561,7 +561,7 @@ export const schemas = [
           },
           "state": {
             "type": "ref",
-            "ref": "lex:app.citruswallet.defs#paymentState"
+            "ref": "lex:app.peachlet.defs#paymentState"
           },
           "address": {
             "type": "string"
@@ -651,14 +651,14 @@ export const schemas = [
         "properties": {
           "payment": {
             "type": "ref",
-            "ref": "lex:app.citruswallet.defs#payment"
+            "ref": "lex:app.peachlet.defs#payment"
           },
           "attemptId": {
             "type": "string"
           },
           "transaction": {
             "type": "ref",
-            "ref": "lex:app.citruswallet.defs#transaction"
+            "ref": "lex:app.peachlet.defs#transaction"
           }
         }
       },
@@ -726,7 +726,7 @@ export const schemas = [
             "type": "array",
             "items": {
               "type": "ref",
-              "ref": "lex:app.citruswallet.defs#link"
+              "ref": "lex:app.peachlet.defs#link"
             }
           },
           "addressSyncPending": {
@@ -742,7 +742,7 @@ export const schemas = [
         "properties": {
           "payment": {
             "type": "ref",
-            "ref": "lex:app.citruswallet.defs#payment"
+            "ref": "lex:app.peachlet.defs#payment"
           }
         }
       },
@@ -798,7 +798,7 @@ export const schemas = [
   },
   {
     "lexicon": 1,
-    "id": "app.citruswallet.deletePayment",
+    "id": "app.peachlet.deletePayment",
     "defs": {
       "main": {
         "type": "procedure",
@@ -836,7 +836,7 @@ export const schemas = [
   },
   {
     "lexicon": 1,
-    "id": "app.citruswallet.estimateFees",
+    "id": "app.peachlet.estimateFees",
     "defs": {
       "main": {
         "type": "procedure",
@@ -941,7 +941,7 @@ export const schemas = [
   },
   {
     "lexicon": 1,
-    "id": "app.citruswallet.exchangeNativeSession",
+    "id": "app.peachlet.exchangeNativeSession",
     "defs": {
       "main": {
         "type": "procedure",
@@ -984,7 +984,7 @@ export const schemas = [
   },
   {
     "lexicon": 1,
-    "id": "app.citruswallet.getAddresses",
+    "id": "app.peachlet.getAddresses",
     "defs": {
       "main": {
         "type": "query",
@@ -1016,7 +1016,7 @@ export const schemas = [
                 "type": "array",
                 "items": {
                   "type": "ref",
-                  "ref": "lex:app.citruswallet.defs#link"
+                  "ref": "lex:app.peachlet.defs#link"
                 }
               }
             }
@@ -1027,7 +1027,7 @@ export const schemas = [
   },
   {
     "lexicon": 1,
-    "id": "app.citruswallet.getAsset",
+    "id": "app.peachlet.getAsset",
     "defs": {
       "main": {
         "type": "query",
@@ -1052,7 +1052,7 @@ export const schemas = [
           "encoding": "application/json",
           "schema": {
             "type": "ref",
-            "ref": "lex:app.citruswallet.defs#assetBalance"
+            "ref": "lex:app.peachlet.defs#assetBalance"
           }
         }
       }
@@ -1060,7 +1060,7 @@ export const schemas = [
   },
   {
     "lexicon": 1,
-    "id": "app.citruswallet.getAssets",
+    "id": "app.peachlet.getAssets",
     "defs": {
       "main": {
         "type": "query",
@@ -1093,7 +1093,7 @@ export const schemas = [
                 "type": "array",
                 "items": {
                   "type": "ref",
-                  "ref": "lex:app.citruswallet.defs#assetBalance"
+                  "ref": "lex:app.peachlet.defs#assetBalance"
                 }
               },
               "cursor": {
@@ -1110,7 +1110,7 @@ export const schemas = [
   },
   {
     "lexicon": 1,
-    "id": "app.citruswallet.getInvitation",
+    "id": "app.peachlet.getInvitation",
     "defs": {
       "main": {
         "type": "query",
@@ -1130,7 +1130,7 @@ export const schemas = [
           "encoding": "application/json",
           "schema": {
             "type": "ref",
-            "ref": "lex:app.citruswallet.defs#paymentResult"
+            "ref": "lex:app.peachlet.defs#paymentResult"
           }
         }
       }
@@ -1138,7 +1138,7 @@ export const schemas = [
   },
   {
     "lexicon": 1,
-    "id": "app.citruswallet.getPayment",
+    "id": "app.peachlet.getPayment",
     "defs": {
       "main": {
         "type": "query",
@@ -1158,7 +1158,7 @@ export const schemas = [
           "encoding": "application/json",
           "schema": {
             "type": "ref",
-            "ref": "lex:app.citruswallet.defs#paymentResult"
+            "ref": "lex:app.peachlet.defs#paymentResult"
           }
         }
       }
@@ -1166,7 +1166,7 @@ export const schemas = [
   },
   {
     "lexicon": 1,
-    "id": "app.citruswallet.getProfile",
+    "id": "app.peachlet.getProfile",
     "defs": {
       "main": {
         "type": "query",
@@ -1180,7 +1180,7 @@ export const schemas = [
             "properties": {
               "actor": {
                 "type": "ref",
-                "ref": "lex:app.citruswallet.defs#actor"
+                "ref": "lex:app.peachlet.defs#actor"
               }
             }
           }
@@ -1190,7 +1190,7 @@ export const schemas = [
   },
   {
     "lexicon": 1,
-    "id": "app.citruswallet.getSession",
+    "id": "app.peachlet.getSession",
     "defs": {
       "main": {
         "type": "query",
@@ -1198,7 +1198,7 @@ export const schemas = [
           "encoding": "application/json",
           "schema": {
             "type": "ref",
-            "ref": "lex:app.citruswallet.defs#session"
+            "ref": "lex:app.peachlet.defs#session"
           }
         }
       }
@@ -1206,7 +1206,7 @@ export const schemas = [
   },
   {
     "lexicon": 1,
-    "id": "app.citruswallet.getWebPushConfig",
+    "id": "app.peachlet.getWebPushConfig",
     "defs": {
       "main": {
         "type": "query",
@@ -1229,7 +1229,7 @@ export const schemas = [
   },
   {
     "lexicon": 1,
-    "id": "app.citruswallet.listNotifications",
+    "id": "app.peachlet.listNotifications",
     "defs": {
       "main": {
         "type": "query",
@@ -1246,7 +1246,7 @@ export const schemas = [
                 "type": "array",
                 "items": {
                   "type": "ref",
-                  "ref": "lex:app.citruswallet.listNotifications#notification"
+                  "ref": "lex:app.peachlet.listNotifications#notification"
                 }
               },
               "unread": {
@@ -1286,7 +1286,7 @@ export const schemas = [
   },
   {
     "lexicon": 1,
-    "id": "app.citruswallet.listPayments",
+    "id": "app.peachlet.listPayments",
     "defs": {
       "main": {
         "type": "query",
@@ -1373,7 +1373,7 @@ export const schemas = [
                 "type": "array",
                 "items": {
                   "type": "ref",
-                  "ref": "lex:app.citruswallet.defs#payment"
+                  "ref": "lex:app.peachlet.defs#payment"
                 }
               }
             }
@@ -1384,7 +1384,7 @@ export const schemas = [
   },
   {
     "lexicon": 1,
-    "id": "app.citruswallet.logout",
+    "id": "app.peachlet.logout",
     "defs": {
       "main": {
         "type": "procedure",
@@ -1415,7 +1415,7 @@ export const schemas = [
   },
   {
     "lexicon": 1,
-    "id": "app.citruswallet.markAllNotificationsRead",
+    "id": "app.peachlet.markAllNotificationsRead",
     "defs": {
       "main": {
         "type": "procedure",
@@ -1446,7 +1446,7 @@ export const schemas = [
   },
   {
     "lexicon": 1,
-    "id": "app.citruswallet.markNotificationRead",
+    "id": "app.peachlet.markNotificationRead",
     "defs": {
       "main": {
         "type": "procedure",
@@ -1484,7 +1484,7 @@ export const schemas = [
   },
   {
     "lexicon": 1,
-    "id": "app.citruswallet.preparePayment",
+    "id": "app.peachlet.preparePayment",
     "defs": {
       "main": {
         "type": "procedure",
@@ -1522,7 +1522,7 @@ export const schemas = [
           "encoding": "application/json",
           "schema": {
             "type": "ref",
-            "ref": "lex:app.citruswallet.defs#attempt"
+            "ref": "lex:app.peachlet.defs#attempt"
           }
         }
       }
@@ -1530,7 +1530,7 @@ export const schemas = [
   },
   {
     "lexicon": 1,
-    "id": "app.citruswallet.registerPushToken",
+    "id": "app.peachlet.registerPushToken",
     "defs": {
       "main": {
         "type": "procedure",
@@ -1576,7 +1576,7 @@ export const schemas = [
   },
   {
     "lexicon": 1,
-    "id": "app.citruswallet.registerWebPush",
+    "id": "app.peachlet.registerWebPush",
     "defs": {
       "main": {
         "type": "procedure",
@@ -1624,7 +1624,7 @@ export const schemas = [
   },
   {
     "lexicon": 1,
-    "id": "app.citruswallet.resolveRecipient",
+    "id": "app.peachlet.resolveRecipient",
     "defs": {
       "main": {
         "type": "procedure",
@@ -1647,7 +1647,7 @@ export const schemas = [
           "encoding": "application/json",
           "schema": {
             "type": "ref",
-            "ref": "lex:app.citruswallet.defs#recipient"
+            "ref": "lex:app.peachlet.defs#recipient"
           }
         }
       }
@@ -1655,7 +1655,7 @@ export const schemas = [
   },
   {
     "lexicon": 1,
-    "id": "app.citruswallet.searchActors",
+    "id": "app.peachlet.searchActors",
     "defs": {
       "main": {
         "type": "query",
@@ -1683,7 +1683,7 @@ export const schemas = [
                 "type": "array",
                 "items": {
                   "type": "ref",
-                  "ref": "lex:app.citruswallet.defs#actor"
+                  "ref": "lex:app.peachlet.defs#actor"
                 }
               }
             }
@@ -1694,7 +1694,7 @@ export const schemas = [
   },
   {
     "lexicon": 1,
-    "id": "app.citruswallet.setDefaultAddress",
+    "id": "app.peachlet.setDefaultAddress",
     "defs": {
       "main": {
         "type": "procedure",
@@ -1718,7 +1718,7 @@ export const schemas = [
           "encoding": "application/json",
           "schema": {
             "type": "ref",
-            "ref": "lex:app.citruswallet.defs#linksResult"
+            "ref": "lex:app.peachlet.defs#linksResult"
           }
         }
       }
@@ -1726,7 +1726,7 @@ export const schemas = [
   },
   {
     "lexicon": 1,
-    "id": "app.citruswallet.startLogin",
+    "id": "app.peachlet.startLogin",
     "defs": {
       "main": {
         "type": "procedure",
@@ -1765,7 +1765,7 @@ export const schemas = [
   },
   {
     "lexicon": 1,
-    "id": "app.citruswallet.submitPayment",
+    "id": "app.peachlet.submitPayment",
     "defs": {
       "main": {
         "type": "procedure",
@@ -1798,7 +1798,7 @@ export const schemas = [
           "encoding": "application/json",
           "schema": {
             "type": "ref",
-            "ref": "lex:app.citruswallet.defs#paymentResult"
+            "ref": "lex:app.peachlet.defs#paymentResult"
           }
         }
       }
@@ -1806,7 +1806,7 @@ export const schemas = [
   },
   {
     "lexicon": 1,
-    "id": "app.citruswallet.subscribeNotifications",
+    "id": "app.peachlet.subscribeNotifications",
     "defs": {
       "main": {
         "type": "query",
@@ -1827,7 +1827,7 @@ export const schemas = [
   },
   {
     "lexicon": 1,
-    "id": "app.citruswallet.syncAddresses",
+    "id": "app.peachlet.syncAddresses",
     "defs": {
       "main": {
         "type": "procedure",
@@ -1858,7 +1858,7 @@ export const schemas = [
   },
   {
     "lexicon": 1,
-    "id": "app.citruswallet.unlinkAddress",
+    "id": "app.peachlet.unlinkAddress",
     "defs": {
       "main": {
         "type": "procedure",
@@ -1882,7 +1882,7 @@ export const schemas = [
           "encoding": "application/json",
           "schema": {
             "type": "ref",
-            "ref": "lex:app.citruswallet.defs#linksResult"
+            "ref": "lex:app.peachlet.defs#linksResult"
           }
         }
       }
@@ -1890,7 +1890,7 @@ export const schemas = [
   },
   {
     "lexicon": 1,
-    "id": "app.citruswallet.unregisterPushToken",
+    "id": "app.peachlet.unregisterPushToken",
     "defs": {
       "main": {
         "type": "procedure",
@@ -1928,7 +1928,7 @@ export const schemas = [
   },
   {
     "lexicon": 1,
-    "id": "app.citruswallet.unregisterWebPush",
+    "id": "app.peachlet.unregisterWebPush",
     "defs": {
       "main": {
         "type": "procedure",
@@ -1966,7 +1966,7 @@ export const schemas = [
   },
   {
     "lexicon": 1,
-    "id": "app.citruswallet.verifyChallenge",
+    "id": "app.peachlet.verifyChallenge",
     "defs": {
       "main": {
         "type": "procedure",
@@ -1994,7 +1994,7 @@ export const schemas = [
           "encoding": "application/json",
           "schema": {
             "type": "ref",
-            "ref": "lex:app.citruswallet.defs#linksResult"
+            "ref": "lex:app.peachlet.defs#linksResult"
           }
         }
       }

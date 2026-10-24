@@ -1,0 +1,46 @@
+{
+  "lexicon": 1,
+  "id": "app.peachlet.registerPushToken",
+  "defs": {
+    "main": {
+      "type": "procedure",
+      "input": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": [
+            "token",
+            "platform"
+          ],
+          "properties": {
+            "token": {
+              "type": "string",
+              "maxLength": 256
+            },
+            "platform": {
+              "type": "string",
+              "enum": [
+                "android",
+                "ios"
+              ]
+            }
+          }
+        }
+      },
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": [
+            "ok"
+          ],
+          "properties": {
+            "ok": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    }
+  }
+}

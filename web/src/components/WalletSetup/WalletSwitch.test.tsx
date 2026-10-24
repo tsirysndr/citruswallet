@@ -27,7 +27,7 @@ it('switches stored wallets without signing or changing the receiving default, a
   const request = vi.fn();
   window.ethereum = { isMetaMask: true, request };
   const view = await renderComponent(<WalletSetup />);
-  expect(await screen.findByRole('radio', { name: 'Citrus Wallet' })).toBeChecked();
+  expect(await screen.findByRole('radio', { name: 'Peachlet' })).toBeChecked();
   await view.user.click(screen.getByRole('radio', { name: 'MetaMask' }));
   expect(localStorage.getItem('citrus:wallet-mode')).toBe('metamask');
   expect(screen.getByText(address)).toBeVisible();
@@ -37,19 +37,19 @@ it('switches stored wallets without signing or changing the receiving default, a
   view.unmount();
   const restored = await renderComponent(<WalletSetup />);
   expect(await screen.findByRole('radio', { name: 'MetaMask' })).toBeChecked();
-  await restored.user.click(screen.getByRole('radio', { name: 'Citrus Wallet' }));
+  await restored.user.click(screen.getByRole('radio', { name: 'Peachlet' }));
   expect(screen.getByText(local)).toBeVisible();
   expect(localStorage.getItem('citrus:wallet-mode')).toBe('citrus');
   expect(requestUnlock).toHaveBeenCalledTimes(1);
 });
 
-it('offers setup when switching to a Citrus wallet that does not exist', async () => {
+it('offers setup when switching to a Peachlet wallet that does not exist', async () => {
   state.vault = 'absent';
   localStorage.setItem('citrus:wallet-mode', 'metamask');
   localStorage.setItem('citrus:metamask-address', address);
   const { user } = await renderComponent(<WalletSetup />);
-  await user.click(await screen.findByRole('radio', { name: 'Citrus Wallet' }));
-  expect(screen.getByRole('button', { name: /Create a Citrus wallet/ })).toBeVisible();
+  await user.click(await screen.findByRole('radio', { name: 'Peachlet' }));
+  expect(screen.getByRole('button', { name: /Create a Peachlet wallet/ })).toBeVisible();
   expect(screen.getByRole('button', { name: 'Restore a wallet' })).toBeVisible();
 });
 

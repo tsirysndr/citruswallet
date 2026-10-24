@@ -1,7 +1,7 @@
 import { beforeEach, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(() => ({ backup: vi.fn(), vault: vi.fn(), save: vi.fn(), encrypt: vi.fn(), decrypt: vi.fn(), create: vi.fn(), get: vi.fn() }));
 vi.mock('./local-wallet', () => ({ backupLocalWallet: mocks.backup, encryptedLocalWallet: mocks.vault, saveUnlockedSecret: mocks.save }));
-vi.mock('@citruswallet/wallet-core', () => ({ randomBytes: (n: number) => new Uint8Array(n), encryptSecret: mocks.encrypt, decryptSecret: mocks.decrypt }));
+vi.mock('@peachlet/wallet-core', () => ({ randomBytes: (n: number) => new Uint8Array(n), encryptSecret: mocks.encrypt, decryptSecret: mocks.decrypt }));
 import { enableWalletPasskey, unlockWithPasskey } from './wallet-passkey';
 const key = 'citrus:wallet-passkey:v1';
 beforeEach(() => {

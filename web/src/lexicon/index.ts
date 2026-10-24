@@ -3,79 +3,79 @@
  */
 import { XrpcClient, type FetchHandler, type FetchHandlerOptions } from '@atproto/xrpc'
 import { schemas } from './lexicons'
-import * as AppCitruswalletAcceptInvitation from './types/app/citruswallet/acceptInvitation'
-import * as AppCitruswalletCancelPayment from './types/app/citruswallet/cancelPayment'
-import * as AppCitruswalletCreateChallenge from './types/app/citruswallet/createChallenge'
-import * as AppCitruswalletCreateInvitation from './types/app/citruswallet/createInvitation'
-import * as AppCitruswalletCreatePayment from './types/app/citruswallet/createPayment'
-import * as AppCitruswalletDeletePayment from './types/app/citruswallet/deletePayment'
-import * as AppCitruswalletEstimateFees from './types/app/citruswallet/estimateFees'
-import * as AppCitruswalletExchangeNativeSession from './types/app/citruswallet/exchangeNativeSession'
-import * as AppCitruswalletGetAddresses from './types/app/citruswallet/getAddresses'
-import * as AppCitruswalletGetAsset from './types/app/citruswallet/getAsset'
-import * as AppCitruswalletGetAssets from './types/app/citruswallet/getAssets'
-import * as AppCitruswalletGetInvitation from './types/app/citruswallet/getInvitation'
-import * as AppCitruswalletGetPayment from './types/app/citruswallet/getPayment'
-import * as AppCitruswalletGetProfile from './types/app/citruswallet/getProfile'
-import * as AppCitruswalletGetSession from './types/app/citruswallet/getSession'
-import * as AppCitruswalletGetWebPushConfig from './types/app/citruswallet/getWebPushConfig'
-import * as AppCitruswalletListNotifications from './types/app/citruswallet/listNotifications'
-import * as AppCitruswalletListPayments from './types/app/citruswallet/listPayments'
-import * as AppCitruswalletLogout from './types/app/citruswallet/logout'
-import * as AppCitruswalletMarkAllNotificationsRead from './types/app/citruswallet/markAllNotificationsRead'
-import * as AppCitruswalletMarkNotificationRead from './types/app/citruswallet/markNotificationRead'
-import * as AppCitruswalletPreparePayment from './types/app/citruswallet/preparePayment'
-import * as AppCitruswalletRegisterPushToken from './types/app/citruswallet/registerPushToken'
-import * as AppCitruswalletRegisterWebPush from './types/app/citruswallet/registerWebPush'
-import * as AppCitruswalletResolveRecipient from './types/app/citruswallet/resolveRecipient'
-import * as AppCitruswalletSearchActors from './types/app/citruswallet/searchActors'
-import * as AppCitruswalletSetDefaultAddress from './types/app/citruswallet/setDefaultAddress'
-import * as AppCitruswalletStartLogin from './types/app/citruswallet/startLogin'
-import * as AppCitruswalletSubmitPayment from './types/app/citruswallet/submitPayment'
-import * as AppCitruswalletSubscribeNotifications from './types/app/citruswallet/subscribeNotifications'
-import * as AppCitruswalletSyncAddresses from './types/app/citruswallet/syncAddresses'
-import * as AppCitruswalletUnlinkAddress from './types/app/citruswallet/unlinkAddress'
-import * as AppCitruswalletUnregisterPushToken from './types/app/citruswallet/unregisterPushToken'
-import * as AppCitruswalletUnregisterWebPush from './types/app/citruswallet/unregisterWebPush'
-import * as AppCitruswalletVerifyChallenge from './types/app/citruswallet/verifyChallenge'
+import * as AppPeachletAcceptInvitation from './types/app/peachlet/acceptInvitation'
+import * as AppPeachletCancelPayment from './types/app/peachlet/cancelPayment'
+import * as AppPeachletCreateChallenge from './types/app/peachlet/createChallenge'
+import * as AppPeachletCreateInvitation from './types/app/peachlet/createInvitation'
+import * as AppPeachletCreatePayment from './types/app/peachlet/createPayment'
+import * as AppPeachletDeletePayment from './types/app/peachlet/deletePayment'
+import * as AppPeachletEstimateFees from './types/app/peachlet/estimateFees'
+import * as AppPeachletExchangeNativeSession from './types/app/peachlet/exchangeNativeSession'
+import * as AppPeachletGetAddresses from './types/app/peachlet/getAddresses'
+import * as AppPeachletGetAsset from './types/app/peachlet/getAsset'
+import * as AppPeachletGetAssets from './types/app/peachlet/getAssets'
+import * as AppPeachletGetInvitation from './types/app/peachlet/getInvitation'
+import * as AppPeachletGetPayment from './types/app/peachlet/getPayment'
+import * as AppPeachletGetProfile from './types/app/peachlet/getProfile'
+import * as AppPeachletGetSession from './types/app/peachlet/getSession'
+import * as AppPeachletGetWebPushConfig from './types/app/peachlet/getWebPushConfig'
+import * as AppPeachletListNotifications from './types/app/peachlet/listNotifications'
+import * as AppPeachletListPayments from './types/app/peachlet/listPayments'
+import * as AppPeachletLogout from './types/app/peachlet/logout'
+import * as AppPeachletMarkAllNotificationsRead from './types/app/peachlet/markAllNotificationsRead'
+import * as AppPeachletMarkNotificationRead from './types/app/peachlet/markNotificationRead'
+import * as AppPeachletPreparePayment from './types/app/peachlet/preparePayment'
+import * as AppPeachletRegisterPushToken from './types/app/peachlet/registerPushToken'
+import * as AppPeachletRegisterWebPush from './types/app/peachlet/registerWebPush'
+import * as AppPeachletResolveRecipient from './types/app/peachlet/resolveRecipient'
+import * as AppPeachletSearchActors from './types/app/peachlet/searchActors'
+import * as AppPeachletSetDefaultAddress from './types/app/peachlet/setDefaultAddress'
+import * as AppPeachletStartLogin from './types/app/peachlet/startLogin'
+import * as AppPeachletSubmitPayment from './types/app/peachlet/submitPayment'
+import * as AppPeachletSubscribeNotifications from './types/app/peachlet/subscribeNotifications'
+import * as AppPeachletSyncAddresses from './types/app/peachlet/syncAddresses'
+import * as AppPeachletUnlinkAddress from './types/app/peachlet/unlinkAddress'
+import * as AppPeachletUnregisterPushToken from './types/app/peachlet/unregisterPushToken'
+import * as AppPeachletUnregisterWebPush from './types/app/peachlet/unregisterWebPush'
+import * as AppPeachletVerifyChallenge from './types/app/peachlet/verifyChallenge'
 
-export * as AppCitruswalletAcceptInvitation from './types/app/citruswallet/acceptInvitation'
-export * as AppCitruswalletAddress from './types/app/citruswallet/address'
-export * as AppCitruswalletCancelPayment from './types/app/citruswallet/cancelPayment'
-export * as AppCitruswalletCreateChallenge from './types/app/citruswallet/createChallenge'
-export * as AppCitruswalletCreateInvitation from './types/app/citruswallet/createInvitation'
-export * as AppCitruswalletCreatePayment from './types/app/citruswallet/createPayment'
-export * as AppCitruswalletDefs from './types/app/citruswallet/defs'
-export * as AppCitruswalletDeletePayment from './types/app/citruswallet/deletePayment'
-export * as AppCitruswalletEstimateFees from './types/app/citruswallet/estimateFees'
-export * as AppCitruswalletExchangeNativeSession from './types/app/citruswallet/exchangeNativeSession'
-export * as AppCitruswalletGetAddresses from './types/app/citruswallet/getAddresses'
-export * as AppCitruswalletGetAsset from './types/app/citruswallet/getAsset'
-export * as AppCitruswalletGetAssets from './types/app/citruswallet/getAssets'
-export * as AppCitruswalletGetInvitation from './types/app/citruswallet/getInvitation'
-export * as AppCitruswalletGetPayment from './types/app/citruswallet/getPayment'
-export * as AppCitruswalletGetProfile from './types/app/citruswallet/getProfile'
-export * as AppCitruswalletGetSession from './types/app/citruswallet/getSession'
-export * as AppCitruswalletGetWebPushConfig from './types/app/citruswallet/getWebPushConfig'
-export * as AppCitruswalletListNotifications from './types/app/citruswallet/listNotifications'
-export * as AppCitruswalletListPayments from './types/app/citruswallet/listPayments'
-export * as AppCitruswalletLogout from './types/app/citruswallet/logout'
-export * as AppCitruswalletMarkAllNotificationsRead from './types/app/citruswallet/markAllNotificationsRead'
-export * as AppCitruswalletMarkNotificationRead from './types/app/citruswallet/markNotificationRead'
-export * as AppCitruswalletPreparePayment from './types/app/citruswallet/preparePayment'
-export * as AppCitruswalletRegisterPushToken from './types/app/citruswallet/registerPushToken'
-export * as AppCitruswalletRegisterWebPush from './types/app/citruswallet/registerWebPush'
-export * as AppCitruswalletResolveRecipient from './types/app/citruswallet/resolveRecipient'
-export * as AppCitruswalletSearchActors from './types/app/citruswallet/searchActors'
-export * as AppCitruswalletSetDefaultAddress from './types/app/citruswallet/setDefaultAddress'
-export * as AppCitruswalletStartLogin from './types/app/citruswallet/startLogin'
-export * as AppCitruswalletSubmitPayment from './types/app/citruswallet/submitPayment'
-export * as AppCitruswalletSubscribeNotifications from './types/app/citruswallet/subscribeNotifications'
-export * as AppCitruswalletSyncAddresses from './types/app/citruswallet/syncAddresses'
-export * as AppCitruswalletUnlinkAddress from './types/app/citruswallet/unlinkAddress'
-export * as AppCitruswalletUnregisterPushToken from './types/app/citruswallet/unregisterPushToken'
-export * as AppCitruswalletUnregisterWebPush from './types/app/citruswallet/unregisterWebPush'
-export * as AppCitruswalletVerifyChallenge from './types/app/citruswallet/verifyChallenge'
+export * as AppPeachletAcceptInvitation from './types/app/peachlet/acceptInvitation'
+export * as AppPeachletAddress from './types/app/peachlet/address'
+export * as AppPeachletCancelPayment from './types/app/peachlet/cancelPayment'
+export * as AppPeachletCreateChallenge from './types/app/peachlet/createChallenge'
+export * as AppPeachletCreateInvitation from './types/app/peachlet/createInvitation'
+export * as AppPeachletCreatePayment from './types/app/peachlet/createPayment'
+export * as AppPeachletDefs from './types/app/peachlet/defs'
+export * as AppPeachletDeletePayment from './types/app/peachlet/deletePayment'
+export * as AppPeachletEstimateFees from './types/app/peachlet/estimateFees'
+export * as AppPeachletExchangeNativeSession from './types/app/peachlet/exchangeNativeSession'
+export * as AppPeachletGetAddresses from './types/app/peachlet/getAddresses'
+export * as AppPeachletGetAsset from './types/app/peachlet/getAsset'
+export * as AppPeachletGetAssets from './types/app/peachlet/getAssets'
+export * as AppPeachletGetInvitation from './types/app/peachlet/getInvitation'
+export * as AppPeachletGetPayment from './types/app/peachlet/getPayment'
+export * as AppPeachletGetProfile from './types/app/peachlet/getProfile'
+export * as AppPeachletGetSession from './types/app/peachlet/getSession'
+export * as AppPeachletGetWebPushConfig from './types/app/peachlet/getWebPushConfig'
+export * as AppPeachletListNotifications from './types/app/peachlet/listNotifications'
+export * as AppPeachletListPayments from './types/app/peachlet/listPayments'
+export * as AppPeachletLogout from './types/app/peachlet/logout'
+export * as AppPeachletMarkAllNotificationsRead from './types/app/peachlet/markAllNotificationsRead'
+export * as AppPeachletMarkNotificationRead from './types/app/peachlet/markNotificationRead'
+export * as AppPeachletPreparePayment from './types/app/peachlet/preparePayment'
+export * as AppPeachletRegisterPushToken from './types/app/peachlet/registerPushToken'
+export * as AppPeachletRegisterWebPush from './types/app/peachlet/registerWebPush'
+export * as AppPeachletResolveRecipient from './types/app/peachlet/resolveRecipient'
+export * as AppPeachletSearchActors from './types/app/peachlet/searchActors'
+export * as AppPeachletSetDefaultAddress from './types/app/peachlet/setDefaultAddress'
+export * as AppPeachletStartLogin from './types/app/peachlet/startLogin'
+export * as AppPeachletSubmitPayment from './types/app/peachlet/submitPayment'
+export * as AppPeachletSubscribeNotifications from './types/app/peachlet/subscribeNotifications'
+export * as AppPeachletSyncAddresses from './types/app/peachlet/syncAddresses'
+export * as AppPeachletUnlinkAddress from './types/app/peachlet/unlinkAddress'
+export * as AppPeachletUnregisterPushToken from './types/app/peachlet/unregisterPushToken'
+export * as AppPeachletUnregisterWebPush from './types/app/peachlet/unregisterWebPush'
+export * as AppPeachletVerifyChallenge from './types/app/peachlet/verifyChallenge'
 
 export class AtpBaseClient extends XrpcClient {
   app: AppNS
@@ -93,15 +93,15 @@ export class AtpBaseClient extends XrpcClient {
 
 export class AppNS {
   _client: XrpcClient
-  citruswallet: AppCitruswalletNS
+  peachlet: AppPeachletNS
 
   constructor(client: XrpcClient) {
     this._client = client
-    this.citruswallet = new AppCitruswalletNS(client)
+    this.peachlet = new AppPeachletNS(client)
   }
 }
 
-export class AppCitruswalletNS {
+export class AppPeachletNS {
   _client: XrpcClient
 
   constructor(client: XrpcClient) {
@@ -109,11 +109,11 @@ export class AppCitruswalletNS {
   }
 
   acceptInvitation(
-    data: AppCitruswalletAcceptInvitation.InputSchema,
-    opts?: AppCitruswalletAcceptInvitation.CallOptions,
-  ): Promise<AppCitruswalletAcceptInvitation.Response> {
+    data?: AppPeachletAcceptInvitation.InputSchema,
+    opts?: AppPeachletAcceptInvitation.CallOptions,
+  ): Promise<AppPeachletAcceptInvitation.Response> {
     return this._client.call(
-      'app.citruswallet.acceptInvitation',
+      'app.peachlet.acceptInvitation',
       opts?.qp,
       data,
       opts,
@@ -121,23 +121,18 @@ export class AppCitruswalletNS {
   }
 
   cancelPayment(
-    data: AppCitruswalletCancelPayment.InputSchema,
-    opts?: AppCitruswalletCancelPayment.CallOptions,
-  ): Promise<AppCitruswalletCancelPayment.Response> {
-    return this._client.call(
-      'app.citruswallet.cancelPayment',
-      opts?.qp,
-      data,
-      opts,
-    )
+    data?: AppPeachletCancelPayment.InputSchema,
+    opts?: AppPeachletCancelPayment.CallOptions,
+  ): Promise<AppPeachletCancelPayment.Response> {
+    return this._client.call('app.peachlet.cancelPayment', opts?.qp, data, opts)
   }
 
   createChallenge(
-    data: AppCitruswalletCreateChallenge.InputSchema,
-    opts?: AppCitruswalletCreateChallenge.CallOptions,
-  ): Promise<AppCitruswalletCreateChallenge.Response> {
+    data?: AppPeachletCreateChallenge.InputSchema,
+    opts?: AppPeachletCreateChallenge.CallOptions,
+  ): Promise<AppPeachletCreateChallenge.Response> {
     return this._client.call(
-      'app.citruswallet.createChallenge',
+      'app.peachlet.createChallenge',
       opts?.qp,
       data,
       opts,
@@ -145,11 +140,11 @@ export class AppCitruswalletNS {
   }
 
   createInvitation(
-    data: AppCitruswalletCreateInvitation.InputSchema,
-    opts?: AppCitruswalletCreateInvitation.CallOptions,
-  ): Promise<AppCitruswalletCreateInvitation.Response> {
+    data?: AppPeachletCreateInvitation.InputSchema,
+    opts?: AppPeachletCreateInvitation.CallOptions,
+  ): Promise<AppPeachletCreateInvitation.Response> {
     return this._client.call(
-      'app.citruswallet.createInvitation',
+      'app.peachlet.createInvitation',
       opts?.qp,
       data,
       opts,
@@ -157,47 +152,32 @@ export class AppCitruswalletNS {
   }
 
   createPayment(
-    data: AppCitruswalletCreatePayment.InputSchema,
-    opts?: AppCitruswalletCreatePayment.CallOptions,
-  ): Promise<AppCitruswalletCreatePayment.Response> {
-    return this._client.call(
-      'app.citruswallet.createPayment',
-      opts?.qp,
-      data,
-      opts,
-    )
+    data?: AppPeachletCreatePayment.InputSchema,
+    opts?: AppPeachletCreatePayment.CallOptions,
+  ): Promise<AppPeachletCreatePayment.Response> {
+    return this._client.call('app.peachlet.createPayment', opts?.qp, data, opts)
   }
 
   deletePayment(
-    data: AppCitruswalletDeletePayment.InputSchema,
-    opts?: AppCitruswalletDeletePayment.CallOptions,
-  ): Promise<AppCitruswalletDeletePayment.Response> {
-    return this._client.call(
-      'app.citruswallet.deletePayment',
-      opts?.qp,
-      data,
-      opts,
-    )
+    data?: AppPeachletDeletePayment.InputSchema,
+    opts?: AppPeachletDeletePayment.CallOptions,
+  ): Promise<AppPeachletDeletePayment.Response> {
+    return this._client.call('app.peachlet.deletePayment', opts?.qp, data, opts)
   }
 
   estimateFees(
-    data: AppCitruswalletEstimateFees.InputSchema,
-    opts?: AppCitruswalletEstimateFees.CallOptions,
-  ): Promise<AppCitruswalletEstimateFees.Response> {
-    return this._client.call(
-      'app.citruswallet.estimateFees',
-      opts?.qp,
-      data,
-      opts,
-    )
+    data?: AppPeachletEstimateFees.InputSchema,
+    opts?: AppPeachletEstimateFees.CallOptions,
+  ): Promise<AppPeachletEstimateFees.Response> {
+    return this._client.call('app.peachlet.estimateFees', opts?.qp, data, opts)
   }
 
   exchangeNativeSession(
-    data: AppCitruswalletExchangeNativeSession.InputSchema,
-    opts?: AppCitruswalletExchangeNativeSession.CallOptions,
-  ): Promise<AppCitruswalletExchangeNativeSession.Response> {
+    data?: AppPeachletExchangeNativeSession.InputSchema,
+    opts?: AppPeachletExchangeNativeSession.CallOptions,
+  ): Promise<AppPeachletExchangeNativeSession.Response> {
     return this._client.call(
-      'app.citruswallet.exchangeNativeSession',
+      'app.peachlet.exchangeNativeSession',
       opts?.qp,
       data,
       opts,
@@ -205,11 +185,11 @@ export class AppCitruswalletNS {
   }
 
   getAddresses(
-    params?: AppCitruswalletGetAddresses.QueryParams,
-    opts?: AppCitruswalletGetAddresses.CallOptions,
-  ): Promise<AppCitruswalletGetAddresses.Response> {
+    params?: AppPeachletGetAddresses.QueryParams,
+    opts?: AppPeachletGetAddresses.CallOptions,
+  ): Promise<AppPeachletGetAddresses.Response> {
     return this._client.call(
-      'app.citruswallet.getAddresses',
+      'app.peachlet.getAddresses',
       params,
       undefined,
       opts,
@@ -217,35 +197,25 @@ export class AppCitruswalletNS {
   }
 
   getAsset(
-    params?: AppCitruswalletGetAsset.QueryParams,
-    opts?: AppCitruswalletGetAsset.CallOptions,
-  ): Promise<AppCitruswalletGetAsset.Response> {
-    return this._client.call(
-      'app.citruswallet.getAsset',
-      params,
-      undefined,
-      opts,
-    )
+    params?: AppPeachletGetAsset.QueryParams,
+    opts?: AppPeachletGetAsset.CallOptions,
+  ): Promise<AppPeachletGetAsset.Response> {
+    return this._client.call('app.peachlet.getAsset', params, undefined, opts)
   }
 
   getAssets(
-    params?: AppCitruswalletGetAssets.QueryParams,
-    opts?: AppCitruswalletGetAssets.CallOptions,
-  ): Promise<AppCitruswalletGetAssets.Response> {
-    return this._client.call(
-      'app.citruswallet.getAssets',
-      params,
-      undefined,
-      opts,
-    )
+    params?: AppPeachletGetAssets.QueryParams,
+    opts?: AppPeachletGetAssets.CallOptions,
+  ): Promise<AppPeachletGetAssets.Response> {
+    return this._client.call('app.peachlet.getAssets', params, undefined, opts)
   }
 
   getInvitation(
-    params?: AppCitruswalletGetInvitation.QueryParams,
-    opts?: AppCitruswalletGetInvitation.CallOptions,
-  ): Promise<AppCitruswalletGetInvitation.Response> {
+    params?: AppPeachletGetInvitation.QueryParams,
+    opts?: AppPeachletGetInvitation.CallOptions,
+  ): Promise<AppPeachletGetInvitation.Response> {
     return this._client.call(
-      'app.citruswallet.getInvitation',
+      'app.peachlet.getInvitation',
       params,
       undefined,
       opts,
@@ -253,47 +223,32 @@ export class AppCitruswalletNS {
   }
 
   getPayment(
-    params?: AppCitruswalletGetPayment.QueryParams,
-    opts?: AppCitruswalletGetPayment.CallOptions,
-  ): Promise<AppCitruswalletGetPayment.Response> {
-    return this._client.call(
-      'app.citruswallet.getPayment',
-      params,
-      undefined,
-      opts,
-    )
+    params?: AppPeachletGetPayment.QueryParams,
+    opts?: AppPeachletGetPayment.CallOptions,
+  ): Promise<AppPeachletGetPayment.Response> {
+    return this._client.call('app.peachlet.getPayment', params, undefined, opts)
   }
 
   getProfile(
-    params?: AppCitruswalletGetProfile.QueryParams,
-    opts?: AppCitruswalletGetProfile.CallOptions,
-  ): Promise<AppCitruswalletGetProfile.Response> {
-    return this._client.call(
-      'app.citruswallet.getProfile',
-      params,
-      undefined,
-      opts,
-    )
+    params?: AppPeachletGetProfile.QueryParams,
+    opts?: AppPeachletGetProfile.CallOptions,
+  ): Promise<AppPeachletGetProfile.Response> {
+    return this._client.call('app.peachlet.getProfile', params, undefined, opts)
   }
 
   getSession(
-    params?: AppCitruswalletGetSession.QueryParams,
-    opts?: AppCitruswalletGetSession.CallOptions,
-  ): Promise<AppCitruswalletGetSession.Response> {
-    return this._client.call(
-      'app.citruswallet.getSession',
-      params,
-      undefined,
-      opts,
-    )
+    params?: AppPeachletGetSession.QueryParams,
+    opts?: AppPeachletGetSession.CallOptions,
+  ): Promise<AppPeachletGetSession.Response> {
+    return this._client.call('app.peachlet.getSession', params, undefined, opts)
   }
 
   getWebPushConfig(
-    params?: AppCitruswalletGetWebPushConfig.QueryParams,
-    opts?: AppCitruswalletGetWebPushConfig.CallOptions,
-  ): Promise<AppCitruswalletGetWebPushConfig.Response> {
+    params?: AppPeachletGetWebPushConfig.QueryParams,
+    opts?: AppPeachletGetWebPushConfig.CallOptions,
+  ): Promise<AppPeachletGetWebPushConfig.Response> {
     return this._client.call(
-      'app.citruswallet.getWebPushConfig',
+      'app.peachlet.getWebPushConfig',
       params,
       undefined,
       opts,
@@ -301,11 +256,11 @@ export class AppCitruswalletNS {
   }
 
   listNotifications(
-    params?: AppCitruswalletListNotifications.QueryParams,
-    opts?: AppCitruswalletListNotifications.CallOptions,
-  ): Promise<AppCitruswalletListNotifications.Response> {
+    params?: AppPeachletListNotifications.QueryParams,
+    opts?: AppPeachletListNotifications.CallOptions,
+  ): Promise<AppPeachletListNotifications.Response> {
     return this._client.call(
-      'app.citruswallet.listNotifications',
+      'app.peachlet.listNotifications',
       params,
       undefined,
       opts,
@@ -313,11 +268,11 @@ export class AppCitruswalletNS {
   }
 
   listPayments(
-    params?: AppCitruswalletListPayments.QueryParams,
-    opts?: AppCitruswalletListPayments.CallOptions,
-  ): Promise<AppCitruswalletListPayments.Response> {
+    params?: AppPeachletListPayments.QueryParams,
+    opts?: AppPeachletListPayments.CallOptions,
+  ): Promise<AppPeachletListPayments.Response> {
     return this._client.call(
-      'app.citruswallet.listPayments',
+      'app.peachlet.listPayments',
       params,
       undefined,
       opts,
@@ -325,18 +280,18 @@ export class AppCitruswalletNS {
   }
 
   logout(
-    data: AppCitruswalletLogout.InputSchema,
-    opts?: AppCitruswalletLogout.CallOptions,
-  ): Promise<AppCitruswalletLogout.Response> {
-    return this._client.call('app.citruswallet.logout', opts?.qp, data, opts)
+    data?: AppPeachletLogout.InputSchema,
+    opts?: AppPeachletLogout.CallOptions,
+  ): Promise<AppPeachletLogout.Response> {
+    return this._client.call('app.peachlet.logout', opts?.qp, data, opts)
   }
 
   markAllNotificationsRead(
-    data: AppCitruswalletMarkAllNotificationsRead.InputSchema,
-    opts?: AppCitruswalletMarkAllNotificationsRead.CallOptions,
-  ): Promise<AppCitruswalletMarkAllNotificationsRead.Response> {
+    data?: AppPeachletMarkAllNotificationsRead.InputSchema,
+    opts?: AppPeachletMarkAllNotificationsRead.CallOptions,
+  ): Promise<AppPeachletMarkAllNotificationsRead.Response> {
     return this._client.call(
-      'app.citruswallet.markAllNotificationsRead',
+      'app.peachlet.markAllNotificationsRead',
       opts?.qp,
       data,
       opts,
@@ -344,11 +299,11 @@ export class AppCitruswalletNS {
   }
 
   markNotificationRead(
-    data: AppCitruswalletMarkNotificationRead.InputSchema,
-    opts?: AppCitruswalletMarkNotificationRead.CallOptions,
-  ): Promise<AppCitruswalletMarkNotificationRead.Response> {
+    data?: AppPeachletMarkNotificationRead.InputSchema,
+    opts?: AppPeachletMarkNotificationRead.CallOptions,
+  ): Promise<AppPeachletMarkNotificationRead.Response> {
     return this._client.call(
-      'app.citruswallet.markNotificationRead',
+      'app.peachlet.markNotificationRead',
       opts?.qp,
       data,
       opts,
@@ -356,11 +311,11 @@ export class AppCitruswalletNS {
   }
 
   preparePayment(
-    data: AppCitruswalletPreparePayment.InputSchema,
-    opts?: AppCitruswalletPreparePayment.CallOptions,
-  ): Promise<AppCitruswalletPreparePayment.Response> {
+    data?: AppPeachletPreparePayment.InputSchema,
+    opts?: AppPeachletPreparePayment.CallOptions,
+  ): Promise<AppPeachletPreparePayment.Response> {
     return this._client.call(
-      'app.citruswallet.preparePayment',
+      'app.peachlet.preparePayment',
       opts?.qp,
       data,
       opts,
@@ -368,11 +323,11 @@ export class AppCitruswalletNS {
   }
 
   registerPushToken(
-    data: AppCitruswalletRegisterPushToken.InputSchema,
-    opts?: AppCitruswalletRegisterPushToken.CallOptions,
-  ): Promise<AppCitruswalletRegisterPushToken.Response> {
+    data?: AppPeachletRegisterPushToken.InputSchema,
+    opts?: AppPeachletRegisterPushToken.CallOptions,
+  ): Promise<AppPeachletRegisterPushToken.Response> {
     return this._client.call(
-      'app.citruswallet.registerPushToken',
+      'app.peachlet.registerPushToken',
       opts?.qp,
       data,
       opts,
@@ -380,11 +335,11 @@ export class AppCitruswalletNS {
   }
 
   registerWebPush(
-    data: AppCitruswalletRegisterWebPush.InputSchema,
-    opts?: AppCitruswalletRegisterWebPush.CallOptions,
-  ): Promise<AppCitruswalletRegisterWebPush.Response> {
+    data?: AppPeachletRegisterWebPush.InputSchema,
+    opts?: AppPeachletRegisterWebPush.CallOptions,
+  ): Promise<AppPeachletRegisterWebPush.Response> {
     return this._client.call(
-      'app.citruswallet.registerWebPush',
+      'app.peachlet.registerWebPush',
       opts?.qp,
       data,
       opts,
@@ -392,11 +347,11 @@ export class AppCitruswalletNS {
   }
 
   resolveRecipient(
-    data: AppCitruswalletResolveRecipient.InputSchema,
-    opts?: AppCitruswalletResolveRecipient.CallOptions,
-  ): Promise<AppCitruswalletResolveRecipient.Response> {
+    data?: AppPeachletResolveRecipient.InputSchema,
+    opts?: AppPeachletResolveRecipient.CallOptions,
+  ): Promise<AppPeachletResolveRecipient.Response> {
     return this._client.call(
-      'app.citruswallet.resolveRecipient',
+      'app.peachlet.resolveRecipient',
       opts?.qp,
       data,
       opts,
@@ -404,11 +359,11 @@ export class AppCitruswalletNS {
   }
 
   searchActors(
-    params?: AppCitruswalletSearchActors.QueryParams,
-    opts?: AppCitruswalletSearchActors.CallOptions,
-  ): Promise<AppCitruswalletSearchActors.Response> {
+    params?: AppPeachletSearchActors.QueryParams,
+    opts?: AppPeachletSearchActors.CallOptions,
+  ): Promise<AppPeachletSearchActors.Response> {
     return this._client.call(
-      'app.citruswallet.searchActors',
+      'app.peachlet.searchActors',
       params,
       undefined,
       opts,
@@ -416,11 +371,11 @@ export class AppCitruswalletNS {
   }
 
   setDefaultAddress(
-    data: AppCitruswalletSetDefaultAddress.InputSchema,
-    opts?: AppCitruswalletSetDefaultAddress.CallOptions,
-  ): Promise<AppCitruswalletSetDefaultAddress.Response> {
+    data?: AppPeachletSetDefaultAddress.InputSchema,
+    opts?: AppPeachletSetDefaultAddress.CallOptions,
+  ): Promise<AppPeachletSetDefaultAddress.Response> {
     return this._client.call(
-      'app.citruswallet.setDefaultAddress',
+      'app.peachlet.setDefaultAddress',
       opts?.qp,
       data,
       opts,
@@ -428,35 +383,25 @@ export class AppCitruswalletNS {
   }
 
   startLogin(
-    data: AppCitruswalletStartLogin.InputSchema,
-    opts?: AppCitruswalletStartLogin.CallOptions,
-  ): Promise<AppCitruswalletStartLogin.Response> {
-    return this._client.call(
-      'app.citruswallet.startLogin',
-      opts?.qp,
-      data,
-      opts,
-    )
+    data?: AppPeachletStartLogin.InputSchema,
+    opts?: AppPeachletStartLogin.CallOptions,
+  ): Promise<AppPeachletStartLogin.Response> {
+    return this._client.call('app.peachlet.startLogin', opts?.qp, data, opts)
   }
 
   submitPayment(
-    data: AppCitruswalletSubmitPayment.InputSchema,
-    opts?: AppCitruswalletSubmitPayment.CallOptions,
-  ): Promise<AppCitruswalletSubmitPayment.Response> {
-    return this._client.call(
-      'app.citruswallet.submitPayment',
-      opts?.qp,
-      data,
-      opts,
-    )
+    data?: AppPeachletSubmitPayment.InputSchema,
+    opts?: AppPeachletSubmitPayment.CallOptions,
+  ): Promise<AppPeachletSubmitPayment.Response> {
+    return this._client.call('app.peachlet.submitPayment', opts?.qp, data, opts)
   }
 
   subscribeNotifications(
-    params?: AppCitruswalletSubscribeNotifications.QueryParams,
-    opts?: AppCitruswalletSubscribeNotifications.CallOptions,
-  ): Promise<AppCitruswalletSubscribeNotifications.Response> {
+    params?: AppPeachletSubscribeNotifications.QueryParams,
+    opts?: AppPeachletSubscribeNotifications.CallOptions,
+  ): Promise<AppPeachletSubscribeNotifications.Response> {
     return this._client.call(
-      'app.citruswallet.subscribeNotifications',
+      'app.peachlet.subscribeNotifications',
       params,
       undefined,
       opts,
@@ -464,35 +409,25 @@ export class AppCitruswalletNS {
   }
 
   syncAddresses(
-    data: AppCitruswalletSyncAddresses.InputSchema,
-    opts?: AppCitruswalletSyncAddresses.CallOptions,
-  ): Promise<AppCitruswalletSyncAddresses.Response> {
-    return this._client.call(
-      'app.citruswallet.syncAddresses',
-      opts?.qp,
-      data,
-      opts,
-    )
+    data?: AppPeachletSyncAddresses.InputSchema,
+    opts?: AppPeachletSyncAddresses.CallOptions,
+  ): Promise<AppPeachletSyncAddresses.Response> {
+    return this._client.call('app.peachlet.syncAddresses', opts?.qp, data, opts)
   }
 
   unlinkAddress(
-    data: AppCitruswalletUnlinkAddress.InputSchema,
-    opts?: AppCitruswalletUnlinkAddress.CallOptions,
-  ): Promise<AppCitruswalletUnlinkAddress.Response> {
-    return this._client.call(
-      'app.citruswallet.unlinkAddress',
-      opts?.qp,
-      data,
-      opts,
-    )
+    data?: AppPeachletUnlinkAddress.InputSchema,
+    opts?: AppPeachletUnlinkAddress.CallOptions,
+  ): Promise<AppPeachletUnlinkAddress.Response> {
+    return this._client.call('app.peachlet.unlinkAddress', opts?.qp, data, opts)
   }
 
   unregisterPushToken(
-    data: AppCitruswalletUnregisterPushToken.InputSchema,
-    opts?: AppCitruswalletUnregisterPushToken.CallOptions,
-  ): Promise<AppCitruswalletUnregisterPushToken.Response> {
+    data?: AppPeachletUnregisterPushToken.InputSchema,
+    opts?: AppPeachletUnregisterPushToken.CallOptions,
+  ): Promise<AppPeachletUnregisterPushToken.Response> {
     return this._client.call(
-      'app.citruswallet.unregisterPushToken',
+      'app.peachlet.unregisterPushToken',
       opts?.qp,
       data,
       opts,
@@ -500,11 +435,11 @@ export class AppCitruswalletNS {
   }
 
   unregisterWebPush(
-    data: AppCitruswalletUnregisterWebPush.InputSchema,
-    opts?: AppCitruswalletUnregisterWebPush.CallOptions,
-  ): Promise<AppCitruswalletUnregisterWebPush.Response> {
+    data?: AppPeachletUnregisterWebPush.InputSchema,
+    opts?: AppPeachletUnregisterWebPush.CallOptions,
+  ): Promise<AppPeachletUnregisterWebPush.Response> {
     return this._client.call(
-      'app.citruswallet.unregisterWebPush',
+      'app.peachlet.unregisterWebPush',
       opts?.qp,
       data,
       opts,
@@ -512,11 +447,11 @@ export class AppCitruswalletNS {
   }
 
   verifyChallenge(
-    data: AppCitruswalletVerifyChallenge.InputSchema,
-    opts?: AppCitruswalletVerifyChallenge.CallOptions,
-  ): Promise<AppCitruswalletVerifyChallenge.Response> {
+    data?: AppPeachletVerifyChallenge.InputSchema,
+    opts?: AppPeachletVerifyChallenge.CallOptions,
+  ): Promise<AppPeachletVerifyChallenge.Response> {
     return this._client.call(
-      'app.citruswallet.verifyChallenge',
+      'app.peachlet.verifyChallenge',
       opts?.qp,
       data,
       opts,

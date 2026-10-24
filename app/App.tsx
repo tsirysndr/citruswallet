@@ -160,9 +160,9 @@ function Shell() {
   </>;
   if (needsSetup === null || needsSetup) return <SafeAreaView className="flex-1 bg-canvas" edges={['top', 'bottom']}>
     {session.data?.did && <WalletUnlock />}<StatusBar style="dark" />
-    <View className="flex-row items-center gap-3 px-5 py-4"><Image source={require('./assets/icon.png')} style={{ width: 42, height: 42 }} /><Text className="text-xl font-bold">Citrus Wallet</Text></View>
+    <View className="flex-row items-center gap-3 px-5 py-4"><Image source={require('./assets/icon.png')} style={{ width: 42, height: 42 }} /><Text className="text-xl font-bold">Peachlet</Text></View>
     <KeyboardAvoidingView className="flex-1" behavior={Platform.OS === 'ios' ? 'padding' : undefined}><ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: 20 }}>
-      {ready && !session.isPending && !session.error ? <WalletEntry onFinished={() => { setNeedsSetup(false); setScreen(invite ? 'Wallet' : 'Account'); }} /> : <ContentSkeleton label="Opening Citrus" />}
+      {ready && !session.isPending && !session.error ? <WalletEntry onFinished={() => { setNeedsSetup(false); setScreen(invite ? 'Wallet' : 'Account'); }} /> : <ContentSkeleton label="Opening Peachlet" />}
       {feedback}
     </ScrollView></KeyboardAvoidingView>
   </SafeAreaView>;
@@ -170,9 +170,9 @@ function Shell() {
     <SafeAreaView className="flex-1 bg-canvas" edges={["top", "bottom"]}>
       <WalletUnlock /><StatusBar style="dark" />
       {!compactRecipient && <View className="flex-row items-center justify-between px-5 py-4">
-        <Pressable accessibilityRole="button" accessibilityLabel="Citrus Wallet home" disabled={busy} onPress={() => { Keyboard.dismiss(); setScreen("Account"); }} className="min-w-0 flex-1 flex-row items-center gap-3">
-          <Image source={require('./assets/icon.png')} accessibilityLabel="Citrus Wallet logo" style={{ width: 42, height: 42 }} />
-          <Text numberOfLines={1} adjustsFontSizeToFit className="flex-shrink text-xl font-bold text-ink">Citrus Wallet</Text>
+        <Pressable accessibilityRole="button" accessibilityLabel="Peachlet home" disabled={busy} onPress={() => { Keyboard.dismiss(); setScreen("Account"); }} className="min-w-0 flex-1 flex-row items-center gap-3">
+          <Image source={require('./assets/icon.png')} accessibilityLabel="Peachlet logo" style={{ width: 42, height: 42 }} />
+          <Text numberOfLines={1} adjustsFontSizeToFit className="flex-shrink text-xl font-bold text-ink">Peachlet</Text>
         </Pressable>
         <View className="items-end pl-2">
           <View className="flex-row items-center gap-2"><NotificationsInbox /><Pressable accessibilityRole="button" accessibilityLabel="Settings" hitSlop={10} onPress={() => setScreen("Settings")}><SettingsIcon size={23} color="#292d26" /></Pressable></View>
@@ -201,7 +201,7 @@ function Shell() {
         >
           {!compactRecipient && feedback}
           {!ready || session.isPending ? (
-            <ContentSkeleton variant="card" label="Opening Citrus" />
+            <ContentSkeleton variant="card" label="Opening Peachlet" />
           ) : screen === "Account" ? (
             <Account />
           ) : screen === "Wallet" ? (

@@ -2,8 +2,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import Database from 'better-sqlite3';
 import { readdirSync, readFileSync } from 'node:fs';
-import { open, close } from '../build/dev/javascript/citruswallet/citruswallet/store.mjs';
-import { Payments, Filters, history } from '../build/dev/javascript/citruswallet/citruswallet/payments.mjs';
+import { open, close } from '../build/dev/javascript/peachlet/peachlet/store.mjs';
+import { Payments, Filters, history } from '../build/dev/javascript/peachlet/peachlet/payments.mjs';
 
 const alice = 'did:plc:alice';
 const bob = 'did:plc:bob';
@@ -82,9 +82,9 @@ test('profile inserts, upserts and deletion update existing activity without dup
   assert.deepEqual(ids('Robert'), []);
   const profile = db.prepare(`INSERT INTO user_profiles(did,handle,display_name) VALUES(?,?,?)
     ON CONFLICT(did) DO UPDATE SET handle=excluded.handle,display_name=excluded.display_name`);
-  profile.run(bob, 'bobby.test', 'Robert Citrus');
-  assert.deepEqual(ids('bert cit'), ['payment']);
-  profile.run(alice, 'alice.test', 'Robert Citrus');
+  profile.run(bob, 'bobby.test', 'Robert Peachlet');
+  assert.deepEqual(ids('bert pea'), ['payment']);
+  profile.run(alice, 'alice.test', 'Robert Peachlet');
   assert.equal(search('Robert').total, 1);
   profile.run(bob, 'renamed.test', null);
   assert.deepEqual(ids('bobby'), []);

@@ -1,41 +1,41 @@
 const fs = require("fs");
+const googleServicesFile = process.env.GOOGLE_SERVICES_JSON || "./google-services.json";
+// Firebase clients are bound to an Android package; never bundle the old app's client.
+const hasPeachletFirebase = fs.existsSync(googleServicesFile) &&
+  JSON.parse(fs.readFileSync(googleServicesFile, "utf8")).client?.some(
+    client => client.client_info?.android_client_info?.package_name === "app.peachlet",
+  );
 module.exports = {
-  name: "Citrus Wallet",
-  slug: "citruswallet",
+  name: "Peachlet",
+  slug: "peachlet",
   owner: "tsirysndr",
   version: "1.0.0",
-  scheme: "citruswallet",
+  scheme: "peachlet",
   orientation: "portrait",
   userInterfaceStyle: "light",
   icon: "./assets/icon.png",
-  backgroundColor: "#f2f1ed",
+  backgroundColor: "#f7f3f0",
   newArchEnabled: true,
-  ios: { bundleIdentifier: "app.citruswallet", supportsTablet: true },
+  ios: { bundleIdentifier: "app.peachlet", supportsTablet: true },
   android: {
-    ...(process.env.GOOGLE_SERVICES_JSON ||
-    fs.existsSync("./google-services.json")
-      ? {
-          googleServicesFile:
-            process.env.GOOGLE_SERVICES_JSON || "./google-services.json",
-        }
-      : {}),
-    package: "app.citruswallet",
+    ...(hasPeachletFirebase ? { googleServicesFile } : {}),
+    package: "app.peachlet",
     intentFilters: [{ action: "VIEW", autoVerify: true,
-      data: [{ scheme: "https", host: "citruswallet.app", path: "/invite" }],
+      data: [{ scheme: "https", host: "peachlet.app", path: "/invite" }],
       category: ["BROWSABLE", "DEFAULT"],
     }],
     adaptiveIcon: {
       foregroundImage: "./assets/adaptive-icon.png",
-      backgroundColor: "#c5f277",
+      backgroundColor: "#ffb995",
     },
   },
   plugins: [
     "expo-font",
-    ["expo-secure-store", { faceIDPermission: "Use Face ID to unlock your Citrus wallet." }],
+    ["expo-secure-store", { faceIDPermission: "Use Face ID to unlock your Peachlet wallet." }],
     "expo-web-browser",
-    ["expo-notifications", { color: "#c5f277" }],
+    ["expo-notifications", { color: "#ffb995" }],
   ],
-  // Dedicated Citrus Wallet project under the existing Expo account.
+  // Dedicated Peachlet project under the existing Expo account.
   extra: {
     eas: { projectId: "4111c93c-f70b-4ed0-b80e-efdb725dd710" },
     klipyApiKey: process.env.EXPO_PUBLIC_KLIPY_API_KEY ||

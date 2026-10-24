@@ -11,7 +11,7 @@ export function normalize(directory) {
     let source = readFileSync(path, 'utf8');
     if (path.endsWith('/index.ts')) {
       source = source.replace(/export class AddressRecord \{[\s\S]*$/, '')
-        .replace(/data\?: AppCitruswallet/g, 'data: AppCitruswallet')
+        .replace(/data\?: AppPeachletwallet/g, 'data: AppPeachletwallet')
         .replace(/^  address: AddressRecord\n/m, '')
         .replace(/^    this.address = new AddressRecord\(client\)\n/m, '');
     }

@@ -1,4 +1,4 @@
-import { expectedTransfer } from "@citruswallet/amounts";
+import { expectedTransfer } from "@peachlet/amounts";
 import { ContentSkeleton } from "../ContentSkeleton";
 import { PaymentMedia } from "../PaymentMedia";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -154,7 +154,7 @@ export function ReviewPanel({ className }: { className?: string }) {
       <PaymentMedia key={payment.media?.url} media={payment.media} />
       {payment.description && (
         <div className="mt-5 rounded-[6px] bg-sunken p-4">
-          <p className="mb-2 text-xs text-ink-muted">Description · only in Citrus Wallet</p>
+          <p className="mb-2 text-xs text-ink-muted">Description · only in Peachlet</p>
           <p className="whitespace-pre-wrap text-sm leading-relaxed [overflow-wrap:anywhere]">{payment.description}</p>
         </div>
       )}

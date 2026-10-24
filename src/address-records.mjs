@@ -3,7 +3,7 @@ export { needsPublication };
 import { randomUUID } from 'node:crypto';
 import { lexicons } from './xrpc.mjs';
 
-const collection = 'app.citruswallet.address';
+const collection = 'app.peachlet.address';
 const namespace = did => `address-record:${did}`;
 
 // Called inside the same SQLite transaction as the verified link mutation.

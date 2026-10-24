@@ -1,7 +1,7 @@
 /* Offline support is deliberately limited to public, static fallback assets.
  * Never cache API responses, OAuth, navigations, payment data, or avatar images.
  * Updates wait for existing windows to close; never reload an active payment. */
-const CACHE = 'citrus-offline-v2';
+const CACHE = 'peachlet-offline-v1';
 const PUBLIC_ASSETS = ['/offline.html', '/offline.css', '/favicon.svg', '/icons/icon-192.png', '/icons/icon-512.png', '/fonts/roboto-mono-latin.woff2'];
 const SCREENS = new Set(['/', '/wallet', '/settings', '/payments', '/activity', '/privacy', '/terms']);
 self.addEventListener('install', event => {
@@ -13,10 +13,10 @@ self.addEventListener('push', event => {
   try { data = event.data?.json() || {}; } catch {}
   const valid = typeof data.paymentId === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(data.paymentId);
   event.waitUntil(self.registration.showNotification('Payment received', {
-    body: 'Open Citrus Wallet to view your payment.',
+    body: 'Open Peachlet to view your payment.',
     icon: '/icons/icon-192.png',
     badge: '/icons/icon-192.png',
-    tag: valid ? 'payment-' + data.paymentId : 'citrus-payment',
+    tag: valid ? 'payment-' + data.paymentId : 'peachlet-payment',
     data: valid ? { paymentId: data.paymentId, notificationId: String(data.notificationId || ''), chainId: [1, 4326].includes(data.chainId) ? data.chainId : 1 } : {},
   }));
 });
@@ -33,7 +33,7 @@ self.addEventListener('notificationclick', event => {
   })());
 });
 self.addEventListener('activate', event => {
-  event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key.startsWith('citrus-offline-') && key !== CACHE).map(key => caches.delete(key)))).then(() => self.clients.claim()));
+  event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => (key.startsWith('peachlet-offline-') || key.startsWith('citrus-offline-')) && key !== CACHE).map(key => caches.delete(key)))).then(() => self.clients.claim()));
 });
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);

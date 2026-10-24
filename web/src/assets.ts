@@ -1,5 +1,5 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
-import type { Asset, AssetBalance } from "./lexicon/types/app/citruswallet/defs";
+import type { Asset, AssetBalance } from "./lexicon/types/app/peachlet/defs";
 import { rpc } from "./api";
 export type { Asset, AssetBalance };
 export function nativeAsset(chainId: number): Asset {

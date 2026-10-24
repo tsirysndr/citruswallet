@@ -22,9 +22,9 @@ normalize('web/src/lexicon');
 mkdirSync('src/generated', { recursive: true });
 writeFileSync('src/generated/lexicons.mjs', '// Generated from pkl/defs. Do not edit.\nexport const schemas = ' + JSON.stringify(docs, null, 2) + ';\n');
 const methods = docs.filter(d => ['query', 'procedure'].includes(d.defs.main?.type));
-writeFileSync('src/citruswallet/xrpc/methods.gleam', '// Generated from pkl/defs. Do not edit.\n\n' + methods.map(d => {
+writeFileSync('src/peachlet/xrpc/methods.gleam', '// Generated from pkl/defs. Do not edit.\n\n' + methods.map(d => {
   const name = d.id.split('.').at(-1).replace(/[A-Z]/g, c => '_' + c.toLowerCase());
   return `pub const ${name} = "${d.id}"\n`;
 }).join('\n'));
 
-execFileSync("gleam", ["format", "src/citruswallet/xrpc/methods.gleam"]);
+execFileSync("gleam", ["format", "src/peachlet/xrpc/methods.gleam"]);

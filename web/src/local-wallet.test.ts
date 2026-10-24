@@ -1,5 +1,5 @@
 import { afterEach, expect, it, vi } from 'vitest';
-import { normalizeSecret } from '@citruswallet/wallet-core';
+import { normalizeSecret } from '@peachlet/wallet-core';
 import { configureLocalNetwork, localProvider, lockLocalWallet, saveLocalWallet } from './local-wallet';
 vi.hoisted(() => { vi.resetModules(); });
 const mocks = vi.hoisted(() => ({ chain: vi.fn(async () => 1), prepare: vi.fn(async (tx: any) => ({ ...tx, gas: tx.gas, maxFeePerGas: tx.maxFeePerGas })), sign: vi.fn(async () => '0xdead'), broadcast: vi.fn(async () => '0xhash'), approve: vi.fn(async () => true) }));

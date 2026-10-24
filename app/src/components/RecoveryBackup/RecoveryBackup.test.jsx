@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, within, fireEventAsync as fireEvent } from '@testing-library/react-native';
 import { RecoveryBackup } from './index';
-jest.mock('@citruswallet/wallet-core', () => ({ recoveryChallenge: () => [
+jest.mock('@peachlet/wallet-core', () => ({ recoveryChallenge: () => [
   { index: 1, choices: ['wrong', 'abandon', 'other', 'choice'] },
   { index: 5, choices: ['wrong', 'other', 'abandon', 'choice'] },
   { index: 11, choices: ['about', 'wrong', 'other', 'choice'] },

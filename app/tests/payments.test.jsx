@@ -118,7 +118,7 @@ test('reports each step to the shell so navigation can stay hidden during compos
 test('copy and share use the invitationUrl response without rotating the same link', async () => {
   const Clipboard = require('expo-clipboard');
   const Share = require('react-native').Share;
-  const url = 'https://citruswallet.app/invite#invite=' + 'a'.repeat(64);
+  const url = 'https://peachlet.app/invite#invite=' + 'a'.repeat(64);
   const copy = jest.spyOn(Clipboard, 'setStringAsync').mockResolvedValue(true);
   const share = jest.spyOn(Share, 'share').mockResolvedValue({ action: Share.sharedAction });
   request.mockImplementation(async method => method === 'resolveRecipient' ? { did: alice.did, handle: alice.handle } :

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { recoveryChallenge } from '@citruswallet/wallet-core';
+import { recoveryChallenge } from '@peachlet/wallet-core';
 import { Button, Hint } from '../ui';
 
 export function RecoveryBackup({ phrase, onConfirmed, onCancel, allowWhileBusy = false }: {

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { PaymentMedia as Media } from "../../lexicon/types/app/citruswallet/defs";
+import type { PaymentMedia as Media } from "../../lexicon/types/app/peachlet/defs";
 import { safeMediaUrl } from "../../klipy";
 
 export function PaymentMedia({ media, compact = false }: { media?: Media | null; compact?: boolean }) {

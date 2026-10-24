@@ -25,7 +25,7 @@ export function NetworkSettings() {
     {chain === '6343' && <Text>For testing only. Testnet ETH has no real value.</Text>}
     <FormField control={form.control} name="rpc" label="Custom HTTPS RPC (optional)" autoCapitalize="none" autoCorrect={false} keyboardType="url" onSubmitEditing={save} />
     {form.formState.errors.chain && <Text accessibilityRole="alert">{form.formState.errors.chain.message}</Text>}
-    <Text>Your RPC provider can see your address and transactions. Citrus verifies payments independently.</Text>
+    <Text>Your RPC provider can see your address and transactions. Peachlet verifies payments independently.</Text>
     <Button title="Save network" onPress={save} />
   </View>;
 }

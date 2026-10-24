@@ -1,5 +1,5 @@
 import { afterEach, expect, it, vi } from 'vitest';
-import { normalizeSecret } from '@citruswallet/wallet-core';
+import { normalizeSecret } from '@peachlet/wallet-core';
 import { renderComponent, screen } from '../../test/render';
 import { LocalWallet } from './LocalWallet';
 import { backupLocalWallet, localWalletState, lockLocalWallet, saveLocalWallet, unlockLocalWallet } from '../../local-wallet';

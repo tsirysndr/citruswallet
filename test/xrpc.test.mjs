@@ -6,18 +6,18 @@ import { XrpcClient } from '@atproto/xrpc';
 import { schemas } from '../src/generated/lexicons.mjs';
 import { lexicons } from '../src/xrpc.mjs';
 import { syncAddresses, queueRemovedAddress, addressSyncPending } from '../src/address-records.mjs';
-import { build } from '../build/dev/javascript/citruswallet/citruswallet/app.mjs';
-import { Chain } from '../build/dev/javascript/citruswallet/citruswallet/chain.mjs';
-import { Settings } from '../build/dev/javascript/citruswallet/citruswallet/xrpc/context.mjs';
-import * as storeModule from '../build/dev/javascript/citruswallet/citruswallet/store.mjs';
-import * as oauthModule from '../build/dev/javascript/citruswallet/citruswallet/oauth.mjs';
-import { mainnet, megaeth, megaeth_testnet } from '../build/dev/javascript/citruswallet/citruswallet/network.mjs';
-import { Directory } from '../build/dev/javascript/citruswallet/citruswallet/directory.mjs';
-import { Identity } from '../build/dev/javascript/citruswallet/citruswallet/identity.mjs';
+import { build } from '../build/dev/javascript/peachlet/peachlet/app.mjs';
+import { Chain } from '../build/dev/javascript/peachlet/peachlet/chain.mjs';
+import { Settings } from '../build/dev/javascript/peachlet/peachlet/xrpc/context.mjs';
+import * as storeModule from '../build/dev/javascript/peachlet/peachlet/store.mjs';
+import * as oauthModule from '../build/dev/javascript/peachlet/peachlet/oauth.mjs';
+import { mainnet, megaeth, megaeth_testnet } from '../build/dev/javascript/peachlet/peachlet/network.mjs';
+import { Directory } from '../build/dev/javascript/peachlet/peachlet/directory.mjs';
+import { Identity } from '../build/dev/javascript/peachlet/peachlet/identity.mjs';
 import { None, Some } from '../build/dev/javascript/gleam_stdlib/gleam/option.mjs';
-import { Ok, toList } from '../build/dev/javascript/citruswallet/gleam.mjs';
+import { Ok, toList } from '../build/dev/javascript/peachlet/gleam.mjs';
 
-const origin = 'https://citruswallet.app';
+const origin = 'https://peachlet.app';
 const alice = 'did:plc:alice';
 const bob = 'did:plc:bob';
 const account = privateKeyToAccount('0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80');
@@ -31,9 +31,9 @@ function fixture(t, chain = new None(), network = mainnet) {
   let failPds = false;
   const writes = [];
   const oauth = {
-    clientMetadata: { scope: 'atproto repo:app.citruswallet.address' },
+    clientMetadata: { scope: 'atproto repo:app.peachlet.address' },
     restore: async () => ({
-      getTokenInfo: async () => ({ scope: 'atproto repo:app.citruswallet.address' }),
+      getTokenInfo: async () => ({ scope: 'atproto repo:app.peachlet.address' }),
       fetchHandler: async (path, options) => {
         writes.push({ path, body: JSON.parse(options.body) });
         return Response.json(failPds ? { error: 'Unavailable' } : { uri: 'at://record', cid: 'test' }, { status: failPds ? 503 : 200 });
@@ -48,14 +48,14 @@ function fixture(t, chain = new None(), network = mainnet) {
   async function raw(path, options = {}) {
     const response = await app.fetch(new Request(origin + path, {
       ...options,
-      headers: { Host: 'citruswallet.app', Origin: origin, cookie, 'x-csrf-token': csrf, ...Object.fromEntries(new Headers(options.headers)) },
+      headers: { Host: 'peachlet.app', Origin: origin, cookie, 'x-csrf-token': csrf, ...Object.fromEntries(new Headers(options.headers)) },
     }), env);
     if (response.headers.has('set-cookie')) cookie = response.headers.get('set-cookie').split(';')[0];
     return response;
   }
   const client = new XrpcClient(raw, schemas);
-  const call = (name, body) => client.call('app.citruswallet.' + name, undefined, body).then(r => r.data);
-  const query = (name, params) => client.call('app.citruswallet.' + name, params).then(r => r.data);
+  const call = (name, body) => client.call('app.peachlet.' + name, undefined, body).then(r => r.data);
+  const query = (name, params) => client.call('app.peachlet.' + name, params).then(r => r.data);
   async function login(did = alice) {
     csrf = (await query('getSession')).csrf;
     const token = cookie.split('=')[1];
@@ -78,16 +78,16 @@ test('XRPC session, OAuth metadata, errors, CSRF, body schemas and removed REST 
   assert.equal(session.did, null);
   assert.equal(session.addressSyncPending, false);
   const realOauth = oauthModule.client(f.store, origin);
-  assert.equal(realOauth.clientMetadata.scope, 'atproto repo:app.citruswallet.address');
+  assert.equal(realOauth.clientMetadata.scope, 'atproto repo:app.peachlet.address');
   assert.deepEqual(realOauth.clientMetadata.redirect_uris, [origin + '/auth/callback']);
   assert.equal((await f.raw('/api/session')).status, 404);
   await assert.rejects(f.query('getProfile'), e => e.status === 401);
-  let response = await f.raw('/xrpc/app.citruswallet.createChallenge', { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' });
+  let response = await f.raw('/xrpc/app.peachlet.createChallenge', { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' });
   assert.equal(response.status, 403);
   await f.login();
   await assert.rejects(f.call('createChallenge', { address: 123 }), e => e.status === 400 && e.error === 'InvalidRequest');
-  assert.equal((await f.raw('/xrpc/app.citruswallet.getPayment?id=one&id=two')).status, 400);
-  response = await f.raw('/xrpc/app.citruswallet.getSession', { headers: { Host: 'evil.test' } });
+  assert.equal((await f.raw('/xrpc/app.peachlet.getPayment?id=one&id=two')).status, 400);
+  response = await f.raw('/xrpc/app.peachlet.getSession', { headers: { Host: 'evil.test' } });
   assert.equal(response.status, 400);
   assert.equal((await f.call('logout', {})).ok, true);
   assert.equal((await f.query('getSession')).did, null);
@@ -104,14 +104,14 @@ test('signed public links publish verified CAIP-2 records; private relinking del
     assert.equal(linked.links[0].public, isPublic);
     const write = f.writes.at(-1);
     assert.equal(write.body.repo, alice);
-    assert.equal(write.body.collection, 'app.citruswallet.address');
+    assert.equal(write.body.collection, 'app.peachlet.address');
     assert.equal(write.body.rkey, `eip155-1-${account.address.toLowerCase()}`);
     if (isPublic) {
       assert.match(write.path, /putRecord$/);
       assert.equal(write.body.record.chain, 'eip155:1');
       assert.equal(write.body.record.address, account.address.toLowerCase());
       assert.equal(write.body.record.signature, signature);
-      assert.ok(lexicons.validate('app.citruswallet.address', write.body.record).success);
+      assert.ok(lexicons.validate('app.peachlet.address', write.body.record).success);
     } else assert.match(write.path, /deleteRecord$/);
     await assert.rejects(f.call('verifyChallenge', { id: challenge.id, signature }), e => e.status === 400);
   }
@@ -199,7 +199,7 @@ test('concurrent address changes cannot let an old put overtake the latest delet
   let peak = 0;
   const actions = [];
   const oauth = { restore: async () => ({
-    getTokenInfo: async () => ({ scope: 'atproto repo:app.citruswallet.address' }),
+    getTokenInfo: async () => ({ scope: 'atproto repo:app.peachlet.address' }),
     fetchHandler: async (path) => {
       active++;
       peak = Math.max(active, peak);
@@ -225,7 +225,7 @@ test('OAuth login requests collection scope, retains credentials, and rotates se
     return new URL('https://provider.example/authorize');
   };
   await f.call('startLogin', { identifier: 'alice.test' });
-  assert.equal(authorization.scope, 'atproto repo:app.citruswallet.address');
+  assert.equal(authorization.scope, 'atproto repo:app.peachlet.address');
   f.oauth.callback = async () => {
     f.store.client.prepare('INSERT INTO kv(namespace,key,value,expires) VALUES(?,?,?,?)')
       .run('oauth-session', alice, '{"retained":true}', Date.now() + 86400000);
@@ -273,12 +273,12 @@ test('activity filters run before pagination, sort deterministically, and isolat
   put.run('received', bob, alice, 'alice.test', 'confirmed', 'Refund', now + 1, now + 600000);
   put.run('expired', alice, bob, 'bob.test', 'waiting', 'Old', now - 100000, now - 1);
   put.run('private', 'did:plc:other', 'did:plc:outsider', 'outsider.test', 'ready', 'Dinner hidden', now + 2, now + 600000);
-  f.store.client.prepare('INSERT INTO user_profiles(did,handle,display_name,avatar,updated_at) VALUES(?,?,?,?,?)').run(bob, 'bob.test', 'Robert Citrus', 'https://cdn.bsky.app/img/avatar/plain/test@jpeg', now);
+  f.store.client.prepare('INSERT INTO user_profiles(did,handle,display_name,avatar,updated_at) VALUES(?,?,?,?,?)').run(bob, 'bob.test', 'Robert Peachlet', 'https://cdn.bsky.app/img/avatar/plain/test@jpeg', now);
   let result = await f.query('listPayments', { pageSize: 20 });
   assert.equal(result.total, 57);
   assert.equal(result.payments.length, 20);
   assert.equal(result.payments[0].id, 'received');
-  assert.equal(result.payments[0].sender.displayName, 'Robert Citrus');
+  assert.equal(result.payments[0].sender.displayName, 'Robert Peachlet');
   const second = await f.query('listPayments', { pageSize: 20, page: 2 });
   assert.equal(new Set([...result.payments, ...second.payments].map(p => p.id)).size, 40);
   assert.equal((await f.query('listPayments', { page: 3, pageSize: 20 })).payments.length, 17);
@@ -289,11 +289,11 @@ test('activity filters run before pagination, sort deterministically, and isolat
   assert.equal((await f.query('listPayments', { status: 'expired' })).payments[0].id, 'expired');
   assert.equal((await f.query('listPayments', { q: '100%_' })).payments[0].id, 'sent-53');
   assert.equal((await f.query('listPayments', { q: "' OR 1=1 --" })).total, 0);
-  assert.equal((await f.query('listPayments', { q: 'robert citrus', direction: 'sent' })).total, 56);
+  assert.equal((await f.query('listPayments', { q: 'robert peachlet', direction: 'sent' })).total, 56);
   assert.equal((await f.query('listPayments', { after: String(now), before: String(now) })).total, 1);
   assert.equal((await f.query('listPayments', { sort: 'oldest', pageSize: 1 })).payments[0].id, 'expired');
   assert.equal((await f.query('listPayments', { page: 999 })).payments.length, 0);
-  assert.equal((await f.raw('/xrpc/app.citruswallet.listPayments?page=1.5')).status, 400);
+  assert.equal((await f.raw('/xrpc/app.peachlet.listPayments?page=1.5')).status, 400);
   for (const params of [{ page: 0 }, { pageSize: 51 }, { status: 'unknown' }, { direction: 'unknown' }, { after: String(now), before: String(now-1) }, { q: 'x'.repeat(513) }, { after: 'not-a-date' }, { before: '-1' }]) {
     await assert.rejects(f.query('listPayments', params), e => e.status === 400);
   }
@@ -349,23 +349,23 @@ test('KLIPY attachments remain participant-only and reject unsafe media URLs', a
 test('native bearer sessions are isolated from cookies and revoked by logout', async t => {
   const f=fixture(t),token='a'.repeat(64),key=createHash('sha256').update(token).digest('hex');
   f.store.client.prepare('INSERT INTO kv(namespace,key,value,expires) VALUES(?,?,?,?)').run('native-session',key,JSON.stringify({did:alice,csrf:'native-csrf',createdAt:Date.now(),scopeVersion:1}),Date.now()+60000);
-  const native=async(path,body)=>f.app.fetch(new Request(origin+'/xrpc/app.citruswallet.'+path,{method:body?'POST':'GET',headers:{Host:'citruswallet.app',Authorization:'Bearer '+token,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})}),env);
+  const native=async(path,body)=>f.app.fetch(new Request(origin+'/xrpc/app.peachlet.'+path,{method:body?'POST':'GET',headers:{Host:'peachlet.app',Authorization:'Bearer '+token,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})}),env);
   assert.equal((await (await native('getSession')).json()).did,alice);
   assert.equal((await native('listPayments?q=dinner')).status,200);
   assert.equal((await native('createChallenge',{address:account.address})).status,200);
-  assert.equal((await f.raw('/xrpc/app.citruswallet.getProfile',{headers:{cookie:'__Host-citruswallet='+token}})).status,401);
+  assert.equal((await f.raw('/xrpc/app.peachlet.getProfile',{headers:{cookie:'__Host-peachlet='+token}})).status,401);
   await f.login();
-  assert.equal((await f.raw('/xrpc/app.citruswallet.getProfile',{headers:{Authorization:'Bearer '+'f'.repeat(64)}})).status,401);
+  assert.equal((await f.raw('/xrpc/app.peachlet.getProfile',{headers:{Authorization:'Bearer '+'f'.repeat(64)}})).status,401);
   assert.equal((await native('logout',{})).status,200);
   assert.equal((await native('getSession')).status,401);
 });
 
 test('notification stream authenticates, replays only the recipient and supports read state',async t=>{
-  const f=fixture(t);assert.equal((await f.raw('/xrpc/app.citruswallet.subscribeNotifications')).status,401);
+  const f=fixture(t);assert.equal((await f.raw('/xrpc/app.peachlet.subscribeNotifications')).status,401);
   await f.login(bob);
   f.store.client.prepare("INSERT INTO payments(id,sender_did,recipient_did,recipient_label,chain_id,amount_atomic,state,created_at,expires_at) VALUES('notice',?,?,'bob.test',1,'1','confirmed',1,2)").run(alice,bob);
   const listed=await f.query('listNotifications');assert.equal(listed.unread,1);
-  const response=await f.raw('/xrpc/app.citruswallet.subscribeNotifications?cursor=0');assert.equal(response.status,200);assert.match(response.headers.get('content-type'),/text\/event-stream/);assert.equal(response.headers.get('x-accel-buffering'),'no');
+  const response=await f.raw('/xrpc/app.peachlet.subscribeNotifications?cursor=0');assert.equal(response.status,200);assert.match(response.headers.get('content-type'),/text\/event-stream/);assert.equal(response.headers.get('x-accel-buffering'),'no');
   const reader=response.body.getReader();let data='';for(let i=0;i<4&&!data.includes('payment-received');i++){data+=new TextDecoder().decode((await reader.read()).value);}await reader.cancel();assert.match(data,/payment-received/);assert.match(data,/notice/);
   await f.call('markNotificationRead',{id:listed.notifications[0].id});assert.equal((await f.query('listNotifications')).unread,0);
   await f.call('registerPushToken',{token:'ExpoPushToken[http_test]',platform:'android'});await f.call('logout',{});assert.equal(f.store.client.prepare('SELECT count(*) AS n FROM push_devices').get().n,0);
@@ -378,21 +378,21 @@ test('native OAuth returns only a one-time proof-bound code and preserves browse
   const start=await f.raw(`/auth/native/start?identifier=alice.test&challenge=${challenge}&state=${state}`);assert.equal(start.status,302);
   f.oauth.callback=async()=>({session:{did:alice},state:oauthState});
   assert.equal((await f.raw('/auth/callback?code=test',{headers:{cookie:''}})).status,401);
-  const callback=await f.raw('/auth/callback?code=test');assert.equal(callback.status,302);const redirect=new URL(callback.headers.get('location'));assert.equal(redirect.origin,'null');assert.equal(redirect.protocol,'citruswallet:');assert.equal(redirect.searchParams.get('state'),state);
-  const exchange=body=>f.app.fetch(new Request(origin+'/xrpc/app.citruswallet.exchangeNativeSession',{method:'POST',headers:{Host:'citruswallet.app','Content-Type':'application/json'},body:JSON.stringify(body)}),env);
+  const callback=await f.raw('/auth/callback?code=test');assert.equal(callback.status,302);const redirect=new URL(callback.headers.get('location'));assert.equal(redirect.origin,'null');assert.equal(redirect.protocol,'peachlet:');assert.equal(redirect.searchParams.get('state'),state);
+  const exchange=body=>f.app.fetch(new Request(origin+'/xrpc/app.peachlet.exchangeNativeSession',{method:'POST',headers:{Host:'peachlet.app','Content-Type':'application/json'},body:JSON.stringify(body)}),env);
   const code=redirect.searchParams.get('code');assert.equal((await exchange({code,verifier:'f'.repeat(64)})).status,401);const response=await exchange({code,verifier});assert.equal(response.status,200);assert.match((await response.json()).token,/^[a-f0-9]{64}$/);assert.equal((await exchange({code,verifier})).status,401);
 });
 
 
 test('browser push endpoints require authentication and CSRF, and logout revokes subscriptions', async t => {
   const f = fixture(t);
-  assert.equal((await f.raw('/xrpc/app.citruswallet.getWebPushConfig')).status, 401);
+  assert.equal((await f.raw('/xrpc/app.peachlet.getWebPushConfig')).status, 401);
   await f.login(bob);
   const settings = await f.query('getWebPushConfig');
   assert.deepEqual(Object.keys(settings), ['publicKey']);
   const ecdh = createECDH('prime256v1');
   const subscription = { endpoint: 'https://fcm.googleapis.com/fcm/send/browser-test', p256dh: ecdh.generateKeys().toString('base64url'), auth: randomBytes(16).toString('base64url') };
-  assert.equal((await f.raw('/xrpc/app.citruswallet.registerWebPush', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-csrf-token': '' }, body: JSON.stringify(subscription) })).status, 403);
+  assert.equal((await f.raw('/xrpc/app.peachlet.registerWebPush', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-csrf-token': '' }, body: JSON.stringify(subscription) })).status, 403);
   await f.call('registerWebPush', subscription);
   assert.equal(f.store.client.prepare("SELECT platform FROM push_devices").get().platform, 'web');
   await assert.rejects(f.call('registerWebPush', { ...subscription, endpoint: 'https://127.0.0.1/private' }), e => e.status === 400);
@@ -417,7 +417,7 @@ test('invitation fallback and Android association are publicly served', async t 
   assert.equal(association.status, 200);
   assert.match(association.headers.get('content-type'), /application\/json/);
   const [statement] = await association.json();
-  assert.equal(statement.target.package_name, 'app.citruswallet');
+  assert.equal(statement.target.package_name, 'app.peachlet');
   assert.match(statement.target.sha256_cert_fingerprints[0], /^(?:[A-F0-9]{2}:){31}[A-F0-9]{2}$/);
   const page = await f.raw('/invite');
   assert.equal(page.status, 200);
@@ -459,12 +459,12 @@ test('asset discovery is wallet-scoped, paginated, and rechecks metadata on-chai
 test('network selection is explicit and cannot supply arbitrary server RPC targets', async t => {
   const f = fixture(t);
   await f.login();
-  const response = await f.raw('/xrpc/app.citruswallet.getSession', { headers: { 'x-citrus-chain-id': '4326' } });
+  const response = await f.raw('/xrpc/app.peachlet.getSession', { headers: { 'x-peachlet-chain-id': '4326' } });
   assert.equal(response.status, 200);
   const session = await response.json();
   assert.equal(session.network.chainId, 4326);
   assert.deepEqual(session.network.rpcUrls, ['https://mainnet.megaeth.com/rpc']);
-  const testnetResponse = await f.raw('/xrpc/app.citruswallet.getSession', { headers: { 'x-citrus-chain-id': '6343' } });
+  const testnetResponse = await f.raw('/xrpc/app.peachlet.getSession', { headers: { 'x-peachlet-chain-id': '6343' } });
   assert.equal(testnetResponse.status, 200);
   const testnetSession = await testnetResponse.json();
   assert.equal(testnetSession.network.chainId, 6343);
@@ -472,7 +472,7 @@ test('network selection is explicit and cannot supply arbitrary server RPC targe
   assert.deepEqual(testnetSession.network.rpcUrls, ['https://carrot.megaeth.com/rpc']);
   assert.equal((await f.query('getSession')).network.chainId, 1);
   for (const invalid of ['31337', '999999', 'https://127.0.0.1/rpc']) {
-    const rejected = await f.raw('/xrpc/app.citruswallet.getSession', { headers: { 'x-citrus-chain-id': invalid } });
+    const rejected = await f.raw('/xrpc/app.peachlet.getSession', { headers: { 'x-peachlet-chain-id': invalid } });
     assert.equal(rejected.status, 400);
   }
 });

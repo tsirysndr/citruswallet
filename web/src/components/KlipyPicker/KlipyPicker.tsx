@@ -2,7 +2,7 @@ import { ContentSkeleton } from "../ContentSkeleton";
 import { useEffect, useRef, useState, useId, type ReactNode } from "react";
 import { ImagePlus, Search, X, Play, ChevronLeft, ChevronRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import type { PaymentMedia as Media } from "../../lexicon/types/app/citruswallet/defs";
+import type { PaymentMedia as Media } from "../../lexicon/types/app/peachlet/defs";
 import { fetchMedia, klipyEnabled, mediaKinds, type MediaKind } from "../../klipy";
 import { PaymentMedia } from "../PaymentMedia";
 

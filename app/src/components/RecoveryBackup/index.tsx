@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
-import { recoveryChallenge } from '@citruswallet/wallet-core';
+import { recoveryChallenge } from '@peachlet/wallet-core';
 import { Text } from '../Typography';
 import { Button } from '../ui';
 

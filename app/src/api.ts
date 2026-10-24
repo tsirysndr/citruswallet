@@ -2,7 +2,7 @@ import { selectedChain } from "./network";
 import { lockNativeWallet } from "./local-wallet";
 import * as SecureStore from "expo-secure-store";
 export const origin = (
-  process.env.EXPO_PUBLIC_API_URL || "https://citruswallet.app"
+  process.env.EXPO_PUBLIC_API_URL || "https://peachlet.app"
 ).replace(/\/$/, "");
 if (!origin.startsWith("https://") && !__DEV__)
   throw new Error("Production API must use HTTPS.");
@@ -43,14 +43,14 @@ export async function request<T>(
   body?: unknown,
   params?: Record<string, string | number | undefined>,
 ): Promise<T> {
-  const url = new URL(`${origin}/xrpc/app.citruswallet.${method}`);
+  const url = new URL(`${origin}/xrpc/app.peachlet.${method}`);
   for (const [key, value] of Object.entries(params ?? {}))
     if (value !== undefined) url.searchParams.set(key, String(value));
   const response = await fetch(url.toString(), {
     method: body === undefined ? "GET" : "POST",
     credentials: "omit",
     headers: {
-      ...(selectedChain() ? { "x-citrus-chain-id": selectedChain()! } : {}),
+      ...(selectedChain() ? { "x-peachlet-chain-id": selectedChain()! } : {}),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(body === undefined ? {} : { "Content-Type": "application/json" }),
     },

@@ -2,7 +2,7 @@ import { View } from 'react-native';
 import { AmountPad } from '../../components/AmountPad';
 import { Avatar, Button } from '../../components/ui';
 import { Text } from '../../components/Typography';
-import { parseAmount } from "@citruswallet/amounts";
+import { parseAmount } from "@peachlet/amounts";
 import type { ReactNode } from "react";
 import type { Actor } from '../../types';
 

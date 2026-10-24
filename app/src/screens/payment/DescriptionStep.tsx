@@ -18,7 +18,7 @@ export function DescriptionStep({ description, media, onDescription, onMedia, on
       <MediaPicker value={media} onChange={onMedia} />
       <Text className="absolute bottom-6 right-4 text-xs text-muted">{description.length}/500</Text>
     </View>
-    <Text className="text-sm text-muted">Only you and the recipient can see this note and attachment in Citrus Wallet.</Text>
+    <Text className="text-sm text-muted">Only you and the recipient can see this note and attachment in Peachlet.</Text>
     <Button title="Review payment" onPress={onReview} />
   </View>;
 }

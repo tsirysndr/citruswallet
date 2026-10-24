@@ -1,5 +1,5 @@
-import citruswallet/notification_worker
-import citruswallet/notifications
+import peachlet/notification_worker
+import peachlet/notifications
 
 pub fn expo_tokens_reject_urls_and_invalid_characters_test() {
   assert notifications.valid_expo_token("ExpoPushToken[abc_123-XYZ]")

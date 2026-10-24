@@ -34,7 +34,7 @@ it('verifies the chosen address before setting the public receiving default', as
   const { user } = await renderComponent(<WalletSetup onFinished={() => {}} />);
   await user.click(screen.getByRole('button', { name: /Connect MetaMask/ }));
   await user.click(screen.getByRole('button', { name: 'Link my wallet' }));
-  expect(await screen.findByRole('button', { name: /Open Citrus Wallet/ })).toBeVisible();
+  expect(await screen.findByRole('button', { name: /Open Peachlet/ })).toBeVisible();
   expect(calls).toEqual(['challenge', 'verify', 'default']);
 });
 it('does not complete setup when setting the receiving default fails', async () => {
@@ -49,7 +49,7 @@ it('does not complete setup when setting the receiving default fails', async () 
   await user.click(screen.getByRole('button', { name: /Connect MetaMask/ }));
   await user.click(screen.getByRole('button', { name: 'Link my wallet' }));
   await waitFor(() => expect(attempted).toBe(true));
-  expect(screen.queryByRole('button', { name: /Open Citrus Wallet/ })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: /Open Peachlet/ })).not.toBeInTheDocument();
   expect(screen.getByRole('button', { name: 'Link my wallet' })).toBeVisible();
 });
 
@@ -62,7 +62,7 @@ it('ends anonymous wallet connection at handle sign-in, and resumes there after 
   await view.user.click(screen.getByRole('button', { name: 'Connect MetaMask' }));
   expect(await screen.findByRole('button', { name: 'Sign In' })).toBeVisible();
   expect(screen.getByText(/using an @handle instead of a long wallet address/)).toBeVisible();
-  expect(screen.queryByRole('button', { name: /Open Citrus Wallet/ })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: /Open Peachlet/ })).not.toBeInTheDocument();
   expect(finished).not.toHaveBeenCalled();
   view.unmount();
   await renderComponent(<WalletSetup onFinished={finished} />);

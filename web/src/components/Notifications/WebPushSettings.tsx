@@ -34,7 +34,7 @@ export function WebPushSettings({ did }: { did: string }) {
     window.addEventListener('focus', refresh);
     return () => { disposed = true; window.removeEventListener('focus', refresh); };
   }, [did]);
-  if (!supportsPush()) return <p className="mt-4 text-sm text-ink-muted">Browser push is unavailable here. On iPhone or iPad, add Citrus Wallet to your Home Screen and open it there.</p>;
+  if (!supportsPush()) return <p className="mt-4 text-sm text-ink-muted">Browser push is unavailable here. On iPhone or iPad, add Peachlet to your Home Screen and open it there.</p>;
   const toggle = async () => {
     setBusy(true); setMessage('');
     try {
@@ -67,7 +67,7 @@ export function WebPushSettings({ did }: { did: string }) {
       await save(subscription);
       localStorage.setItem(preference, did);
       setEnabled(true);
-      setMessage(registration.waiting ? 'Notifications enabled. Close all Citrus Wallet tabs and reopen to activate the updated notification service.' : 'Notifications enabled, including when this site is closed.');
+      setMessage(registration.waiting ? 'Notifications enabled. Close all Peachlet tabs and reopen to activate the updated notification service.' : 'Notifications enabled, including when this site is closed.');
     } catch (error) { setMessage(error instanceof Error ? error.message : 'Could not update notifications. Please retry.'); }
     finally { setBusy(false); }
   };

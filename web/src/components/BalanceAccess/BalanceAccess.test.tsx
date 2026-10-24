@@ -10,7 +10,7 @@ it('opens the password/device unlock dialog directly from the balance card', asy
   const { user } = await renderComponent(<><BalanceAccess session={session} available={false} loading={false} refresh={refresh} /><WalletUnlock /></>);
   await user.click(screen.getByRole('button', { name: 'Cancel' }));
   await user.click(screen.getByRole('button', { name: 'Unlock wallet' }));
-  expect(screen.getByRole('dialog', { name: 'Unlock Citrus wallet' })).toBeVisible();
+  expect(screen.getByRole('dialog', { name: 'Unlock Peachlet wallet' })).toBeVisible();
   expect(screen.getByLabelText('Wallet password')).toBeVisible();
   await user.click(screen.getByRole('button', { name: 'Cancel' }));
   expect(refresh).not.toHaveBeenCalled();

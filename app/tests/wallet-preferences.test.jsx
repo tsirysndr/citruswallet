@@ -28,7 +28,7 @@ test.each(['citrus', 'metamask'])('restores %s from secure storage in a fresh ap
   }
   expect(restarted.configuredAddress()).toBe(selection === 'citrus' ? mockLocalAddress : mockExternalAddress);
 });
-test('does not substitute the MetaMask address when the selected Citrus vault is absent', async () => {
+test('does not substitute the MetaMask address when the selected Peachlet vault is absent', async () => {
   mockStorage.set('citrus-wallet-mode', 'citrus');
   mockStorage.set('citrus-metamask-address', mockExternalAddress);
   mockState = 'absent';

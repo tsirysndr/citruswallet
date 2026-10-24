@@ -1,4 +1,4 @@
-import { parseAmount } from "@citruswallet/amounts";
+import { parseAmount } from "@peachlet/amounts";
 import { z } from "zod";
 
 /* These mirror the server's own rules so a typo is caught before a request is

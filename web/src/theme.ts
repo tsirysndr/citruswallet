@@ -4,4 +4,4 @@ const unavailable = {
   subscribe: () => () => {},
 };
 
-export const theme = window.citrusTheme ?? unavailable;
+export const theme = window.peachletTheme ?? unavailable;

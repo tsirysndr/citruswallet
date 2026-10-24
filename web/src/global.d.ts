@@ -8,7 +8,7 @@ interface Eip1193Provider {
 
 interface Window {
   ethereum?: Eip1193Provider;
-  citrusTheme: {
+  peachletTheme: {
     current(): Theme;
     set(theme: Theme): void;
     subscribe(listener: () => void): () => void;

@@ -11,7 +11,7 @@ export async function finishLogin(url: string): Promise<boolean> {
   if (exchanging) return exchanging;
   exchanging = (async () => {
     const parsed = new URL(url);
-    if (parsed.protocol !== "citruswallet:" || parsed.hostname !== "auth")
+    if (parsed.protocol !== "peachlet:" || parsed.hostname !== "auth")
       return false;
     const raw = await SecureStore.getItemAsync("citrus-login");
     if (!raw) return false;
@@ -49,7 +49,7 @@ export async function signIn(identifier: string, create = false) {
   const url = `${origin}/auth/native/start?${new URLSearchParams({ identifier: identifier.trim().replace(/^@/, ""), challenge, state, ...(create ? { create: "true" } : {}) })}`;
   const result = await WebBrowser.openAuthSessionAsync(
     url,
-    "citruswallet://auth",
+    "peachlet://auth",
   );
   if (result.type === "success") return finishLogin(result.url);
   return false;

@@ -1,21 +1,21 @@
-import { ensure_profile } from '../build/dev/javascript/citruswallet/citruswallet/jetstream.mjs';
-import { Ok, toList } from '../build/dev/javascript/citruswallet/gleam.mjs';
+import { ensure_profile } from '../build/dev/javascript/peachlet/peachlet/jetstream.mjs';
+import { Ok, toList } from '../build/dev/javascript/peachlet/gleam.mjs';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import Database from 'better-sqlite3';
 import { readFileSync } from 'node:fs';
 import { privateKeyToAccount } from 'viem/accounts';
 import { createSiweMessage } from 'viem/siwe';
-import { applyAddressEvent, recordKey } from '../src/address-index.mjs';
+import { applyAddressEvent, recordKey, needsPublication, saveRecordHead } from '../src/address-index.mjs';
 import { queueRemovedAddress } from '../src/address-records.mjs';
 import { startJetstream, configuredUrls, JETSTREAM_URLS, subscriptionUrl } from '../src/jetstream.mjs';
-import * as storeModule from '../build/dev/javascript/citruswallet/citruswallet/store.mjs';
-import * as profiles from '../build/dev/javascript/citruswallet/citruswallet/profiles.mjs';
-import { Actor, Directory } from '../build/dev/javascript/citruswallet/citruswallet/directory.mjs';
+import * as storeModule from '../build/dev/javascript/peachlet/peachlet/store.mjs';
+import * as profiles from '../build/dev/javascript/peachlet/peachlet/profiles.mjs';
+import { Actor, Directory } from '../build/dev/javascript/peachlet/peachlet/directory.mjs';
 import { None, Some } from '../build/dev/javascript/gleam_stdlib/gleam/option.mjs';
 
 const did = 'did:plc:alice';
-const origin = 'https://citruswallet.app';
+const origin = 'https://peachlet.app';
 const account = privateKeyToAccount('0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80');
 const other = privateKeyToAccount('0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d');
 const rev = n => '3aaaaaaaaaaa' + n;
@@ -28,14 +28,14 @@ function database(t) {
 async function record(wallet = account, owner = did) {
   const createdAt = '2026-01-01T00:00:00.000Z';
   const message = createSiweMessage({
-    domain: 'citruswallet.app', address: wallet.address, chainId: 1,
+    domain: 'peachlet.app', address: wallet.address, chainId: 1,
     uri: origin + '/wallet-link', version: '1', nonce: '12345678',
     issuedAt: new Date(createdAt), expirationTime: new Date('2026-01-01T00:05:00.000Z'),
     statement: `Link this wallet to AT Protocol account ${owner}. This does not authorize transactions.`, resources: [owner],
   });
-  return { $type: 'app.citruswallet.address', chain: 'eip155:1', address: wallet.address.toLowerCase(), message, signature: await wallet.signMessage({ message }), createdAt };
+  return { $type: 'app.peachlet.address', chain: 'eip155:1', address: wallet.address.toLowerCase(), message, signature: await wallet.signMessage({ message }), createdAt };
 }
-const event = (operation, number, value, rkey = 'receiving') => ({ did, kind: 'commit', commit: { operation, rev: rev(number), collection: 'app.citruswallet.address', rkey, record: value } });
+const event = (operation, number, value, rkey = 'receiving') => ({ did, kind: 'commit', commit: { operation, rev: rev(number), collection: 'app.peachlet.address', rkey, record: value } });
 
 test('Jetstream create, update, delete and durable deduplication preserve the latest repository revision', async t => {
   const db = database(t);
@@ -131,7 +131,7 @@ test('JETSTREAM_URLS overrides constants, normalizes endpoints, and rejects inva
   assert.throws(() => configuredUrls({ JETSTREAM_URLS: '' }));
   assert.throws(() => configuredUrls({ JETSTREAM_URLS: 'ws://example.com/subscribe' }));
   const url = subscriptionUrl('wss://example.com/subscribe', 10_000_000);
-  assert.equal(url.searchParams.get('wantedCollections'), 'app.citruswallet.address');
+  assert.equal(url.searchParams.get('wantedCollections'), 'app.peachlet.address');
   assert.equal(url.searchParams.get('cursor'), '5000000');
 });
 
@@ -171,4 +171,15 @@ test('unknown event DIDs fetch and upsert the full stored profile once', async t
   assert.ok(saved.id > 0 && saved.created_at > 0 && saved.updated_at > 0);
   await applyAddressEvent(store.client, event('delete', 3), origin, () => {}, ensure);
   assert.equal(lookups, 1);
+});
+
+
+test('legacy address records do not count as published in the Peachlet namespace', async t => {
+  const db = database(t);
+  const value = await record();
+  const key = recordKey(1, value.address);
+  saveRecordHead(db, did, key, rev(1), { ...value, $type: 'app.citruswallet.address' });
+  assert.equal(needsPublication(db, did, 1, value.address), true);
+  saveRecordHead(db, did, key, rev(2), value);
+  assert.equal(needsPublication(db, did, 1, value.address), false);
 });

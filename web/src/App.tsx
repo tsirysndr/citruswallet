@@ -11,7 +11,7 @@ import { Link, Outlet, useNavigate, useLocation } from "@tanstack/react-router";
 import { rpc } from "./api";
 import { busyAtom, inviteTokenAtom, reviewIdAtom, statusAtom } from "./atoms";
 import { BottomNav, SidebarNav } from "./components/Nav";
-import { CitrusMark } from "./components/CitrusMark";
+import { PeachletMark } from "./components/PeachletMark";
 import { Notifications } from "./components/Notifications";
 import { ActivitySearch } from "./components/ActivitySearch";
 import { InstallApp } from "./components/InstallApp";
@@ -100,9 +100,9 @@ export function App() {
     const linkedDefault = session.links.some(link => link.chain_id === session.network.chainId && link.is_default && link.public && (!address || link.address.toLowerCase() === address.toLowerCase()));
     setNeedsSetup(!configured || !session.did || !linkedDefault);
   }, [session, needsSetup, vaultState]);
-  if (needsSetup === null && !error && !['/privacy', '/terms'].includes(location.pathname)) return <div className="min-h-dvh bg-canvas p-8"><ContentSkeleton variant="card" label="Opening Citrus" /></div>;
+  if (needsSetup === null && !error && !['/privacy', '/terms'].includes(location.pathname)) return <div className="min-h-dvh bg-canvas p-8"><ContentSkeleton variant="card" label="Opening Peachlet" /></div>;
   if (needsSetup && session && !['/privacy', '/terms'].includes(location.pathname)) return <div className="min-h-dvh bg-canvas px-5 py-8 font-sans md:py-12">
-    <div className="mx-auto mb-10 flex max-w-[560px] items-center gap-2 text-lg font-semibold"><CitrusMark className="size-9" />Citrus Wallet</div>
+    <div className="mx-auto mb-10 flex max-w-[560px] items-center gap-2 text-lg font-semibold"><PeachletMark className="size-9" />Peachlet</div>
     <MetaMaskConnection /><WalletApproval /><WalletUnlock />
     <WalletSetup key={session.did || 'signed-out'} onFinished={() => { setNeedsSetup(false); void navigate({ to: invite ? '/wallet' : '/' }); }} />
     <p role="status" className={`mx-auto mt-5 max-w-[560px] text-sm ${failed ? 'text-bad' : 'text-ink-muted'}`}>{message}</p>
@@ -121,7 +121,7 @@ export function App() {
           to="/"
           className="brand-logo mobile-brand"
         >
-          <span className="logo-mark"><CitrusMark /></span><span>Citrus<span className="logo-wallet hidden min-[400px]:inline"> Wallet</span></span>
+          <span className="logo-mark"><PeachletMark /></span><span>Peachlet</span>
         </Link>
         <div className="flex items-center gap-2.5">
           {session?.did && <><Notifications /><Link to="/settings" aria-label="Settings" title="Settings" className="inline-flex size-10 items-center justify-center rounded-full hover:bg-sunken"><SettingsIcon size={21} strokeWidth={1.75} /></Link><ActivitySearch /></>}
@@ -133,7 +133,7 @@ export function App() {
         <MetaMaskConnection />
         <WalletApproval />
         <WalletUnlock />
-        {isPending ? <div className="page-content"><ContentSkeleton variant="card" label="Opening Citrus" /></div> : <Outlet />}
+        {isPending ? <div className="page-content"><ContentSkeleton variant="card" label="Opening Peachlet" /></div> : <Outlet />}
         {error && (
           <p className="mt-5 text-[13px] text-bad">
             Could not reach the server.{" "}
@@ -162,7 +162,7 @@ export function App() {
           <InstallApp />
           <Link to="/privacy">Privacy Policy</Link>
           <Link to="/terms">Terms and Conditions</Link>
-          <a href="mailto:contact@citruswallet.app">Contact</a>
+          <a href="mailto:contact@peachlet.app">Contact</a>
         </nav>
       </footer>
 

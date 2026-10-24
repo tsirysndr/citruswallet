@@ -1,10 +1,10 @@
 import * as Keychain from 'react-native-keychain';
 import { Platform } from 'react-native';
-const service = 'app.citruswallet.device-vault.v2';
+const service = 'app.peachlet.device-vault.v2';
 const policy = {
   service,
   accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_ANY_OR_DEVICE_PASSCODE,
-  authenticationPrompt: { title: 'Unlock Citrus Wallet', subtitle: 'Use your device screen lock or biometrics', cancel: 'Cancel' },
+  authenticationPrompt: { title: 'Unlock Peachlet', subtitle: 'Use your device screen lock or biometrics', cancel: 'Cancel' },
 };
 export async function deviceUnlockAvailable() {
   // Android 11 added the strong-biometric-or-device-credential combination.

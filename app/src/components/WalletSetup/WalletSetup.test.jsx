@@ -22,7 +22,7 @@ test('sets the verified account as default without opening a second connection',
   renderComponent(<WalletSetup onFinished={() => {}} />);
   await fireEvent.press(screen.getByRole('button', { name: 'Connect MetaMask' }));
   await fireEvent.press(screen.getByRole('button', { name: 'Link my wallet' }));
-  await waitFor(() => expect(screen.getByRole('button', { name: 'Open Citrus Wallet' })).toBeTruthy());
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Open Peachlet' })).toBeTruthy());
   expect(linkWallet).toHaveBeenCalledWith({ chainId: 1 }, true);
   expect(request).toHaveBeenCalledWith('setDefaultAddress', { address: mockAddress });
   expect(connect).not.toHaveBeenCalled();
@@ -33,7 +33,7 @@ test('keeps setup open when receiving-default update fails', async () => {
   await fireEvent.press(screen.getByRole('button', { name: 'Connect MetaMask' }));
   await fireEvent.press(screen.getByRole('button', { name: 'Link my wallet' }));
   expect(mockError).toHaveBeenCalled();
-  expect(screen.queryByRole('button', { name: 'Open Citrus Wallet' })).toBeNull();
+  expect(screen.queryByRole('button', { name: 'Open Peachlet' })).toBeNull();
 });
 
 test('anonymous connection ends with handle sign-in and does not finish onboarding', async () => {
@@ -43,7 +43,7 @@ test('anonymous connection ends with handle sign-in and does not finish onboardi
   await fireEvent.press(screen.getByRole('button', { name: 'Connect MetaMask' }));
   await fireEvent.press(screen.getByRole('button', { name: 'Connect MetaMask' }));
   expect(screen.getByText(/using an @handle instead of a long wallet address/)).toBeTruthy();
-  expect(screen.queryByRole('button', { name: 'Open Citrus Wallet' })).toBeNull();
+  expect(screen.queryByRole('button', { name: 'Open Peachlet' })).toBeNull();
   expect(screen.getByRole('button', { name: 'Sign In' })).toBeDisabled();
   await fireEvent.changeText(screen.getByLabelText('Handle'), 'alice.test');
   await fireEvent.press(screen.getByRole('button', { name: 'Sign In' }));
@@ -53,11 +53,11 @@ test('anonymous connection ends with handle sign-in and does not finish onboardi
 });
 
 
-test('switches wallets and only unlocks Citrus without linking or moving funds', async () => {
+test('switches wallets and only unlocks Peachlet without linking or moving funds', async () => {
   mockVault = 'locked'; mockMode = 'citrus';
   mockLinks = [mockAddress, mockLocalAddress].map(address => ({ address, chain_id: 1 }));
   const view = renderComponent(<WalletSetup />);
-  expect(screen.getByRole('radio', { name: 'Citrus Wallet' })).toBeChecked();
+  expect(screen.getByRole('radio', { name: 'Peachlet' })).toBeChecked();
   await fireEvent.press(screen.getByRole('radio', { name: 'MetaMask' }));
   expect(require('../../wallet-preferences').selectWallet).toHaveBeenCalledWith('metamask');
   expect(screen.getByText(mockAddress)).toBeTruthy();
@@ -66,7 +66,7 @@ test('switches wallets and only unlocks Citrus without linking or moving funds',
   view.unmount();
   renderComponent(<WalletSetup />);
   expect(screen.getByRole('radio', { name: 'MetaMask' })).toBeChecked();
-  await fireEvent.press(screen.getByRole('radio', { name: 'Citrus Wallet' }));
+  await fireEvent.press(screen.getByRole('radio', { name: 'Peachlet' }));
   expect(screen.getByText(mockLocalAddress)).toBeTruthy();
   expect(require('../../wallet-unlock').requestUnlock).toHaveBeenCalledTimes(1);
   expect(linkWallet).not.toHaveBeenCalled();
@@ -74,10 +74,10 @@ test('switches wallets and only unlocks Citrus without linking or moving funds',
   expect(request).not.toHaveBeenCalled();
 });
 
-test('offers creation and restoration when Citrus is not configured', async () => {
+test('offers creation and restoration when Peachlet is not configured', async () => {
   renderComponent(<WalletSetup />);
-  await fireEvent.press(screen.getByRole('radio', { name: 'Citrus Wallet' }));
-  expect(screen.getByRole('button', { name: 'Create a Citrus wallet' })).toBeTruthy();
+  await fireEvent.press(screen.getByRole('radio', { name: 'Peachlet' }));
+  expect(screen.getByRole('button', { name: 'Create a Peachlet wallet' })).toBeTruthy();
   expect(screen.getByRole('button', { name: 'Restore a wallet' })).toBeTruthy();
   expect(require('../../wallet-unlock').requestUnlock).not.toHaveBeenCalled();
 });
@@ -85,7 +85,7 @@ test('offers creation and restoration when Citrus is not configured', async () =
 test('keeps the selected wallet when saving the selection fails', async () => {
   require('../../wallet-preferences').selectWallet.mockRejectedValueOnce(new Error('Storage unavailable'));
   renderComponent(<WalletSetup />);
-  await fireEvent.press(screen.getByRole('radio', { name: 'Citrus Wallet' }));
+  await fireEvent.press(screen.getByRole('radio', { name: 'Peachlet' }));
   expect(screen.getByRole('radio', { name: 'MetaMask' })).toBeChecked();
   expect(mockError).toHaveBeenCalled();
   expect(require('../../wallet-unlock').requestUnlock).not.toHaveBeenCalled();
@@ -95,7 +95,7 @@ test('disables wallet switching during an active wallet operation', async () => 
   const store = require('jotai').createStore();
   store.set(require('../../state').busyAtom, true);
   renderComponent(<WalletSetup />, { store });
-  const citrus = screen.getByRole('radio', { name: 'Citrus Wallet' });
+  const citrus = screen.getByRole('radio', { name: 'Peachlet' });
   expect(citrus).toBeDisabled();
   await fireEvent.press(citrus);
   expect(require('../../wallet-preferences').selectWallet).not.toHaveBeenCalled();
@@ -107,7 +107,7 @@ test.each([false, true])('shows sign-in for an existing locked wallet after sign
   expect(await screen.findByText('Welcome back.')).toBeTruthy();
   expect(screen.getByRole('button', { name: 'Sign In' })).toBeTruthy();
   expect(screen.queryByText('WALLET SETUP')).toBeNull();
-  expect(screen.queryByRole('button', { name: 'Create a Citrus wallet' })).toBeNull();
+  expect(screen.queryByRole('button', { name: 'Create a Peachlet wallet' })).toBeNull();
   expect(require('../../wallet-unlock').requestUnlock).not.toHaveBeenCalled();
   expect(require('../../wallet-preferences').selectWallet).not.toHaveBeenCalled();
 });

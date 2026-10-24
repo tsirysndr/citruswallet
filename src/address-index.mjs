@@ -3,7 +3,7 @@ import { verifyMessage } from 'viem';
 import { parseSiweMessage } from 'viem/siwe';
 import { lexicons } from './xrpc.mjs';
 
-export const ADDRESS_COLLECTION = 'app.citruswallet.address';
+export const ADDRESS_COLLECTION = 'app.peachlet.address';
 export const recordKey = (chain, address) => `eip155-${chain}-${address.toLowerCase()}`;
 const revision = /^[234567abcdefghijklmnopqrstuvwxyz]{13}$/;
 export const validRevision = value => typeof value === 'string' && revision.test(value);
@@ -16,7 +16,7 @@ export function saveRecordHead(db, did, rkey, rev, record) {
 }
 
 export const needsPublication = (db, did, chain, address) => !db.prepare(
-  'SELECT 1 FROM address_repository_records WHERE did=? AND chain_id=? AND address=? AND record IS NOT NULL LIMIT 1',
+  `SELECT 1 FROM address_repository_records WHERE did=? AND chain_id=? AND address=? AND record IS NOT NULL AND json_extract(record, '$.$type') = 'app.peachlet.address' LIMIT 1`,
 ).get(did, chain, address.toLowerCase());
 
 async function verifiedRecord(record, did, origin) {

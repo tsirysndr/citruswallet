@@ -1,0 +1,50 @@
+{
+  "lexicon": 1,
+  "id": "app.peachlet.getAssets",
+  "defs": {
+    "main": {
+      "type": "query",
+      "parameters": {
+        "type": "params",
+        "required": [
+          "address"
+        ],
+        "properties": {
+          "address": {
+            "type": "string",
+            "maxLength": 42
+          },
+          "cursor": {
+            "type": "string",
+            "maxLength": 2000
+          }
+        }
+      },
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": [
+            "assets",
+            "discoveryAvailable"
+          ],
+          "properties": {
+            "assets": {
+              "type": "array",
+              "items": {
+                "type": "ref",
+                "ref": "app.peachlet.defs#assetBalance"
+              }
+            },
+            "cursor": {
+              "type": "string"
+            },
+            "discoveryAvailable": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    }
+  }
+}

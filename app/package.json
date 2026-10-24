@@ -1,5 +1,5 @@
 {
-  "name": "@citruswallet/app",
+  "name": "@peachlet/app",
   "version": "1.0.0",
   "private": true,
   "main": "index.js",
@@ -15,8 +15,8 @@
     "test:ui:watch": "jest --watch"
   },
   "dependencies": {
-    "@citruswallet/amounts": "file:packages/amounts",
-    "@citruswallet/wallet-core": "file:packages/wallet-core",
+    "@peachlet/amounts": "file:packages/amounts",
+    "@peachlet/wallet-core": "file:packages/wallet-core",
     "@expo/vector-icons": "^15.0.3",
     "@hookform/resolvers": "6.0.0",
     "@metamask/connect-evm": "2.1.1",

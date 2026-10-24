@@ -2,7 +2,7 @@
    response. It is remembered so a reload cannot turn one transfer into two. */
 export type Pending = { id: string; attemptId: string; txHash?: string };
 
-const key = (did: string) => `citruswallet-broadcast:${did}`;
+const key = (did: string) => `peachlet-broadcast:${did}`;
 
 export function pendingBroadcast(did: string): Pending | null {
   const saved = sessionStorage.getItem(key(did));

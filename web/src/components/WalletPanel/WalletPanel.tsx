@@ -55,7 +55,7 @@ export function WalletPanel({ className }: { className?: string }) {
       });
       if (challenge.chainId !== network.chainId)
         throw new Error("Server network changed. Reload and try again.");
-      status(builtIn ? "Linking your Citrus wallet…" : "Review the linking message in MetaMask…");
+      status(builtIn ? "Linking your Peachlet wallet…" : "Review the linking message in MetaMask…");
       const signature = await wallet.request({
         method: "personal_sign",
         params: [hexOf(challenge.message), account],
@@ -81,14 +81,14 @@ export function WalletPanel({ className }: { className?: string }) {
         Link your wallet to your Atmosphere account to send and receive payments.
         Linking has no gas fee.
       </Hint>
-      {walletState !== "absent" && <select aria-label="Wallet to use" value={mode} onChange={e => { setMode(e.target.value); localStorage.setItem("citrus:wallet-mode", e.target.value); void refresh(); }}><option value="citrus">Citrus wallet</option><option value="metamask">MetaMask (optional)</option></select>}
+      {walletState !== "absent" && <select aria-label="Wallet to use" value={mode} onChange={e => { setMode(e.target.value); localStorage.setItem("citrus:wallet-mode", e.target.value); void refresh(); }}><option value="citrus">Peachlet wallet</option><option value="metamask">MetaMask (optional)</option></select>}
       <Checkbox id="discoverable" checked={discoverable} onChange={setDiscoverable}>
         Publish this address to my AT Protocol repository and allow public
         payments (first public wallet becomes my receiving default)
       </Checkbox>
       {builtIn || hasMetaMask || isMobileWalletBrowser() ? (
         <Button className="mt-4 w-full" disabled={!signedIn || (builtIn && walletState === "locked")} onClick={link}>
-          {builtIn ? (walletState === "locked" ? "Unlock your wallet above" : "Link Citrus wallet") : isMobileWalletBrowser() ? "Open MetaMask & link" : "Connect MetaMask & link"}
+          {builtIn ? (walletState === "locked" ? "Unlock your wallet above" : "Link Peachlet wallet") : isMobileWalletBrowser() ? "Open MetaMask & link" : "Connect MetaMask & link"}
         </Button>
       ) : (
         <div className="mt-4">

@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { walletDefaults, walletForm } from '../../wallet-validation';
 import { RecoveryBackup } from "../RecoveryBackup";
 import { useEffect, useState, useSyncExternalStore } from 'react';
-import { createRecoveryPhrase, normalizeSecret, type WalletSecret } from '@citruswallet/wallet-core';
+import { createRecoveryPhrase, normalizeSecret, type WalletSecret } from '@peachlet/wallet-core';
 import { backupLocalWallet, localAddress, localWalletState, lockLocalWallet, saveLocalWallet, subscribeWallet, unlockLocalWallet } from '../../local-wallet';
 import { enableWalletPasskey, hasWalletPasskey, supportsWalletPasskeys, unlockWithPasskey } from '../../wallet-passkey';
 import { Button, Heading, Hint, Input, Label, Panel } from '../ui';

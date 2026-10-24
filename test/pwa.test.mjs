@@ -9,12 +9,12 @@ function worker() {
   const requests = [];
   const cache = {
     addAll: async reqs => { for (const req of reqs) saved.set(req.url, new Response('offline document')); },
-    match: async key => saved.get(typeof key === 'string' ? 'https://citruswallet.app' + key : key.url),
+    match: async key => saved.get(typeof key === 'string' ? 'https://peachlet.app' + key : key.url),
   };
   runInNewContext(readFileSync('web/public/sw.js', 'utf8'), {
-    self: { location: { origin: 'https://citruswallet.app' }, addEventListener: (name, fn) => handlers[name] = fn, clients: { claim: async () => {} } },
+    self: { location: { origin: 'https://peachlet.app' }, addEventListener: (name, fn) => handlers[name] = fn, clients: { claim: async () => {} } },
     caches: { open: async () => cache, keys: async () => [], delete: async () => true },
-    Request: class extends Request { constructor(path, options) { super(new URL(path, 'https://citruswallet.app'), options); } },
+    Request: class extends Request { constructor(path, options) { super(new URL(path, 'https://peachlet.app'), options); } },
     Response, URL, Set,
     fetch: async request => { requests.push(request.url); throw new Error('offline'); },
   });
@@ -29,19 +29,19 @@ test('PWA caches only static fallback assets and never intercepts payment or OAu
   assert.equal(w.saved.size, 6);
   for (const url of w.saved.keys()) assert.ok(!/xrpc|auth|activity|payments/.test(url));
   for (const [path, method, mode] of [
-    ['/xrpc/app.citruswallet.getSession','GET','cors'],
-    ['/xrpc/app.citruswallet.createPayment','POST','cors'],
+    ['/xrpc/app.peachlet.getSession','GET','cors'],
+    ['/xrpc/app.peachlet.createPayment','POST','cors'],
     ['/auth/callback?code=secret','GET','navigate'],
     ['/client-metadata.json','GET','cors'],
     ['/?code=secret','GET','navigate'],
     ['https://cdn.bsky.app/avatar','GET','cors'],
   ]) {
     let intercepted = false;
-    w.handlers.fetch({ request: { url: new URL(path, 'https://citruswallet.app').href, method, mode }, respondWith: () => intercepted = true });
+    w.handlers.fetch({ request: { url: new URL(path, 'https://peachlet.app').href, method, mode }, respondWith: () => intercepted = true });
     assert.equal(intercepted, false, path);
   }
   let fallback;
-  w.handlers.fetch({ request: { url: 'https://citruswallet.app/activity', method: 'GET', mode: 'navigate' }, respondWith: promise => fallback = promise });
+  w.handlers.fetch({ request: { url: 'https://peachlet.app/activity', method: 'GET', mode: 'navigate' }, respondWith: promise => fallback = promise });
   assert.equal(await (await fallback).text(), 'offline document');
   assert.equal(w.saved.size, 6, 'no user navigation was stored');
 });

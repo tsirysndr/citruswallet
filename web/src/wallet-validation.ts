@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { normalizeSecret } from '@citruswallet/wallet-core';
+import { normalizeSecret } from '@peachlet/wallet-core';
 export const rpcUrl = z.string().trim().max(2048, 'RPC URL is too long.').refine(value => {
   if (!value) return true;
   try { const url = new URL(value); return url.protocol === 'https:' && !url.username && !url.password && !url.hash; } catch { return false; }

@@ -11,7 +11,7 @@ export function mobileWalletClient() {
   client ??= import("@metamask/connect-evm").then(({ createEVMClient }) =>
     createEVMClient({
       dapp: {
-        name: "Citrus Wallet",
+        name: "Peachlet",
         url: window.location.origin,
         iconUrl: new URL("/icons/icon-192.png", window.location.origin).href,
       },

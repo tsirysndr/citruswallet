@@ -3,10 +3,10 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "@citruswallet/app",
+      "name": "@peachlet/app",
       "dependencies": {
-        "@citruswallet/amounts": "file:packages/amounts",
-        "@citruswallet/wallet-core": "file:packages/wallet-core",
+        "@peachlet/amounts": "file:packages/amounts",
+        "@peachlet/wallet-core": "file:packages/wallet-core",
         "@expo/vector-icons": "^15.0.3",
         "@hookform/resolvers": "6.0.0",
         "@metamask/connect-evm": "2.1.1",
@@ -258,9 +258,9 @@
 
     "@bcoe/v8-coverage": ["@bcoe/v8-coverage@0.2.3", "", {}, "sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw=="],
 
-    "@citruswallet/amounts": ["@citruswallet/amounts@file:packages/amounts", { "dependencies": { "bignumber.js": "^11.1.0" } }],
+    "@peachlet/amounts": ["@peachlet/amounts@file:packages/amounts", { "dependencies": { "bignumber.js": "^11.1.0" } }],
 
-    "@citruswallet/wallet-core": ["@citruswallet/wallet-core@file:packages/wallet-core", { "dependencies": { "@noble/ciphers": "1.3.0", "@noble/hashes": "1.8.0", "@scure/bip39": "1.6.0", "viem": "^2.0.0" } }],
+    "@peachlet/wallet-core": ["@peachlet/wallet-core@file:packages/wallet-core", { "dependencies": { "@noble/ciphers": "1.3.0", "@noble/hashes": "1.8.0", "@scure/bip39": "1.6.0", "viem": "^2.0.0" } }],
 
     "@ecies/ciphers": ["@ecies/ciphers@0.2.6", "", { "peerDependencies": { "@noble/ciphers": "^1.0.0" } }, "sha512-patgsRPKGkhhoBjETV4XxD0En4ui5fbX0hzayqI3M8tvNMGUoUvmyYAIWwlxBc1KX5cturfqByYdj5bYGRpN9g=="],
 

@@ -1,13 +1,13 @@
-# Citrus Wallet
+# Peachlet
 
 [![API tests](https://github.com/tsirysndr/citruswallet/actions/workflows/api-tests.yml/badge.svg)](https://github.com/tsirysndr/citruswallet/actions/workflows/api-tests.yml)
 [![Web tests](https://github.com/tsirysndr/citruswallet/actions/workflows/web-tests.yml/badge.svg)](https://github.com/tsirysndr/citruswallet/actions/workflows/web-tests.yml)
 
 Pay someone by their AT Protocol handle instead of their Ethereum address.
 
-![Citrus Wallet signed in: an account card showing an avatar, display name, handle, linked balance and DID, beside the panel for linking a MetaMask wallet](preview.png)
+![Peachlet signed in: an account card showing an avatar, display name, handle, linked balance and DID, beside the panel for linking a MetaMask wallet](preview.png)
 
-An Ethereum address is 42 characters of hex that nobody can check by eye, so sending ETH to a person means trusting an address copied from somewhere. An AT Protocol handle — `alice.bsky.social` — is something you already recognise. Citrus Wallet connects the two: you prove you control an address by signing a message naming your AT Protocol account in Citrus Wallet or optional MetaMask, and from then on people can pay you by handle.
+An Ethereum address is 42 characters of hex that nobody can check by eye, so sending ETH to a person means trusting an address copied from somewhere. An AT Protocol handle — `alice.bsky.social` — is something you already recognise. Peachlet connects the two: you prove you control an address by signing a message naming your AT Protocol account in Peachlet or optional MetaMask, and from then on people can pay you by handle.
 
 Sending works in the open. You type a handle, the server resolves it to the account's stable DID and the address that account chose to receive on, and shows you the full address, the pinned DID, the network and the amount. Nothing moves until you approve the transaction. Built-in wallets sign on your device; MetaMask remains an optional external signer.
 
@@ -64,7 +64,7 @@ Both handle fields — sign-in and recipient — suggest accounts as you type: a
 
 Suggestions come from an AT Protocol AppView's typeahead, called by **this server** rather than the browser, so the page keeps its `connect-src 'self'` policy and your keystrokes are not sent to a third party by the page itself. The server drops any result it would refuse to address anyway — an invalid handle, or a DID method this app does not support — and only passes through an avatar URL on an allow-listed HTTPS host, which is also the only remote host added to the page's `img-src`. Avatar images are then loaded by the browser from that CDN directly, with `referrerpolicy="no-referrer"`; anything else falls back to the placeholder.
 
-A suggestion is a convenience, never a source of truth: picking one only fills the field. The identity is still resolved and verified in both directions through `/xrpc/app.citruswallet.resolveRecipient` before a payment intent can name it.
+A suggestion is a convenience, never a source of truth: picking one only fills the field. The identity is still resolved and verified in both directions through `/xrpc/app.peachlet.resolveRecipient` before a payment intent can name it.
 
 ### Signing in, or signing up
 
@@ -84,26 +84,26 @@ The linked-addresses panel shows balances on the selected chain. Built-in wallet
 
 Web and Expo discover ERC-20 holdings for each linked wallet, with pagination and direct contract lookup in the payment asset picker. Ethereum mainnet discovery uses Blockscout's public API; `TOKEN_INDEXER_URL` can override its HTTPS `/api/v2` base URL. Discovery can lag the chain or be unavailable, and heavily used wallets may time out. The UI reports unavailable discovery and still supports direct contract lookup. Local Anvil uses contract lookup without a public indexer.
 
-A token is identified by its chain and contract, never its symbol. Selection reads metadata and balances from the configured Ethereum RPC. Creating an intent snapshots the token metadata; preparing it rechecks decimals, available balance, and transfer simulation. A successful receipt must contain the exact matching ERC-20 `Transfer` event before Citrus marks it confirmed. No token approval or allowance is requested. ETH is still required for gas. Fee-on-transfer, rebasing, and other nonstandard tokens may not satisfy exact-transfer verification.
+A token is identified by its chain and contract, never its symbol. Selection reads metadata and balances from the configured Ethereum RPC. Creating an intent snapshots the token metadata; preparing it rechecks decimals, available balance, and transfer simulation. A successful receipt must contain the exact matching ERC-20 `Transfer` event before Peachlet marks it confirmed. No token approval or allowance is requested. ETH is still required for gas. Fee-on-transfer, rebasing, and other nonstandard tokens may not satisfy exact-transfer verification.
 
-The shared `@citruswallet/amounts` package in `app/packages/amounts` uses an isolated BigNumber.js configuration. Amounts remain decimal strings, atomic units remain integer strings, and excess precision is rejected instead of rounded. The clients construct the expected transfer locally and compare it with the prepared wallet request. Account balances list assets separately; amounts in different assets are never added together.
+The shared `@peachlet/amounts` package in `app/packages/amounts` uses an isolated BigNumber.js configuration. Amounts remain decimal strings, atomic units remain integer strings, and excess precision is rejected instead of rounded. The clients construct the expected transfer locally and compare it with the prepared wallet request. Account balances list assets separately; amounts in different assets are never added together.
 
 Payments store `amount_atomic`, token contract, symbol, name, and decimals. Migration `0011` preserves existing ETH amounts and assigns ETH metadata. XRPC returns `assetId`, `assetDetails`, and `amountAtomic`; `amountWei` remains a deprecated compatibility alias for atomic units. Lexicons originate in PKL; run `bun run lex:generate` after changing them.
 
 ## Database and migrations
 
-The schema is defined in Gleam, one module per table, under `src/citruswallet/drizzle/schema/`. Those modules build real Drizzle tables, so they are the single source of truth for both queries and migrations: `drizzle/schema.mjs` re-exports the compiled tables for `drizzle-kit`, which generates the SQL in `drizzle/`.
+The schema is defined in Gleam, one module per table, under `src/peachlet/drizzle/schema/`. Those modules build real Drizzle tables, so they are the single source of truth for both queries and migrations: `drizzle/schema.mjs` re-exports the compiled tables for `drizzle-kit`, which generates the SQL in `drizzle/`.
 
 ```sh
 bun run db:generate   # gleam build, then drizzle-kit generate
 bun run db:check
 ```
 
-The server applies pending migrations at startup, so no separate migrate step is needed. There is no raw SQL in the Gleam code: every query goes through the typed Drizzle bindings in `src/citruswallet/drizzle/orm.gleam`. The only SQL text anywhere is the two partial-index predicates in the schema modules, which Drizzle expresses as SQL in any language, and the three connection `PRAGMA`s in `src/citruswallet/ffi/better_sqlite.gleam`.
+The server applies pending migrations at startup, so no separate migrate step is needed. There is no raw SQL in the Gleam code: every query goes through the typed Drizzle bindings in `src/peachlet/drizzle/orm.gleam`. The only SQL text anywhere is the two partial-index predicates in the schema modules, which Drizzle expresses as SQL in any language, and the three connection `PRAGMA`s in `src/peachlet/ffi/better_sqlite.gleam`.
 
 The same Ethereum address can be independently linked on different chains, with at most one DID owning an `(address, chain)` association. Each DID has at most one public receiving default per chain.
 
-OAuth login upserts `user_profiles` by DID, storing the handle, display name, avatar URL, and creation/update timestamps in Unix milliseconds. `id` is an automatically assigned integer primary key; `did` is unique and non-nullable, and `handle` is non-nullable. Other profile fields remain nullable. Updates preserve `created_at`; `/xrpc/app.citruswallet.getProfile` also refreshes the stored profile and falls back to it when the AppView is unavailable. A first login without an available profile records the DID with an empty handle until a later successful lookup. Avatar image files are not copied into the database.
+OAuth login upserts `user_profiles` by DID, storing the handle, display name, avatar URL, and creation/update timestamps in Unix milliseconds. `id` is an automatically assigned integer primary key; `did` is unique and non-nullable, and `handle` is non-nullable. Other profile fields remain nullable. Updates preserve `created_at`; `/xrpc/app.peachlet.getProfile` also refreshes the stored profile and falls back to it when the AppView is unavailable. A first login without an available profile records the DID with an empty handle until a later successful lookup. Avatar image files are not copied into the database.
 
 ## Mainnet / configuration
 
@@ -152,46 +152,46 @@ Only unprepared intents can be cancelled in the app. An expired prepared intent 
 
 ## XRPC API and lexicons
 
-All application API methods are under `/xrpc/app.citruswallet.*`. Old `/api/*` and `/auth/start` routes are removed. Queries use URL parameters; procedures use JSON bodies, including payment IDs and invitation tokens. Errors use `{ error, message }`.
+All application API methods are under `/xrpc/app.peachlet.*`. Old `/api/*` and `/auth/start` routes are removed. Queries use URL parameters; procedures use JSON bodies, including payment IDs and invitation tokens. Errors use `{ error, message }`.
 
-Authenticated procedures retain HttpOnly cookies, exact `Origin`, and `x-csrf-token` from `app.citruswallet.getSession`. JSON bodies are limited to 8 KiB. These are browser-session APIs, not PDS-proxied bearer-token endpoints. `/auth/callback` and `/client-metadata.json` remain OAuth protocol endpoints.
+Authenticated procedures retain HttpOnly cookies, exact `Origin`, and `x-csrf-token` from `app.peachlet.getSession`. JSON bodies are limited to 8 KiB. These are browser-session APIs, not PDS-proxied bearer-token endpoints. `/auth/callback` and `/client-metadata.json` remain OAuth protocol endpoints.
 
 `pkl/defs/` is the authoritative source. With the PKL CLI installed, run `bun run lex:generate` to evaluate PKL into `lexicons/*.json`, run the official lex-cli TypeScript generator, and emit server runtime schemas and Gleam method constants. Commit generated outputs; production builds do not require PKL. The frontend calls the generated client with cookie/CSRF handling; the server validates request and response bodies against those same schemas.
 
-`src/citruswallet/xrpc/` groups handlers into `auth.gleam`, `address.gleam`, `payment.gleam`, and `actor.gleam`. `register.gleam` registers all methods, `context.gleam` contains shared security/session helpers, and `methods.gleam` is generated.
+`src/peachlet/xrpc/` groups handlers into `auth.gleam`, `address.gleam`, `payment.gleam`, and `actor.gleam`. `register.gleam` registers all methods, `context.gleam` contains shared security/session helpers, and `methods.gleam` is generated.
 
 | HTTP | NSID (append to `/xrpc/`) | Parameters / JSON fields |
 | --- | --- | --- |
-| POST | `app.citruswallet.acceptInvitation` | `token`, `address` |
-| POST | `app.citruswallet.cancelPayment` | `id` |
-| POST | `app.citruswallet.createChallenge` | `address`, `public` |
-| POST | `app.citruswallet.createInvitation` | `id` |
-| POST | `app.citruswallet.createPayment` | `identifier`, `expectedDid`, `amount` |
-| POST | `app.citruswallet.estimateFees` | `chainId`, `from`, `to`, `value` (decimal wei), `data`, `nonce` |
-| GET | `app.citruswallet.getAddresses` | `did` |
-| GET | `app.citruswallet.getInvitation` | `token` |
-| GET | `app.citruswallet.getPayment` | `id` |
-| GET | `app.citruswallet.getProfile` | — |
-| GET | `app.citruswallet.getSession` | — |
-| GET | `app.citruswallet.listPayments` | — |
-| POST | `app.citruswallet.logout` | — |
-| POST | `app.citruswallet.preparePayment` | `id`, `revision`, `address`, `fromAddress` |
-| POST | `app.citruswallet.resolveRecipient` | `identifier` |
-| GET | `app.citruswallet.searchActors` | `q` |
-| POST | `app.citruswallet.setDefaultAddress` | `address` |
-| POST | `app.citruswallet.startLogin` | `identifier`, `create` |
-| POST | `app.citruswallet.submitPayment` | `id`, `attemptId`, `txHash` |
-| POST | `app.citruswallet.syncAddresses` | — |
-| POST | `app.citruswallet.unlinkAddress` | `address` |
-| POST | `app.citruswallet.verifyChallenge` | `id`, `signature` |
+| POST | `app.peachlet.acceptInvitation` | `token`, `address` |
+| POST | `app.peachlet.cancelPayment` | `id` |
+| POST | `app.peachlet.createChallenge` | `address`, `public` |
+| POST | `app.peachlet.createInvitation` | `id` |
+| POST | `app.peachlet.createPayment` | `identifier`, `expectedDid`, `amount` |
+| POST | `app.peachlet.estimateFees` | `chainId`, `from`, `to`, `value` (decimal wei), `data`, `nonce` |
+| GET | `app.peachlet.getAddresses` | `did` |
+| GET | `app.peachlet.getInvitation` | `token` |
+| GET | `app.peachlet.getPayment` | `id` |
+| GET | `app.peachlet.getProfile` | — |
+| GET | `app.peachlet.getSession` | — |
+| GET | `app.peachlet.listPayments` | — |
+| POST | `app.peachlet.logout` | — |
+| POST | `app.peachlet.preparePayment` | `id`, `revision`, `address`, `fromAddress` |
+| POST | `app.peachlet.resolveRecipient` | `identifier` |
+| GET | `app.peachlet.searchActors` | `q` |
+| POST | `app.peachlet.setDefaultAddress` | `address` |
+| POST | `app.peachlet.startLogin` | `identifier`, `create` |
+| POST | `app.peachlet.submitPayment` | `id`, `attemptId`, `txHash` |
+| POST | `app.peachlet.syncAddresses` | — |
+| POST | `app.peachlet.unlinkAddress` | `address` |
+| POST | `app.peachlet.verifyChallenge` | `id`, `signature` |
 
 ### Repository address records
 
-OAuth requests `atproto repo:app.citruswallet.address`: create/update/delete access only for that collection. Repository records are publicly readable. Existing browser sessions are invalidated once so users sign in again and grant collection permission. Credentials remain in the private server-side OAuth session store, with single-process refresh locking; logout removes them.
+OAuth requests `atproto repo:app.peachlet.address`: create/update/delete access only for that collection. Repository records are publicly readable. Existing browser sessions are invalidated once so users sign in again and grant collection permission. Credentials remain in the private server-side OAuth session store, with single-process refresh locking; logout removes them.
 
 Only verified public links are published. The checkbox explicitly discloses publication. Records contain `chain` (CAIP-2, e.g. `eip155:1`), `address`, the signed `message`, `signature`, and `createdAt`. The deterministic key is `eip155-<chain ID>-<lowercase address>`. Private links and unlinking queue deletions; deleting a record cannot retract previously indexed copies.
 
-The link mutation and persistent outbox share one SQLite transaction. PDS writes are serialized by DID, with conditional acknowledgment so concurrent edits survive. Failed writes remain queued and are retried at login or through `app.citruswallet.syncAddresses`; the UI shows `addressSyncPending` and a retry action. Login also backfills public links not yet indexed from the repository. Records are locally validated and sent with `validate: false` because a PDS may not have installed our custom lexicon.
+The link mutation and persistent outbox share one SQLite transaction. PDS writes are serialized by DID, with conditional acknowledgment so concurrent edits survive. Failed writes remain queued and are retried at login or through `app.peachlet.syncAddresses`; the UI shows `addressSyncPending` and a retry action. Login also backfills public links not yet indexed from the repository. Records are locally validated and sent with `validate: false` because a PDS may not have installed our custom lexicon.
 
 ### Jetstream indexing
 
@@ -230,22 +230,22 @@ The layout is mobile-first: one column with a bottom tab bar on a phone, and a w
 
 ## Source and trust model
 
-- `src/citruswallet.gleam`: startup, configuration, and shutdown.
-- `src/citruswallet/app.gleam`: HTTP routes, sessions, CSRF, host and rate-limit middleware.
-- `src/citruswallet/oauth.gleam`, `src/citruswallet/identity.gleam`: official OAuth client and bidirectional identity resolution.
-- `src/citruswallet/directory.gleam`: AppView handle suggestions, vetted before they reach the page.
-- `src/citruswallet/linking.gleam`: SIWE challenges, verification, wallet ownership, and receiving defaults.
-- `src/citruswallet/payments.gleam`, `src/citruswallet/chain.gleam`: unfunded intents, recipient invitations, preparation, and RPC verification.
-- `src/citruswallet/store.gleam`, `src/citruswallet/drizzle/`: schema, migrations, typed queries, and session state.
-- `src/citruswallet/network.gleam`, `src/citruswallet/validate.gleam`, `src/citruswallet/rate_limit.gleam`, `src/citruswallet/error.gleam`: chain configuration, input shapes, request limits, and failures.
-- `src/citruswallet/ffi/`: Gleam bindings for Hono, Drizzle, better-sqlite3, viem, the AT Protocol SDKs, Node, `fetch`, and `URL`.
+- `src/peachlet.gleam`: startup, configuration, and shutdown.
+- `src/peachlet/app.gleam`: HTTP routes, sessions, CSRF, host and rate-limit middleware.
+- `src/peachlet/oauth.gleam`, `src/peachlet/identity.gleam`: official OAuth client and bidirectional identity resolution.
+- `src/peachlet/directory.gleam`: AppView handle suggestions, vetted before they reach the page.
+- `src/peachlet/linking.gleam`: SIWE challenges, verification, wallet ownership, and receiving defaults.
+- `src/peachlet/payments.gleam`, `src/peachlet/chain.gleam`: unfunded intents, recipient invitations, preparation, and RPC verification.
+- `src/peachlet/store.gleam`, `src/peachlet/drizzle/`: schema, migrations, typed queries, and session state.
+- `src/peachlet/network.gleam`, `src/peachlet/validate.gleam`, `src/peachlet/rate_limit.gleam`, `src/peachlet/error.gleam`: chain configuration, input shapes, request limits, and failures.
+- `src/peachlet/ffi/`: Gleam bindings for Hono, Drizzle, better-sqlite3, viem, the AT Protocol SDKs, Node, `fetch`, and `URL`.
 - `web/src/`: the React frontend — `pages/` for the four screens, `components/Name/` for each panel or primitive module, its index, and colocated tests, `queries.ts` for server state, `atoms.ts` for page state, `validation.ts` for the input schemas, `wallet.ts` for MetaMask.
 - `vite.config.ts`: the frontend build, and the dev proxy to `VITE_API_URL`.
 - `scripts/`: Anvil + app launcher.
 
 The wallet signature proves that the Ethereum account signed a message naming the DID. DID-owner consent relies on this app's OAuth verification; a copied wallet signature alone is not an independently verifiable DID-owner attestation. Payment resolution uses the verified database projection, which now also indexes public PDS records through Jetstream; a record must pass proof verification before it becomes a receiving address. Consumers trust this server's mapping and configured RPC. Handle suggestions additionally trust the configured AppView for discovery only, and loading a suggested avatar reveals the viewer's IP address to that image CDN; neither affects what the app will accept as a payment recipient.
 
-OAuth requests base AT Protocol access and write access to the `app.citruswallet.address` collection. OAuth credentials are retained server-side for record synchronization. Browser sessions and temporary OAuth state are sensitive; keep the SQLite files private. Wallet keys, seed phrases, and transaction-signing credentials never reach the server.
+OAuth requests base AT Protocol access and write access to the `app.peachlet.address` collection. OAuth credentials are retained server-side for record synchronization. Browser sessions and temporary OAuth state are sensitive; keep the SQLite files private. Wallet keys, seed phrases, and transaction-signing credentials never reach the server.
 
 Supported assets/wallets: native ETH and standard ERC-20 transfers on MegaETH and Ethereum, plus local Anvil development. Contract wallets/ERC-1271, escrow, automatic payouts, native Bitcoin, and server-managed recovery are outside this implementation. Real provider login, device biometrics, and external wallet prompts require platform testing.
 
@@ -254,17 +254,17 @@ The optional MetaMask installation prompt appears in the wallet panel when MetaM
 
 ## Payment descriptions and activity
 
-Payment creation accepts an optional `description` (up to 500 characters, with a 2,000-byte API limit). It is trimmed, blank values become NULL, and migration 0004 adds a nullable column without modifying old payment data. Descriptions are internal to Citrus Wallet, visible only to payment participants, and never included in repository records or transaction data.
+Payment creation accepts an optional `description` (up to 500 characters, with a 2,000-byte API limit). It is trimmed, blank values become NULL, and migration 0004 adds a nullable column without modifying old payment data. Descriptions are internal to Peachlet, visible only to payment participants, and never included in repository records or transaction data.
 
-`app.citruswallet.listPayments` lists both sent and received payments for the authenticated DID. It accepts `q`, `direction` (`all`, `sent`, `received`), `status`, `after`, `before`, `sort` (`newest`, `oldest`), `page`, and `pageSize` (1–50). The response includes `payments`, `total`, `page`, and `pageSize`. Date bounds are inclusive Unix milliseconds encoded as decimal **strings** to avoid the XRPC client's 32-bit integer serialization. Search uses FTS5 trigram indexes for literal substrings across descriptions, handles, names, DIDs, wallet addresses, and transaction hashes. Queries of fewer than three characters use a participant-scoped substring fallback. Search text is bound and quoted as a literal phrase, so punctuation and FTS operators never change query semantics. Filtering and stable creation-time/ID sorting happen in SQLite before pagination. Expiration is accounted for in status filters.
+`app.peachlet.listPayments` lists both sent and received payments for the authenticated DID. It accepts `q`, `direction` (`all`, `sent`, `received`), `status`, `after`, `before`, `sort` (`newest`, `oldest`), `page`, and `pageSize` (1–50). The response includes `payments`, `total`, `page`, and `pageSize`. Date bounds are inclusive Unix milliseconds encoded as decimal **strings** to avoid the XRPC client's 32-bit integer serialization. Search uses FTS5 trigram indexes for literal substrings across descriptions, handles, names, DIDs, wallet addresses, and transaction hashes. Queries of fewer than three characters use a participant-scoped substring fallback. Search text is bound and quoted as a literal phrase, so punctuation and FTS operators never change query semantics. Filtering and stable creation-time/ID sorting happen in SQLite before pagination. Expiration is accounted for in status filters.
 
 The activity UI debounces search by 300ms, cancels superseded requests, resets pagination when filters change, and offers transaction type/status filters, active-filter chips, and a themed date-range dialog. Presets include all time, last 7/30/90 days, this/last month, and this/last year. Date ranges use the viewer's local calendar. Profiles and rounded avatars are included in responses; unknown profiles are fetched through the vetted AppView lookup, with a cached fallback.
 
-Recipients can read their incoming payment details, but only senders can prepare, submit, cancel, or generate invitations. `app.citruswallet.deletePayment` permanently deletes only a sender-owned cancelled intent without a transaction hash. The UI confirms deletion; it removes the shared intent, not an on-chain transaction. Other payment states remain protected.
+Recipients can read their incoming payment details, but only senders can prepare, submit, cancel, or generate invitations. `app.peachlet.deletePayment` permanently deletes only a sender-owned cancelled intent without a transaction hash. The UI confirms deletion; it removes the shared intent, not an on-chain transaction. Other payment states remain protected.
 
 ## Installable web app
 
-The production frontend registers `/sw.js` and exposes `/manifest.webmanifest`, PNG icons derived from the Citrus logo, an Apple touch icon, and an install control in the footer. Supported browsers show a native install prompt; other browsers get installation instructions. The built-in encrypted wallet works in the PWA; MetaMask is optional.
+The production frontend registers `/sw.js` and exposes `/manifest.webmanifest`, PNG icons derived from the Peachlet logo, an Apple touch icon, and an install control in the footer. Supported browsers show a native install prompt; other browsers get installation instructions. The built-in encrypted wallet works in the PWA; MetaMask is optional.
 
 The service worker only caches the static offline page and its public assets. It does **not** cache authenticated responses, wallet data, avatars, OAuth requests, or payment requests, and never queues transfers. Offline navigation shows a reconnect screen. Updates wait for existing windows to close instead of reloading an in-progress payment. The sign-in form includes a local, animated Atmosphere app-logo strip, with pause and reduced-motion support.
 
@@ -292,11 +292,11 @@ The floating keyboard button opens the shortcut guide. Press `G`, then `A`, `W`,
 
 Phones and tablets offer **Connect MetaMask** through the official MetaMask
 Connect EVM client. Connections open the mobile app using a native deep link;
-return to Citrus after approving the connection, linking signature, or payment.
-If unlocking does not show the connection prompt, return to Citrus and use
+return to Peachlet after approving the connection, linking signature, or payment.
+If unlocking does not show the connection prompt, return to Peachlet and use
 **Open MetaMask again** to reopen the same pending request.
 The MetaMask in-app browser continues to use its injected provider, and desktop
-browsers continue to use the extension. Device hints choose the UI; Citrus does
+browsers continue to use the extension. Device hints choose the UI; Peachlet does
 not claim it can inspect which apps are installed. A download link is available
 in the wallet card if MetaMask is missing.
 
@@ -317,13 +317,13 @@ FTS virtual tables and triggers live in this custom migration because Drizzle's 
 
 The Expo app lives in [`app/`](app/README.md). It shares API contract types with the web client and uses Jotai, TanStack Query, NativeWind and MetaMask deep links.
 
-Native login starts at `/auth/native/start` and redeems a one-time proof-bound code via `app.citruswallet.exchangeNativeSession`. Native tokens use a separate server namespace from browser sessions. Browser CSRF checks stay enabled; the code-redemption endpoint uses the verifier proof, while authenticated native calls use explicit bearer credentials.
+Native login starts at `/auth/native/start` and redeems a one-time proof-bound code via `app.peachlet.exchangeNativeSession`. Native tokens use a separate server namespace from browser sessions. Browser CSRF checks stay enabled; the code-redemption endpoint uses the verifier proof, while authenticated native calls use explicit bearer credentials.
 
 Migration `0008` creates a durable recipient notification log, push-device registrations and push delivery jobs. SQLite triggers add one notification per confirmed payment/recipient in the same transaction as confirmation. A worker checks submitted/confirming transactions in the background, so notification creation does not depend on a user polling the payment screen. Existing confirmed history is not replayed as new notifications when migrating.
 
-The authenticated `app.citruswallet.subscribeNotifications` SSE endpoint supports `Last-Event-ID` or a `cursor`, heartbeats, replay, bounded batches, per-session connection limits, and session revocation/expiry. `listNotifications` returns the latest 50 notifications and unread count; `markNotificationRead` is recipient- and chain-scoped. Both clients invalidate cached activity/balances on new events. Caddy should stream the endpoint without response buffering; the API emits `X-Accel-Buffering: no` and `Cache-Control: no-store`.
+The authenticated `app.peachlet.subscribeNotifications` SSE endpoint supports `Last-Event-ID` or a `cursor`, heartbeats, replay, bounded batches, per-session connection limits, and session revocation/expiry. `listNotifications` returns the latest 50 notifications and unread count; `markNotificationRead` is recipient- and chain-scoped. Both clients invalidate cached activity/balances on new events. Caddy should stream the endpoint without response buffering; the API emits `X-Accel-Buffering: no` and `Cache-Control: no-store`.
 
-`registerPushToken` and `unregisterPushToken` manage Expo device tokens. Logout unregisters devices associated with that session. The worker queues unseen events from the last seven days, persists delivery tickets, checks Expo receipts, retries transient errors with backoff, and removes `DeviceNotRegistered` tokens. Delivery is at-least-once across ambiguous network failures; notification IDs support client deduplication. `EXPO_ACCESS_TOKEN` can be configured on the server if Expo enhanced push security is enabled. FCM v1 (Android) or APNs (iOS) credentials must also be configured on the dedicated Citrus EAS project. No wallet keys, payment amounts or profile details are included in push bodies.
+`registerPushToken` and `unregisterPushToken` manage Expo device tokens. Logout unregisters devices associated with that session. The worker queues unseen events from the last seven days, persists delivery tickets, checks Expo receipts, retries transient errors with backoff, and removes `DeviceNotRegistered` tokens. Delivery is at-least-once across ambiguous network failures; notification IDs support client deduplication. `EXPO_ACCESS_TOKEN` can be configured on the server if Expo enhanced push security is enabled. FCM v1 (Android) or APNs (iOS) credentials must also be configured on the dedicated Peachlet EAS project. No wallet keys, payment amounts or profile details are included in push bodies.
 
 Browser Web Push is opt-in from the notification popover. `getWebPushConfig`, `registerWebPush`, and `unregisterWebPush` manage browser subscriptions with normal session/CSRF protections. The service worker displays a generic payment alert and opens a local payment page on click; it does not cache payment data. Chrome, Firefox and Safari push-service endpoints are allowlisted to prevent arbitrary outbound requests. Expired subscriptions are removed on HTTP 404/410. Signing keys are generated once and stored server-side in the database, so database backups preserve existing subscriptions. An explicit `WEB_PUSH_PUBLIC_KEY` / `WEB_PUSH_PRIVATE_KEY` pair can override them; rotating keys requires browsers to subscribe again. Only the public key is exposed to clients.
 
@@ -336,17 +336,28 @@ Create a 12-word BIP-39 wallet or import an English recovery phrase/private key 
 
 The shared `app/packages/wallet-core` uses viem accounts, scure BIP-39, and Noble AES-256-GCM/PBKDF2-SHA256 (600,000 iterations). Browser storage contains a versioned encrypted vault with fresh random salt and nonce; the password must have at least 12 characters. WebAuthn PRF can protect a second encrypted copy when the platform authenticator supports it, with required user verification. Touch ID/device PIN availability depends on the OS, browser, and authenticator; password unlock remains available. This is local wallet unlock, not server authentication.
 
-Expo offers device unlock or a wallet password (at least 12 characters). On Android 11+, device unlock uses the existing screen-lock PIN, pattern, password, or strong biometrics through react-native-keychain with an authentication-required AES-GCM Android Keystore key. Android grants a five-second key-use window after system authentication; Citrus never receives the screen-lock PIN. Devices without supported screen-lock authentication use password protection. Password vaults use a random device-stored secret plus the chosen password for key derivation and increasing delays after failed attempts. Existing Citrus PIN vaults remain readable and can be upgraded from Settings after authenticating the old vault. Device migration verifies the new protected copy before replacing the old vault. Wallets lock on backgrounding and after five minutes without wallet actions; logout locks without deleting the backup or vault. JavaScript strings cannot be reliably zeroized: lock removes application references, not a guarantee of physical memory erasure.
+Expo offers device unlock or a wallet password (at least 12 characters). On Android 11+, device unlock uses the existing screen-lock PIN, pattern, password, or strong biometrics through react-native-keychain with an authentication-required AES-GCM Android Keystore key. Android grants a five-second key-use window after system authentication; Peachlet never receives the screen-lock PIN. Devices without supported screen-lock authentication use password protection. Password vaults use a random device-stored secret plus the chosen password for key derivation and increasing delays after failed attempts. Existing Peachlet PIN vaults remain readable and can be upgraded from Settings after authenticating the old vault. Device migration verifies the new protected copy before replacing the old vault. Wallets lock on backgrounding and after five minutes without wallet actions; logout locks without deleting the backup or vault. JavaScript strings cannot be reliably zeroized: lock removes application references, not a guarantee of physical memory erasure.
 
-Secrets never enter API requests, React Query, telemetry, or public AT Protocol records. Keep the recovery backup offline: clearing browser data, uninstalling, losing the device, or losing the password/PIN can make the local vault inaccessible. Citrus cannot reset a wallet password or recover funds. Browser self-custody also relies on the integrity of the served application and device; this implementation has not received an independent security audit.
+Secrets never enter API requests, React Query, telemetry, or public AT Protocol records. Keep the recovery backup offline: clearing browser data, uninstalling, losing the device, or losing the password/PIN can make the local vault inaccessible. Peachlet cannot reset a wallet password or recover funds. Browser self-custody also relies on the integrity of the served application and device; this implementation has not received an independent security audit.
 
 Network settings select MegaETH mainnet, MegaETH testnet, or Ethereum, with optional HTTPS RPC overrides verified against `eth_chainId`. Custom RPCs run only on the client; API verification uses fixed server-configured RPCs. Existing production environments with explicit `EVM_CHAIN_ID=1` retain that setting until it is changed. Background confirmation checks cover both mainnets and MegaETH testnet. MegaETH testnet discovers standard ERC-20 contracts from incoming Transfer logs on its public RPC, then reads metadata and current balances on-chain; results are paginated in batches of 20 contracts. RPC errors are reported as unavailable rather than an empty portfolio. Tokens without standard Transfer events can still be added by contract address. Signing preserves the server-reserved nonce, verifies sender/chain, estimates fees, requires confirmation, and aborts if the wallet locks before broadcast.
 
 
 ### Network fee estimates
 
-Built-in wallets on web and Expo call `app.citruswallet.estimateFees` before payment approval. The authenticated sender must be linked on the selected chain; the body's `chainId` must match `x-citrus-chain-id` (or the server default). The Gleam handler accepts bounded ETH and ERC-20 transfer requests, verifies the server RPC's chain ID, and asks that RPC for EIP-1559 fees and `eth_estimateGas` using the exact sender, destination, value, calldata, and reserved nonce. Ethereum (1) and MegaETH (4326) never share a fixed gas limit. MegaETH estimates therefore include its chain-specific compute and storage costs.
+Built-in wallets on web and Expo call `app.peachlet.estimateFees` before payment approval. The authenticated sender must be linked on the selected chain; the body's `chainId` must match `x-peachlet-chain-id` (or the server default). The Gleam handler accepts bounded ETH and ERC-20 transfer requests, verifies the server RPC's chain ID, and asks that RPC for EIP-1559 fees and `eth_estimateGas` using the exact sender, destination, value, calldata, and reserved nonce. Ethereum (1) and MegaETH (4326) never share a fixed gas limit. MegaETH estimates therefore include its chain-specific compute and storage costs.
 
 Responses echo the transaction and return `gasLimit`, `maxFeePerGas`, `maxPriorityFeePerGas`, and `maxFeeWei` as decimal integer strings, plus `expiresAt` in Unix milliseconds. Quotes expire after 60 seconds. Both clients validate the transaction binding and fee arithmetic, display the maximum execution fee, and recheck expiry after approval. A stale quote or failed simulation stops signing; there is no fixed-gas fallback. Custom RPCs remain client-only for broadcasting; server estimates use `ETH_RPC_URL` / `MEGAETH_RPC_URL` / `MEGAETH_TESTNET_RPC_URL`. MetaMask continues to manage its own gas estimation. This endpoint never receives private keys, signs, or broadcasts. Deploy the API before distributing clients that require this endpoint.
 
 Token picker logos use chain-and-contract mappings generated from the Uniswap and official MegaETH token lists by `node scripts/token-logos.mjs`. Missing or failed logos use a circular symbol fallback. Logos do not establish token authenticity.
+
+
+## Peachlet transition
+
+The public origin is `https://peachlet.app`, the application namespace is `app.peachlet.*`, and native links use `peachlet://`. Set production `APP_URL=https://peachlet.app` and `EXPO_PUBLIC_API_URL=https://peachlet.app`; configure DNS and Caddy for that host before switching clients. The systemd definition is `systemd/peachlet.service`. Its working directory intentionally retains the existing server checkout location. Stop the old service before enabling the renamed service on the same port. GitHub repository links still point to the existing repository.
+
+Keep the existing database and secrets. Accounts, payments and local links stay in that database. OAuth consent must be renewed to grant access to `app.peachlet.address`. Old public records are not rewritten or deleted automatically; re-link public addresses under the new origin to sign a fresh proof and publish in the new collection. Existing records do not count as published in the new namespace. Old clients using `app.citruswallet.*` must upgrade.
+
+Wallet encryption format identifiers and existing local storage keys are intentionally retained for compatibility. Browser storage and passkeys cannot move between domains: recover the wallet on the new domain with its recovery phrase/private key and configure device unlock again. The new Android package `app.peachlet` installs separately and cannot access the previous application's secure storage; keep the old application until recovery is verified.
+
+Before an Android release, register `app.peachlet` in Firebase and download its `google-services.json`. Configuration for the previous package is excluded from builds. Rename the existing Expo project slug to `peachlet` while retaining the configured project ID (or supply a new project ID and configure its push credentials). Verify the new package's signing fingerprint in the Android asset-links response. These external project, DNS and deployment changes are not performed by editing the repository.

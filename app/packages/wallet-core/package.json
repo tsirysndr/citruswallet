@@ -1,5 +1,5 @@
 {
-  "name": "@citruswallet/wallet-core",
+  "name": "@peachlet/wallet-core",
   "version": "1.0.0",
   "private": true,
   "type": "module",

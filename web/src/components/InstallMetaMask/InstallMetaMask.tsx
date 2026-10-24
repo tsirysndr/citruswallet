@@ -12,7 +12,7 @@ export function InstallMetaMask() {
   const status = useStatus();
   if (!detected && isMobileWalletBrowser()) return (
     <button type="button" disabled={!session} onClick={() => run(async () => {
-      status("Approve the connection in MetaMask, then return to Citrus.");
+      status("Approve the connection in MetaMask, then return to Peachlet.");
       const wallet = await connectWallet(session!.network);
       await walletAccount(wallet, session!.network);
       await refresh();

@@ -28,13 +28,13 @@ const client = new AtpBaseClient(async (path, init) => {
   const headers = new Headers(init?.headers);
   headers.set("x-csrf-token", csrf);
   const chain = selectedChain();
-  if (chain) headers.set("x-citrus-chain-id", chain);
+  if (chain) headers.set("x-peachlet-chain-id", chain);
   const response = await fetch(path, { ...init, headers, credentials: "same-origin" });
   if (response.status === 401) {
     for (const listener of unauthorizedListeners) listener();
   }
   return response;
-}).app.citruswallet;
+}).app.peachlet;
 
 type DataClient<T> = {
   [K in keyof T as T[K] extends (...args: never[]) => Promise<unknown> ? K : never]:

@@ -15,7 +15,7 @@ export function MetaMaskConnection() {
   return (
     <section className="mb-5 rounded-[6px] border border-edge bg-panel p-4 text-sm" aria-label="MetaMask connection" aria-live="polite">
       <p className="font-semibold">Waiting for MetaMask approval</p>
-      <p className="mt-1 text-ink-muted">If you unlocked MetaMask but no request appeared, open it again below. Approve the connection, then return to Citrus.</p>
+      <p className="mt-1 text-ink-muted">If you unlocked MetaMask but no request appeared, open it again below. Approve the connection, then return to Peachlet.</p>
       <a href={uri} className="mt-3 inline-flex items-center gap-2 rounded-[6px] bg-accent px-4 py-3 font-semibold text-accent-ink">
         <img src="/metamask.png" width={24} height={24} alt="" />
         Open MetaMask again

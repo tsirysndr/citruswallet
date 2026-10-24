@@ -78,7 +78,7 @@ export function Account() {
           subtitle="Send assets to the people you know. Your keys stay with you."
         />
         <View className="gap-5 rounded-3xl bg-white p-6">
-          <Heading title="Welcome to Citrus" />
+          <Heading title="Welcome to Peachlet" />
           <AtmosphereApps />
           <HandleInput value={handle} onChange={setHandle} onSubmit={form.handleSubmit(({ identifier }) => run(async () => { if (await signIn(identifier)) await query.invalidateQueries(); }))} />
           {form.formState.errors.identifier && <Text accessibilityRole="alert" className="text-red-700">{form.formState.errors.identifier.message}</Text>}
@@ -100,7 +100,7 @@ export function Account() {
           <View className="flex-row gap-4">
             <Text
               onPress={() =>
-                void Linking.openURL("https://citruswallet.app/terms")
+                void Linking.openURL("https://peachlet.app/terms")
               }
               className="text-sm underline"
             >
@@ -108,7 +108,7 @@ export function Account() {
             </Text>
             <Text
               onPress={() =>
-                void Linking.openURL("https://citruswallet.app/privacy")
+                void Linking.openURL("https://peachlet.app/privacy")
               }
               className="text-sm underline"
             >

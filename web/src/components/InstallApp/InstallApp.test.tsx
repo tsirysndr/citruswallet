@@ -5,7 +5,7 @@ it("shows and dismisses manual PWA install instructions", async () => {
   const { user } = await renderComponent(<InstallApp />);
   await user.click(screen.getByRole("button", { name: "Install app" }));
   expect(
-    screen.getByRole("dialog", { name: "Keep Citrus close." }),
+    screen.getByRole("dialog", { name: "Keep Peachlet close." }),
   ).toBeInTheDocument();
   expect(
     screen.getByText(/Add to Home Screen/, { selector: "p.mt-4" }),

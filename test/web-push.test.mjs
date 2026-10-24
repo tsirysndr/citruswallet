@@ -1,10 +1,10 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {createECDH,randomBytes} from 'node:crypto';
-import {open,close} from '../build/dev/javascript/citruswallet/citruswallet/store.mjs';
-import {config,register,unregister,valid_subscription as validSubscription} from '../build/dev/javascript/citruswallet/citruswallet/web_push.mjs';
+import {open,close} from '../build/dev/javascript/peachlet/peachlet/store.mjs';
+import {config,register,unregister,valid_subscription as validSubscription} from '../build/dev/javascript/peachlet/peachlet/web_push.mjs';
 import {deliver} from './helpers/notifications.mjs';
-import {revoke_devices as revokeDevices} from '../build/dev/javascript/citruswallet/citruswallet/notifications.mjs';
+import {revoke_devices as revokeDevices} from '../build/dev/javascript/peachlet/peachlet/notifications.mjs';
 function body(endpoint='https://fcm.googleapis.com/fcm/send/test') { const ecdh=createECDH('prime256v1');return {endpoint,p256dh:ecdh.generateKeys().toString('base64url'),auth:randomBytes(16).toString('base64url')}; }
 function fixture(t) {const store=open(':memory:','./drizzle')[0];t.after(()=>close(store));return store.client;}
 test('VAPID public key is stable and never exposes its private key',t=>{const db=fixture(t);assert.deepEqual(config(db),config(db));assert.deepEqual(Object.keys(config(db)),['publicKey']);assert.equal(Buffer.from(config(db).publicKey,'base64url').length,65);});

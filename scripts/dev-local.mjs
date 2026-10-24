@@ -35,7 +35,7 @@ try {
   if (!stopping) {
     // The browser talks to Vite, which proxies the API to the Gleam server, so
     // APP_URL is the Vite origin: that is the origin OAuth must return to.
-    console.log('\nCitrus Wallet: ' + APP_URL + ' · Anvil RPC: ' + RPC_URL + '\n');
+    console.log('\nPeachlet: ' + APP_URL + ' · Anvil RPC: ' + RPC_URL + '\n');
     track(spawn('gleam', ['run'], {
       cwd, stdio: 'inherit',
       env: { ...process.env, APP_URL, PORT: API_PORT, HOST: '127.0.0.1',

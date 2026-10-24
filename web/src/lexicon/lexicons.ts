@@ -4,9 +4,9 @@
 import { type LexiconDoc, Lexicons } from '@atproto/lexicon'
 
 export const schemaDict = {
-  AppCitruswalletAcceptInvitation: {
+  AppPeachletAcceptInvitation: {
     lexicon: 1,
-    id: 'app.citruswallet.acceptInvitation',
+    id: 'app.peachlet.acceptInvitation',
     defs: {
       main: {
         type: 'procedure',
@@ -31,15 +31,15 @@ export const schemaDict = {
           encoding: 'application/json',
           schema: {
             type: 'ref',
-            ref: 'lex:app.citruswallet.defs#paymentResult',
+            ref: 'lex:app.peachlet.defs#paymentResult',
           },
         },
       },
     },
   },
-  AppCitruswalletAddress: {
+  AppPeachletAddress: {
     lexicon: 1,
-    id: 'app.citruswallet.address',
+    id: 'app.peachlet.address',
     defs: {
       main: {
         type: 'record',
@@ -77,9 +77,9 @@ export const schemaDict = {
       },
     },
   },
-  AppCitruswalletCancelPayment: {
+  AppPeachletCancelPayment: {
     lexicon: 1,
-    id: 'app.citruswallet.cancelPayment',
+    id: 'app.peachlet.cancelPayment',
     defs: {
       main: {
         type: 'procedure',
@@ -100,15 +100,15 @@ export const schemaDict = {
           encoding: 'application/json',
           schema: {
             type: 'ref',
-            ref: 'lex:app.citruswallet.defs#paymentResult',
+            ref: 'lex:app.peachlet.defs#paymentResult',
           },
         },
       },
     },
   },
-  AppCitruswalletCreateChallenge: {
+  AppPeachletCreateChallenge: {
     lexicon: 1,
-    id: 'app.citruswallet.createChallenge',
+    id: 'app.peachlet.createChallenge',
     defs: {
       main: {
         type: 'procedure',
@@ -133,15 +133,15 @@ export const schemaDict = {
           encoding: 'application/json',
           schema: {
             type: 'ref',
-            ref: 'lex:app.citruswallet.defs#challenge',
+            ref: 'lex:app.peachlet.defs#challenge',
           },
         },
       },
     },
   },
-  AppCitruswalletCreateInvitation: {
+  AppPeachletCreateInvitation: {
     lexicon: 1,
-    id: 'app.citruswallet.createInvitation',
+    id: 'app.peachlet.createInvitation',
     defs: {
       main: {
         type: 'procedure',
@@ -162,15 +162,15 @@ export const schemaDict = {
           encoding: 'application/json',
           schema: {
             type: 'ref',
-            ref: 'lex:app.citruswallet.defs#invitationResult',
+            ref: 'lex:app.peachlet.defs#invitationResult',
           },
         },
       },
     },
   },
-  AppCitruswalletCreatePayment: {
+  AppPeachletCreatePayment: {
     lexicon: 1,
-    id: 'app.citruswallet.createPayment',
+    id: 'app.peachlet.createPayment',
     defs: {
       main: {
         type: 'procedure',
@@ -190,7 +190,7 @@ export const schemaDict = {
               },
               media: {
                 type: 'ref',
-                ref: 'lex:app.citruswallet.defs#paymentMedia',
+                ref: 'lex:app.peachlet.defs#paymentMedia',
               },
               description: {
                 type: 'string',
@@ -216,7 +216,7 @@ export const schemaDict = {
             properties: {
               payment: {
                 type: 'ref',
-                ref: 'lex:app.citruswallet.defs#payment',
+                ref: 'lex:app.peachlet.defs#payment',
               },
               invitationUrl: {
                 type: 'string',
@@ -227,9 +227,9 @@ export const schemaDict = {
       },
     },
   },
-  AppCitruswalletDefs: {
+  AppPeachletDefs: {
     lexicon: 1,
-    id: 'app.citruswallet.defs',
+    id: 'app.peachlet.defs',
     defs: {
       actor: {
         type: 'object',
@@ -280,7 +280,7 @@ export const schemaDict = {
           },
           nativeCurrency: {
             type: 'ref',
-            ref: 'lex:app.citruswallet.defs#currency',
+            ref: 'lex:app.peachlet.defs#currency',
           },
           rpcUrls: {
             type: 'array',
@@ -342,7 +342,7 @@ export const schemaDict = {
         properties: {
           network: {
             type: 'ref',
-            ref: 'lex:app.citruswallet.defs#network',
+            ref: 'lex:app.peachlet.defs#network',
           },
           paymentsEnabled: {
             type: 'boolean',
@@ -357,7 +357,7 @@ export const schemaDict = {
             type: 'array',
             items: {
               type: 'ref',
-              ref: 'lex:app.citruswallet.defs#link',
+              ref: 'lex:app.peachlet.defs#link',
             },
           },
           addressSyncPending: {
@@ -431,7 +431,7 @@ export const schemaDict = {
         properties: {
           asset: {
             type: 'ref',
-            ref: 'lex:app.citruswallet.defs#asset',
+            ref: 'lex:app.peachlet.defs#asset',
           },
           balanceAtomic: {
             type: 'string',
@@ -486,7 +486,7 @@ export const schemaDict = {
           },
           media: {
             type: 'ref',
-            ref: 'lex:app.citruswallet.defs#paymentMedia',
+            ref: 'lex:app.peachlet.defs#paymentMedia',
           },
           description: {
             type: 'string',
@@ -495,18 +495,18 @@ export const schemaDict = {
           },
           sender: {
             type: 'ref',
-            ref: 'lex:app.citruswallet.defs#actor',
+            ref: 'lex:app.peachlet.defs#actor',
           },
           recipient: {
             type: 'ref',
-            ref: 'lex:app.citruswallet.defs#actor',
+            ref: 'lex:app.peachlet.defs#actor',
           },
           assetId: {
             type: 'string',
           },
           assetDetails: {
             type: 'ref',
-            ref: 'lex:app.citruswallet.defs#asset',
+            ref: 'lex:app.peachlet.defs#asset',
           },
           amountAtomic: {
             type: 'string',
@@ -516,7 +516,7 @@ export const schemaDict = {
           },
           state: {
             type: 'ref',
-            ref: 'lex:app.citruswallet.defs#paymentState',
+            ref: 'lex:app.peachlet.defs#paymentState',
           },
           address: {
             type: 'string',
@@ -595,14 +595,14 @@ export const schemaDict = {
         properties: {
           payment: {
             type: 'ref',
-            ref: 'lex:app.citruswallet.defs#payment',
+            ref: 'lex:app.peachlet.defs#payment',
           },
           attemptId: {
             type: 'string',
           },
           transaction: {
             type: 'ref',
-            ref: 'lex:app.citruswallet.defs#transaction',
+            ref: 'lex:app.peachlet.defs#transaction',
           },
         },
       },
@@ -654,7 +654,7 @@ export const schemaDict = {
             type: 'array',
             items: {
               type: 'ref',
-              ref: 'lex:app.citruswallet.defs#link',
+              ref: 'lex:app.peachlet.defs#link',
             },
           },
           addressSyncPending: {
@@ -668,7 +668,7 @@ export const schemaDict = {
         properties: {
           payment: {
             type: 'ref',
-            ref: 'lex:app.citruswallet.defs#payment',
+            ref: 'lex:app.peachlet.defs#payment',
           },
         },
       },
@@ -709,9 +709,9 @@ export const schemaDict = {
       },
     },
   },
-  AppCitruswalletDeletePayment: {
+  AppPeachletDeletePayment: {
     lexicon: 1,
-    id: 'app.citruswallet.deletePayment',
+    id: 'app.peachlet.deletePayment',
     defs: {
       main: {
         type: 'procedure',
@@ -743,9 +743,9 @@ export const schemaDict = {
       },
     },
   },
-  AppCitruswalletEstimateFees: {
+  AppPeachletEstimateFees: {
     lexicon: 1,
-    id: 'app.citruswallet.estimateFees',
+    id: 'app.peachlet.estimateFees',
     defs: {
       main: {
         type: 'procedure',
@@ -842,9 +842,9 @@ export const schemaDict = {
       },
     },
   },
-  AppCitruswalletExchangeNativeSession: {
+  AppPeachletExchangeNativeSession: {
     lexicon: 1,
-    id: 'app.citruswallet.exchangeNativeSession',
+    id: 'app.peachlet.exchangeNativeSession',
     defs: {
       main: {
         type: 'procedure',
@@ -880,9 +880,9 @@ export const schemaDict = {
       },
     },
   },
-  AppCitruswalletGetAddresses: {
+  AppPeachletGetAddresses: {
     lexicon: 1,
-    id: 'app.citruswallet.getAddresses',
+    id: 'app.peachlet.getAddresses',
     defs: {
       main: {
         type: 'query',
@@ -909,7 +909,7 @@ export const schemaDict = {
                 type: 'array',
                 items: {
                   type: 'ref',
-                  ref: 'lex:app.citruswallet.defs#link',
+                  ref: 'lex:app.peachlet.defs#link',
                 },
               },
             },
@@ -918,9 +918,9 @@ export const schemaDict = {
       },
     },
   },
-  AppCitruswalletGetAsset: {
+  AppPeachletGetAsset: {
     lexicon: 1,
-    id: 'app.citruswallet.getAsset',
+    id: 'app.peachlet.getAsset',
     defs: {
       main: {
         type: 'query',
@@ -942,15 +942,15 @@ export const schemaDict = {
           encoding: 'application/json',
           schema: {
             type: 'ref',
-            ref: 'lex:app.citruswallet.defs#assetBalance',
+            ref: 'lex:app.peachlet.defs#assetBalance',
           },
         },
       },
     },
   },
-  AppCitruswalletGetAssets: {
+  AppPeachletGetAssets: {
     lexicon: 1,
-    id: 'app.citruswallet.getAssets',
+    id: 'app.peachlet.getAssets',
     defs: {
       main: {
         type: 'query',
@@ -978,7 +978,7 @@ export const schemaDict = {
                 type: 'array',
                 items: {
                   type: 'ref',
-                  ref: 'lex:app.citruswallet.defs#assetBalance',
+                  ref: 'lex:app.peachlet.defs#assetBalance',
                 },
               },
               cursor: {
@@ -993,9 +993,9 @@ export const schemaDict = {
       },
     },
   },
-  AppCitruswalletGetInvitation: {
+  AppPeachletGetInvitation: {
     lexicon: 1,
-    id: 'app.citruswallet.getInvitation',
+    id: 'app.peachlet.getInvitation',
     defs: {
       main: {
         type: 'query',
@@ -1013,15 +1013,15 @@ export const schemaDict = {
           encoding: 'application/json',
           schema: {
             type: 'ref',
-            ref: 'lex:app.citruswallet.defs#paymentResult',
+            ref: 'lex:app.peachlet.defs#paymentResult',
           },
         },
       },
     },
   },
-  AppCitruswalletGetPayment: {
+  AppPeachletGetPayment: {
     lexicon: 1,
-    id: 'app.citruswallet.getPayment',
+    id: 'app.peachlet.getPayment',
     defs: {
       main: {
         type: 'query',
@@ -1039,15 +1039,15 @@ export const schemaDict = {
           encoding: 'application/json',
           schema: {
             type: 'ref',
-            ref: 'lex:app.citruswallet.defs#paymentResult',
+            ref: 'lex:app.peachlet.defs#paymentResult',
           },
         },
       },
     },
   },
-  AppCitruswalletGetProfile: {
+  AppPeachletGetProfile: {
     lexicon: 1,
-    id: 'app.citruswallet.getProfile',
+    id: 'app.peachlet.getProfile',
     defs: {
       main: {
         type: 'query',
@@ -1059,7 +1059,7 @@ export const schemaDict = {
             properties: {
               actor: {
                 type: 'ref',
-                ref: 'lex:app.citruswallet.defs#actor',
+                ref: 'lex:app.peachlet.defs#actor',
               },
             },
           },
@@ -1067,9 +1067,9 @@ export const schemaDict = {
       },
     },
   },
-  AppCitruswalletGetSession: {
+  AppPeachletGetSession: {
     lexicon: 1,
-    id: 'app.citruswallet.getSession',
+    id: 'app.peachlet.getSession',
     defs: {
       main: {
         type: 'query',
@@ -1077,15 +1077,15 @@ export const schemaDict = {
           encoding: 'application/json',
           schema: {
             type: 'ref',
-            ref: 'lex:app.citruswallet.defs#session',
+            ref: 'lex:app.peachlet.defs#session',
           },
         },
       },
     },
   },
-  AppCitruswalletGetWebPushConfig: {
+  AppPeachletGetWebPushConfig: {
     lexicon: 1,
-    id: 'app.citruswallet.getWebPushConfig',
+    id: 'app.peachlet.getWebPushConfig',
     defs: {
       main: {
         type: 'query',
@@ -1104,9 +1104,9 @@ export const schemaDict = {
       },
     },
   },
-  AppCitruswalletListNotifications: {
+  AppPeachletListNotifications: {
     lexicon: 1,
-    id: 'app.citruswallet.listNotifications',
+    id: 'app.peachlet.listNotifications',
     defs: {
       main: {
         type: 'query',
@@ -1120,7 +1120,7 @@ export const schemaDict = {
                 type: 'array',
                 items: {
                   type: 'ref',
-                  ref: 'lex:app.citruswallet.listNotifications#notification',
+                  ref: 'lex:app.peachlet.listNotifications#notification',
                 },
               },
               unread: {
@@ -1153,9 +1153,9 @@ export const schemaDict = {
       },
     },
   },
-  AppCitruswalletListPayments: {
+  AppPeachletListPayments: {
     lexicon: 1,
-    id: 'app.citruswallet.listPayments',
+    id: 'app.peachlet.listPayments',
     defs: {
       main: {
         type: 'query',
@@ -1232,7 +1232,7 @@ export const schemaDict = {
                 type: 'array',
                 items: {
                   type: 'ref',
-                  ref: 'lex:app.citruswallet.defs#payment',
+                  ref: 'lex:app.peachlet.defs#payment',
                 },
               },
             },
@@ -1241,9 +1241,9 @@ export const schemaDict = {
       },
     },
   },
-  AppCitruswalletLogout: {
+  AppPeachletLogout: {
     lexicon: 1,
-    id: 'app.citruswallet.logout',
+    id: 'app.peachlet.logout',
     defs: {
       main: {
         type: 'procedure',
@@ -1270,9 +1270,9 @@ export const schemaDict = {
       },
     },
   },
-  AppCitruswalletMarkAllNotificationsRead: {
+  AppPeachletMarkAllNotificationsRead: {
     lexicon: 1,
-    id: 'app.citruswallet.markAllNotificationsRead',
+    id: 'app.peachlet.markAllNotificationsRead',
     defs: {
       main: {
         type: 'procedure',
@@ -1299,9 +1299,9 @@ export const schemaDict = {
       },
     },
   },
-  AppCitruswalletMarkNotificationRead: {
+  AppPeachletMarkNotificationRead: {
     lexicon: 1,
-    id: 'app.citruswallet.markNotificationRead',
+    id: 'app.peachlet.markNotificationRead',
     defs: {
       main: {
         type: 'procedure',
@@ -1333,9 +1333,9 @@ export const schemaDict = {
       },
     },
   },
-  AppCitruswalletPreparePayment: {
+  AppPeachletPreparePayment: {
     lexicon: 1,
-    id: 'app.citruswallet.preparePayment',
+    id: 'app.peachlet.preparePayment',
     defs: {
       main: {
         type: 'procedure',
@@ -1368,15 +1368,15 @@ export const schemaDict = {
           encoding: 'application/json',
           schema: {
             type: 'ref',
-            ref: 'lex:app.citruswallet.defs#attempt',
+            ref: 'lex:app.peachlet.defs#attempt',
           },
         },
       },
     },
   },
-  AppCitruswalletRegisterPushToken: {
+  AppPeachletRegisterPushToken: {
     lexicon: 1,
-    id: 'app.citruswallet.registerPushToken',
+    id: 'app.peachlet.registerPushToken',
     defs: {
       main: {
         type: 'procedure',
@@ -1412,9 +1412,9 @@ export const schemaDict = {
       },
     },
   },
-  AppCitruswalletRegisterWebPush: {
+  AppPeachletRegisterWebPush: {
     lexicon: 1,
-    id: 'app.citruswallet.registerWebPush',
+    id: 'app.peachlet.registerWebPush',
     defs: {
       main: {
         type: 'procedure',
@@ -1454,9 +1454,9 @@ export const schemaDict = {
       },
     },
   },
-  AppCitruswalletResolveRecipient: {
+  AppPeachletResolveRecipient: {
     lexicon: 1,
-    id: 'app.citruswallet.resolveRecipient',
+    id: 'app.peachlet.resolveRecipient',
     defs: {
       main: {
         type: 'procedure',
@@ -1477,15 +1477,15 @@ export const schemaDict = {
           encoding: 'application/json',
           schema: {
             type: 'ref',
-            ref: 'lex:app.citruswallet.defs#recipient',
+            ref: 'lex:app.peachlet.defs#recipient',
           },
         },
       },
     },
   },
-  AppCitruswalletSearchActors: {
+  AppPeachletSearchActors: {
     lexicon: 1,
-    id: 'app.citruswallet.searchActors',
+    id: 'app.peachlet.searchActors',
     defs: {
       main: {
         type: 'query',
@@ -1509,7 +1509,7 @@ export const schemaDict = {
                 type: 'array',
                 items: {
                   type: 'ref',
-                  ref: 'lex:app.citruswallet.defs#actor',
+                  ref: 'lex:app.peachlet.defs#actor',
                 },
               },
             },
@@ -1518,9 +1518,9 @@ export const schemaDict = {
       },
     },
   },
-  AppCitruswalletSetDefaultAddress: {
+  AppPeachletSetDefaultAddress: {
     lexicon: 1,
-    id: 'app.citruswallet.setDefaultAddress',
+    id: 'app.peachlet.setDefaultAddress',
     defs: {
       main: {
         type: 'procedure',
@@ -1542,15 +1542,15 @@ export const schemaDict = {
           encoding: 'application/json',
           schema: {
             type: 'ref',
-            ref: 'lex:app.citruswallet.defs#linksResult',
+            ref: 'lex:app.peachlet.defs#linksResult',
           },
         },
       },
     },
   },
-  AppCitruswalletStartLogin: {
+  AppPeachletStartLogin: {
     lexicon: 1,
-    id: 'app.citruswallet.startLogin',
+    id: 'app.peachlet.startLogin',
     defs: {
       main: {
         type: 'procedure',
@@ -1585,9 +1585,9 @@ export const schemaDict = {
       },
     },
   },
-  AppCitruswalletSubmitPayment: {
+  AppPeachletSubmitPayment: {
     lexicon: 1,
-    id: 'app.citruswallet.submitPayment',
+    id: 'app.peachlet.submitPayment',
     defs: {
       main: {
         type: 'procedure',
@@ -1616,15 +1616,15 @@ export const schemaDict = {
           encoding: 'application/json',
           schema: {
             type: 'ref',
-            ref: 'lex:app.citruswallet.defs#paymentResult',
+            ref: 'lex:app.peachlet.defs#paymentResult',
           },
         },
       },
     },
   },
-  AppCitruswalletSubscribeNotifications: {
+  AppPeachletSubscribeNotifications: {
     lexicon: 1,
-    id: 'app.citruswallet.subscribeNotifications',
+    id: 'app.peachlet.subscribeNotifications',
     defs: {
       main: {
         type: 'query',
@@ -1643,9 +1643,9 @@ export const schemaDict = {
       },
     },
   },
-  AppCitruswalletSyncAddresses: {
+  AppPeachletSyncAddresses: {
     lexicon: 1,
-    id: 'app.citruswallet.syncAddresses',
+    id: 'app.peachlet.syncAddresses',
     defs: {
       main: {
         type: 'procedure',
@@ -1672,9 +1672,9 @@ export const schemaDict = {
       },
     },
   },
-  AppCitruswalletUnlinkAddress: {
+  AppPeachletUnlinkAddress: {
     lexicon: 1,
-    id: 'app.citruswallet.unlinkAddress',
+    id: 'app.peachlet.unlinkAddress',
     defs: {
       main: {
         type: 'procedure',
@@ -1696,15 +1696,15 @@ export const schemaDict = {
           encoding: 'application/json',
           schema: {
             type: 'ref',
-            ref: 'lex:app.citruswallet.defs#linksResult',
+            ref: 'lex:app.peachlet.defs#linksResult',
           },
         },
       },
     },
   },
-  AppCitruswalletUnregisterPushToken: {
+  AppPeachletUnregisterPushToken: {
     lexicon: 1,
-    id: 'app.citruswallet.unregisterPushToken',
+    id: 'app.peachlet.unregisterPushToken',
     defs: {
       main: {
         type: 'procedure',
@@ -1736,9 +1736,9 @@ export const schemaDict = {
       },
     },
   },
-  AppCitruswalletUnregisterWebPush: {
+  AppPeachletUnregisterWebPush: {
     lexicon: 1,
-    id: 'app.citruswallet.unregisterWebPush',
+    id: 'app.peachlet.unregisterWebPush',
     defs: {
       main: {
         type: 'procedure',
@@ -1770,9 +1770,9 @@ export const schemaDict = {
       },
     },
   },
-  AppCitruswalletVerifyChallenge: {
+  AppPeachletVerifyChallenge: {
     lexicon: 1,
-    id: 'app.citruswallet.verifyChallenge',
+    id: 'app.peachlet.verifyChallenge',
     defs: {
       main: {
         type: 'procedure',
@@ -1797,7 +1797,7 @@ export const schemaDict = {
           encoding: 'application/json',
           schema: {
             type: 'ref',
-            ref: 'lex:app.citruswallet.defs#linksResult',
+            ref: 'lex:app.peachlet.defs#linksResult',
           },
         },
       },
@@ -1808,44 +1808,41 @@ export const schemaDict = {
 export const schemas = Object.values(schemaDict)
 export const lexicons: Lexicons = new Lexicons(schemas)
 export const ids = {
-  AppCitruswalletAcceptInvitation: 'app.citruswallet.acceptInvitation',
-  AppCitruswalletAddress: 'app.citruswallet.address',
-  AppCitruswalletCancelPayment: 'app.citruswallet.cancelPayment',
-  AppCitruswalletCreateChallenge: 'app.citruswallet.createChallenge',
-  AppCitruswalletCreateInvitation: 'app.citruswallet.createInvitation',
-  AppCitruswalletCreatePayment: 'app.citruswallet.createPayment',
-  AppCitruswalletDefs: 'app.citruswallet.defs',
-  AppCitruswalletDeletePayment: 'app.citruswallet.deletePayment',
-  AppCitruswalletEstimateFees: 'app.citruswallet.estimateFees',
-  AppCitruswalletExchangeNativeSession:
-    'app.citruswallet.exchangeNativeSession',
-  AppCitruswalletGetAddresses: 'app.citruswallet.getAddresses',
-  AppCitruswalletGetAsset: 'app.citruswallet.getAsset',
-  AppCitruswalletGetAssets: 'app.citruswallet.getAssets',
-  AppCitruswalletGetInvitation: 'app.citruswallet.getInvitation',
-  AppCitruswalletGetPayment: 'app.citruswallet.getPayment',
-  AppCitruswalletGetProfile: 'app.citruswallet.getProfile',
-  AppCitruswalletGetSession: 'app.citruswallet.getSession',
-  AppCitruswalletGetWebPushConfig: 'app.citruswallet.getWebPushConfig',
-  AppCitruswalletListNotifications: 'app.citruswallet.listNotifications',
-  AppCitruswalletListPayments: 'app.citruswallet.listPayments',
-  AppCitruswalletLogout: 'app.citruswallet.logout',
-  AppCitruswalletMarkAllNotificationsRead:
-    'app.citruswallet.markAllNotificationsRead',
-  AppCitruswalletMarkNotificationRead: 'app.citruswallet.markNotificationRead',
-  AppCitruswalletPreparePayment: 'app.citruswallet.preparePayment',
-  AppCitruswalletRegisterPushToken: 'app.citruswallet.registerPushToken',
-  AppCitruswalletRegisterWebPush: 'app.citruswallet.registerWebPush',
-  AppCitruswalletResolveRecipient: 'app.citruswallet.resolveRecipient',
-  AppCitruswalletSearchActors: 'app.citruswallet.searchActors',
-  AppCitruswalletSetDefaultAddress: 'app.citruswallet.setDefaultAddress',
-  AppCitruswalletStartLogin: 'app.citruswallet.startLogin',
-  AppCitruswalletSubmitPayment: 'app.citruswallet.submitPayment',
-  AppCitruswalletSubscribeNotifications:
-    'app.citruswallet.subscribeNotifications',
-  AppCitruswalletSyncAddresses: 'app.citruswallet.syncAddresses',
-  AppCitruswalletUnlinkAddress: 'app.citruswallet.unlinkAddress',
-  AppCitruswalletUnregisterPushToken: 'app.citruswallet.unregisterPushToken',
-  AppCitruswalletUnregisterWebPush: 'app.citruswallet.unregisterWebPush',
-  AppCitruswalletVerifyChallenge: 'app.citruswallet.verifyChallenge',
+  AppPeachletAcceptInvitation: 'app.peachlet.acceptInvitation',
+  AppPeachletAddress: 'app.peachlet.address',
+  AppPeachletCancelPayment: 'app.peachlet.cancelPayment',
+  AppPeachletCreateChallenge: 'app.peachlet.createChallenge',
+  AppPeachletCreateInvitation: 'app.peachlet.createInvitation',
+  AppPeachletCreatePayment: 'app.peachlet.createPayment',
+  AppPeachletDefs: 'app.peachlet.defs',
+  AppPeachletDeletePayment: 'app.peachlet.deletePayment',
+  AppPeachletEstimateFees: 'app.peachlet.estimateFees',
+  AppPeachletExchangeNativeSession: 'app.peachlet.exchangeNativeSession',
+  AppPeachletGetAddresses: 'app.peachlet.getAddresses',
+  AppPeachletGetAsset: 'app.peachlet.getAsset',
+  AppPeachletGetAssets: 'app.peachlet.getAssets',
+  AppPeachletGetInvitation: 'app.peachlet.getInvitation',
+  AppPeachletGetPayment: 'app.peachlet.getPayment',
+  AppPeachletGetProfile: 'app.peachlet.getProfile',
+  AppPeachletGetSession: 'app.peachlet.getSession',
+  AppPeachletGetWebPushConfig: 'app.peachlet.getWebPushConfig',
+  AppPeachletListNotifications: 'app.peachlet.listNotifications',
+  AppPeachletListPayments: 'app.peachlet.listPayments',
+  AppPeachletLogout: 'app.peachlet.logout',
+  AppPeachletMarkAllNotificationsRead: 'app.peachlet.markAllNotificationsRead',
+  AppPeachletMarkNotificationRead: 'app.peachlet.markNotificationRead',
+  AppPeachletPreparePayment: 'app.peachlet.preparePayment',
+  AppPeachletRegisterPushToken: 'app.peachlet.registerPushToken',
+  AppPeachletRegisterWebPush: 'app.peachlet.registerWebPush',
+  AppPeachletResolveRecipient: 'app.peachlet.resolveRecipient',
+  AppPeachletSearchActors: 'app.peachlet.searchActors',
+  AppPeachletSetDefaultAddress: 'app.peachlet.setDefaultAddress',
+  AppPeachletStartLogin: 'app.peachlet.startLogin',
+  AppPeachletSubmitPayment: 'app.peachlet.submitPayment',
+  AppPeachletSubscribeNotifications: 'app.peachlet.subscribeNotifications',
+  AppPeachletSyncAddresses: 'app.peachlet.syncAddresses',
+  AppPeachletUnlinkAddress: 'app.peachlet.unlinkAddress',
+  AppPeachletUnregisterPushToken: 'app.peachlet.unregisterPushToken',
+  AppPeachletUnregisterWebPush: 'app.peachlet.unregisterWebPush',
+  AppPeachletVerifyChallenge: 'app.peachlet.verifyChallenge',
 }

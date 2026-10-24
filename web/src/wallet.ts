@@ -72,7 +72,7 @@ const accountRequests = new WeakMap<Eip1193Provider, { chain: string; promise: P
 function walletErrorCode(error: any) {
   return error?.data?.originalError?.code ?? error?.rpcCode ?? error?.code;
 }
-const pendingNetworkMessage = 'Open MetaMask and finish the pending network request. Select the requested network there, then return to Citrus.';
+const pendingNetworkMessage = 'Open MetaMask and finish the pending network request. Select the requested network there, then return to Peachlet.';
 
 // Joining the same operation prevents duplicate permission/network prompts even
 // when multiple callers share a provider. Never retry add-chain automatically.

@@ -1,4 +1,4 @@
-import { formatBalance } from "@citruswallet/amounts";
+import { formatBalance } from "@peachlet/amounts";
 import type { Actor, Currency, PaymentState } from "./types";
 
 export const stateLabels: Record<PaymentState, string> = {

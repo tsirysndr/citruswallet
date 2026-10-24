@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {open,close} from '../build/dev/javascript/citruswallet/citruswallet/store.mjs';
+import {open,close} from '../build/dev/javascript/peachlet/peachlet/store.mjs';
 import {list,markRead,markAllRead,register,unregister,deliver} from './helpers/notifications.mjs';
 function fixture(t){const store=open(':memory:','./drizzle')[0];t.after(()=>close(store));const db=store.client;
  const payment=(id='payment',recipient='bob',chain=1)=>db.prepare("INSERT INTO payments(id,sender_did,recipient_did,recipient_label,chain_id,amount_atomic,state,created_at,expires_at) VALUES(?,'alice',?,'bob.test',?,'1','submitted',1,9999999999999)").run(id,recipient,chain);

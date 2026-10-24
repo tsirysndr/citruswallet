@@ -1,6 +1,6 @@
 // Authoritative Lexicon source. Generate with bun run lex:generate.
 lexicon = 1
-id = "app.citruswallet.createChallenge"
+id = "app.peachlet.createChallenge"
 defs = new Dynamic {
   `main` = new Dynamic {
     `type` = "procedure"
@@ -25,7 +25,7 @@ defs = new Dynamic {
       `encoding` = "application/json"
       `schema` = new Dynamic {
         `type` = "ref"
-        `ref` = "app.citruswallet.defs#challenge"
+        `ref` = "app.peachlet.defs#challenge"
       }
     }
   }

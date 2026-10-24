@@ -32,7 +32,7 @@ export function complete(db, oauthState, did) {
   remove(db, "native-binding", oauthState);
   const code = randomBytes(32).toString("hex");
   put(db, "native-code", hash(code), { ...binding, did }, 60000);
-  return `citruswallet://auth?code=${code}&state=${binding.state}`;
+  return `peachlet://auth?code=${code}&state=${binding.state}`;
 }
 export function exchange(db, body) {
   const { code, verifier } = body;

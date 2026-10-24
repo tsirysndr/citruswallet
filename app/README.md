@@ -1,8 +1,8 @@
-# Citrus Wallet for Android and iOS
+# Peachlet for Android and iOS
 
 Expo SDK 54, React Native, NativeWind 4, Jotai, TanStack Query and MetaMask Connect. The app has Account, Wallet, Payments and Activity tabs, a decimal-safe custom amount keypad, payment review/recovery, recipient suggestions, FTS activity search, filters and a notification inbox.
 
-The dedicated Expo project is `@tsirysndr/citruswallet` (`4111c93c-f70b-4ed0-b80e-efdb725dd710`), with native identifier `app.citruswallet` and callback scheme `citruswallet://auth`. It uses dedicated signing credentials.
+The dedicated Expo project is `@tsirysndr/peachlet` (`4111c93c-f70b-4ed0-b80e-efdb725dd710`), with native identifier `app.peachlet` and callback scheme `peachlet://auth`. It uses dedicated signing credentials.
 
 ## Run
 
@@ -14,7 +14,7 @@ bun run android
 bun run start
 ```
 
-Use a native development build, not Expo Go. MetaMask and SecureStore use native functionality. `EXPO_PUBLIC_API_URL` defaults to `https://citruswallet.app`; it must point to a deployment that includes the native login and notification endpoints in this change. `EXPO_PUBLIC_ETH_RPC_URL` defaults to the public mainnet RPC.
+Use a native development build, not Expo Go. MetaMask and SecureStore use native functionality. `EXPO_PUBLIC_API_URL` defaults to `https://peachlet.app`; it must point to a deployment that includes the native login and notification endpoints in this change. `EXPO_PUBLIC_ETH_RPC_URL` defaults to the public mainnet RPC.
 
 ```sh
 bun run typecheck
@@ -33,11 +33,11 @@ Each component lives in `src/components/ComponentName/` with its implementation,
 ```sh
 mise install
 export ANDROID_HOME="$HOME/Library/Android/sdk"
-mise exec -- bunx eas-cli build --platform android --profile preview --local --output /tmp/citruswallet-preview.apk
-adb -s DEVICE_SERIAL install -r /tmp/citruswallet-preview.apk
+mise exec -- bunx eas-cli build --platform android --profile preview --local --output /tmp/peachlet-preview.apk
+adb -s DEVICE_SERIAL install -r /tmp/peachlet-preview.apk
 ```
 
-`preview` produces a signed APK with the JavaScript bundle included. `production` produces a store app bundle. EAS manages the dedicated Citrus signing key. For a Pixel-only preview, `ORG_GRADLE_PROJECT_reactNativeArchitectures=arm64-v8a` reduces local build time.
+`preview` produces a signed APK with the JavaScript bundle included. `production` produces a store app bundle. EAS manages the dedicated Peachlet signing key. For a Pixel-only preview, `ORG_GRADLE_PROJECT_reactNativeArchitectures=arm64-v8a` reduces local build time.
 
 The root `mise.toml` pins Temurin Java 21.0.12+8 LTS. Running the build through `mise exec` sets both Java and `JAVA_HOME` consistently.
 
@@ -49,10 +49,10 @@ MetaMask deep links preserve the SDK connection request and relay response. Link
 
 ## Firebase / Expo push
 
-1. Create a Firebase project and add Android package `app.citruswallet`.
+1. Create a Firebase project and add Android package `app.peachlet`.
 2. Save its Android configuration to `app/google-services.json` (ignored by Git), or set `GOOGLE_SERVICES_JSON` to a file path before building.
    The root `.easignore` includes this client configuration in EAS build archives while excluding service-account keys and signing credentials.
-3. Generate a Firebase service-account key and upload it to the Citrus Expo project's Android FCM V1 credentials. Keep this private key outside the repository and the APK.
+3. Generate a Firebase service-account key and upload it to the Peachlet Expo project's Android FCM V1 credentials. Keep this private key outside the repository and the APK.
 4. Rebuild and install the APK after adding Firebase configuration.
 5. Sign in, open the notification bell, and choose **Enable push notifications**. Grant the Android permission.
 
@@ -62,6 +62,6 @@ Notifications reflect verified incoming payments after the required chain confir
 
 ### Android invitation links
 
-Invitations use `https://citruswallet.app/invite#invite=<token>`. The fragment keeps the invitation token out of HTTP requests. Android verifies the release signing certificate against `/.well-known/assetlinks.json`; `app.config.js` restricts verified links to `/invite`. Keep the SHA-256 fingerprint synchronized with the release certificate. When enabling Play App Signing, add the **Play app signing certificate** fingerprint as well (not the upload certificate). Rebuild and reinstall after changing intent filters. iOS universal links are not configured yet.
+Invitations use `https://peachlet.app/invite#invite=<token>`. The fragment keeps the invitation token out of HTTP requests. Android verifies the release signing certificate against `/.well-known/assetlinks.json`; `app.config.js` restricts verified links to `/invite`. Keep the SHA-256 fingerprint synchronized with the release certificate. When enabling Play App Signing, add the **Play app signing certificate** fingerprint as well (not the upload certificate). Rebuild and reinstall after changing intent filters. iOS universal links are not configured yet.
 
 The app retains pending invitations in secure storage through sign-in. Recipients must explicitly choose a linked address; opening a link never accepts an invitation or sends funds. The website remains the fallback when the app is absent and provides an explicit app-opening link for older invitations.

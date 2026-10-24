@@ -2,8 +2,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import Database from 'better-sqlite3';
 import { readdirSync, readFileSync } from 'node:fs';
-import { open, close } from '../build/dev/javascript/citruswallet/citruswallet/store.mjs';
-import { Payments, Filters, history } from '../build/dev/javascript/citruswallet/citruswallet/payments.mjs';
+import { open, close } from '../build/dev/javascript/peachlet/peachlet/store.mjs';
+import { Payments, Filters, history } from '../build/dev/javascript/peachlet/peachlet/payments.mjs';
 
 function fixture(t) {
   const store = open(':memory:', './drizzle')[0];

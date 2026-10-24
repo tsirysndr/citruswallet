@@ -60,7 +60,7 @@ export function Notifications() {
       cursor = sessionStorage.getItem(key) || "0";
     } catch {}
     const source = new EventSource(
-      `/xrpc/app.citruswallet.subscribeNotifications?chainId=${session.network.chainId}&cursor=${encodeURIComponent(cursor)}`,
+      `/xrpc/app.peachlet.subscribeNotifications?chainId=${session.network.chainId}&cursor=${encodeURIComponent(cursor)}`,
     );
     source.addEventListener("payment-received", (event) => {
       try {

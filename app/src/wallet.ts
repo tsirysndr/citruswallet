@@ -1,7 +1,7 @@
 import { requestUnlock } from "./wallet-unlock";
 import { walletMode } from "./wallet-preferences";
 import { nativeProvider, nativeVaultState } from "./local-wallet";
-import { expectedTransfer } from "@citruswallet/amounts";
+import { expectedTransfer } from "@peachlet/amounts";
 import { Linking } from "react-native";
 import { createEVMClient } from "@metamask/connect-evm";
 import { Buffer } from "buffer";
@@ -14,9 +14,9 @@ let launchFailed: ((error: Error) => void) | undefined;
 export function getClient() {
   return (client ??= createEVMClient({
     dapp: {
-      name: "Citrus Wallet",
-      url: "https://citruswallet.app",
-      iconUrl: "https://citruswallet.app/icons/icon-192.png",
+      name: "Peachlet",
+      url: "https://peachlet.app",
+      iconUrl: "https://peachlet.app/icons/icon-192.png",
     },
     api: {
       supportedNetworks: {
@@ -41,15 +41,15 @@ export function getClient() {
 }
 export async function connect(network: Network) {
   if (walletMode() === 'citrus') {
-    if (nativeVaultState() === 'loading') throw new Error('Your Citrus wallet is still loading. Try again in a moment.');
-    if (nativeVaultState() === 'absent') throw new Error('Set up your Citrus wallet from the Wallet screen first.');
+    if (nativeVaultState() === 'loading') throw new Error('Your Peachlet wallet is still loading. Try again in a moment.');
+    if (nativeVaultState() === 'absent') throw new Error('Set up your Peachlet wallet from the Wallet screen first.');
     if (nativeVaultState() === "locked") await requestUnlock();
     const wallet = nativeProvider(network);
     const addresses = await wallet.request({ method: "eth_requestAccounts" });
     return { wallet, address: addresses[0] as string };
   }
   const sdk = await withWalletDeadline(getClient(), 20_000,
-    "MetaMask could not initialize. Close and reopen Citrus Wallet, then try again.");
+    "MetaMask could not initialize. Close and reopen Peachlet, then try again.");
   if (sdk.status !== "connected") {
     const launchError = new Promise<never>((_, reject) => { launchFailed = reject; });
     try {

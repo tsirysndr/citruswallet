@@ -1,6 +1,6 @@
 // Authoritative Lexicon source. Generate with bun run lex:generate.
 lexicon = 1
-id = "app.citruswallet.logout"
+id = "app.peachlet.logout"
 defs = new Dynamic {
   `main` = new Dynamic {
     `type` = "procedure"

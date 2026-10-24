@@ -6,7 +6,7 @@ import { useRefresh, useRun, useStatus } from "../../hooks";
 import { useProfile, useSession } from "../../queries";
 import { Avatar } from "../Avatar";
 import { LogOut, PanelLeftClose, PanelLeftOpen } from "lucide-react";
-import { CitrusMark } from "../CitrusMark";
+import { PeachletMark } from "../PeachletMark";
 import { Link } from "@tanstack/react-router";
 import { screens, type Screen } from "../../screens";
 
@@ -58,9 +58,9 @@ export function SidebarNav({ marks, collapsed, onToggle, network }: {
   return (
     <aside className="app-sidebar" aria-label="Sidebar">
       <div className="sidebar-heading">
-      <Link to="/" className="brand-logo sidebar-brand" aria-label="Citrus Wallet">
-        <span className="logo-mark"><CitrusMark /></span>
-        {!collapsed && <span>Citrus<span className="logo-wallet"> Wallet</span></span>}
+      <Link to="/" className="brand-logo sidebar-brand" aria-label="Peachlet">
+        <span className="logo-mark"><PeachletMark /></span>
+        {!collapsed && <span>Peachlet</span>}
       </Link>
       <button type="button" className="sidebar-toggle" onClick={onToggle}
         aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}

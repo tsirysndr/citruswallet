@@ -1,8 +1,8 @@
 import api/fixtures as f
-import citruswallet/error
-import citruswallet/linking
-import citruswallet/payments
-import citruswallet/store
+import peachlet/error
+import peachlet/linking
+import peachlet/payments
+import peachlet/store
 import gleam/javascript/promise
 import gleam/list
 import gleam/option.{None, Some}
