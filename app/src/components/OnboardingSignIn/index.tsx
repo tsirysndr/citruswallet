@@ -21,6 +21,7 @@ export function OnboardingSignIn({ returning = false }: { returning?: boolean })
   const submit = form.handleSubmit(({ identifier }) => start(identifier));
   return <View className="gap-5 rounded-3xl bg-white p-6">
     <Text className="text-center text-3xl font-semibold">{returning ? 'Welcome back.' : 'Your handle. Your wallet.'}</Text>
+    <Text className="my-1 text-center text-base leading-6 text-muted">Sign in with your Atmosphere Account</Text>
     <AtmosphereApps />
     <Controller control={form.control} name="identifier" render={({ field }) => <HandleInput value={field.value} onChange={field.onChange} onSubmit={submit} />} />
     {form.formState.errors.identifier && <Text accessibilityRole="alert" className="text-sm text-red-700">{form.formState.errors.identifier.message}</Text>}

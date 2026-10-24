@@ -75,6 +75,7 @@ export function IdentityPanel({ className }: { className?: string }) {
             start({ identifier }, "Finding your account provider…"),
           )}
         >
+          <p className="my-6 text-center text-base leading-6 text-ink-muted">Sign in with your Atmosphere Account</p>
           <AtmosphereApps />
           <Label htmlFor="identifier">Handle</Label>
           <Row>

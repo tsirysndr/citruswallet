@@ -17,6 +17,7 @@ export function OnboardingSignIn() {
   });
   return <Panel className="font-sans">
     <h1 className="text-center text-3xl font-semibold">Your handle. Your wallet.</h1>
+    <p className="my-6 text-center text-base leading-6 text-ink-muted">Sign in with your Atmosphere Account</p>
     <AtmosphereApps />
     <form className="mt-5 flex flex-col gap-3" noValidate onSubmit={form.handleSubmit(start)}>
       <Label htmlFor="onboarding-handle">Handle</Label>

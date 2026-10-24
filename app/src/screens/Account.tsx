@@ -79,6 +79,7 @@ export function Account() {
         />
         <View className="gap-5 rounded-3xl bg-white p-6">
           <Heading title="Welcome to Peachlet" />
+          <Text className="my-1 text-center text-base leading-6 text-muted">Sign in with your Atmosphere Account</Text>
           <AtmosphereApps />
           <HandleInput value={handle} onChange={setHandle} onSubmit={form.handleSubmit(({ identifier }) => run(async () => { if (await signIn(identifier)) await query.invalidateQueries(); }))} />
           {form.formState.errors.identifier && <Text accessibilityRole="alert" className="text-red-700">{form.formState.errors.identifier.message}</Text>}
