@@ -129,7 +129,7 @@ textarea:focus-visible { outline: none; }
 .network-pill { display: inline-flex; align-items: center; gap: 8px; background: #ffffff18; color: #eef2df; padding: 9px 12px; border-radius: 10px; font-size: 12px; font-weight: 600; }
 .network-pill i { width: 6px; height: 6px; border-radius: 50%; background: #ffb995; }
 .balance-note { font-size: 12px; color: #bcbdb3; margin: 12px 0 0; }
-.quick-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 18px 0 32px; }
+.quick-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 180px)); gap: 10px; margin: 18px 0 32px; }
 .action-tile { display: flex; align-items: center; justify-content: center; gap: 9px; min-height: 58px; border-radius: 100px; color: var(--ink); border: 1px solid var(--edge); text-decoration: none; font-size: 14px; font-weight: 500; background: var(--surface); }
 .action-tile svg { width: 19px; height: 19px; stroke-width: 1.6; }
 .action-tile:hover { transform: translateY(-3px); border-color: var(--ink-muted); }
