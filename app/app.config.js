@@ -32,6 +32,7 @@ module.exports = {
   },
   plugins: [
     "expo-font",
+    ...(process.env.EXPO_PUBLIC_GOOGLE_DRIVE_WEB_CLIENT_ID ? ["@react-native-google-signin/google-signin"] : []),
     ["expo-secure-store", { faceIDPermission: "Use Face ID to unlock your Peachlet wallet." }],
     "expo-web-browser",
     ["expo-notifications", { color: "#ffb995" }],

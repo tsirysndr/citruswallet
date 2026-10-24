@@ -563,7 +563,9 @@ test('web CSP permits curated token logos without allowing arbitrary image hosts
   const images = policy.split(';').find(rule => rule.trim().startsWith('img-src'));
   for (const host of ['raw.githubusercontent.com', 'assets.coingecko.com', 'coin-images.coingecko.com', 'assets.kraken.com', 's2.coinmarketcap.com', 'www.geckoterminal.com', 'arbitrum.foundation']) assert.ok(images.includes('https://' + host));
   assert.ok(!images.split(' ').includes('https:'));
-  assert.ok(policy.includes("script-src 'self'"));
+  assert.ok(policy.includes("script-src 'self' https://accounts.google.com/gsi/"));
+  assert.ok(policy.includes("frame-src 'self' https://accounts.google.com"));
+  assert.equal(response.headers.get("cross-origin-opener-policy"), "same-origin-allow-popups");
 });
 
 

@@ -1,3 +1,5 @@
+import { CloudBackup } from '../CloudBackup';
+import { BackButton } from '../BackButton';
 import { useTheme } from '../../theme';
 import { OnboardingSignIn } from '../OnboardingSignIn';
 import { useAtomValue } from 'jotai';
@@ -28,7 +30,7 @@ export function WalletSetup({ onFinished, restart = false }: { onFinished?: () =
   const busy = useAtomValue(busyAtom);
   const existing = vault !== 'absent' || Boolean(configuredAddress());
   const [kind, setKind] = useState(walletMode());
-  const [stage, setStage] = useState<'choice' | 'create' | 'import' | 'link' | 'signin' | 'done'>(() => !restart && existing ? session?.did ? 'link' : 'signin' : 'choice');
+  const [stage, setStage] = useState<'choice' | 'cloud' | 'create' | 'import' | 'link' | 'signin' | 'done'>(() => !restart && existing ? session?.did ? 'link' : 'signin' : 'choice');
   const [editing, setEditing] = useState(restart || Boolean(onFinished));
   const current = configuredAddress();
   const links = session?.links.filter(link => link.chain_id === session.network.chainId) || [];
@@ -93,7 +95,8 @@ export function WalletSetup({ onFinished, restart = false }: { onFinished?: () =
         { id: 'metamask' as const, title: 'Connect MetaMask', subtitle: 'Keep using the wallet you already know.', Icon: Link2, color: '#ffe0d7' },
       ]).map(({ id, title, subtitle, Icon, color }) => <Pressable key={id} accessibilityRole="button" accessibilityLabel={title} onPress={() => choose(id)} className="flex-row items-center gap-3 rounded-2xl border border-edge bg-surface p-4"><View style={{ backgroundColor: color, padding: 12, borderRadius: 12 }}><Icon size={24} color="#292d26" /></View><View className="flex-1 gap-1"><Text className="text-base font-semibold">{title}</Text><Text className="text-sm leading-5 text-muted">{subtitle}</Text></View><ArrowRight size={18} color={colors.ink} /></Pressable>)}</View>
       {vault === 'absent' && <Pressable accessibilityRole="button" accessibilityLabel="Restore a wallet" onPress={() => choose('citrus', true)}><Text className="text-center text-sm text-muted">Have a recovery phrase? <Text className="font-semibold text-ink underline">Restore a wallet</Text></Text></Pressable>}
-    </> : stage === 'create' || stage === 'import' ? <LocalWallet key={stage} initialAction={stage} onCreated={() => { setAddress(nativeBalanceAddress() || ''); setStage(session?.did ? 'link' : 'signin'); }} onCancel={() => setStage('choice')} /> : <View className="gap-5 rounded-3xl bg-surface p-6">
+      {vault === 'absent' && <Button title="Restore from Google Drive or Dropbox" multiline tone="ghost" onPress={() => run(async () => { await selectWallet('citrus'); setKind('citrus'); setEditing(true); setStage('cloud'); })} />}
+    </> : stage === 'cloud' ? <><BackButton onPress={() => setStage('choice')} /><CloudBackup onRestored={() => { setAddress(nativeBalanceAddress() || ''); setStage(session?.did ? 'link' : 'signin'); }} /></> : stage === 'create' || stage === 'import' ? <LocalWallet key={stage} initialAction={stage} onCreated={() => { setAddress(nativeBalanceAddress() || ''); setStage(session?.did ? 'link' : 'signin'); }} onCancel={() => setStage('choice')} /> : <View className="gap-5 rounded-3xl bg-surface p-6">
       <View className="items-center"><WalletIllustration variant="connect" /></View><Text className="text-center text-2xl font-semibold">{session?.did ? 'Your handle, meet your wallet.' : 'Bring your wallet along.'}</Text>
       <Text className="text-center text-base leading-6 text-muted">{session?.did ? 'Your wallet address will be public, linked to your Atmosphere account, and set as your receiving default. Linking is free and never moves funds.' : 'Connect MetaMask to get started. You’ll link your Atmosphere account after signing in.'}</Text>
       {linked?.requires_relink && <Text className="text-center text-sm leading-6 text-muted">Confirm a new signature for Peachlet to update your public address record. This is free and never moves funds.</Text>}

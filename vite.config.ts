@@ -15,7 +15,7 @@ export default defineConfig(({ mode }) => {
   return {
     root: "web",
     envDir: projectRoot,
-    define: { "import.meta.env.VITE_KLIPY_API_KEY": JSON.stringify(env.VITE_KLIPY_API_KEY || "") },
+    define: Object.fromEntries(["VITE_KLIPY_API_KEY", "VITE_GOOGLE_DRIVE_CLIENT_ID", "VITE_DROPBOX_APP_KEY"].map(key => [`import.meta.env.${key}`, JSON.stringify(env[key] || "")])),
     plugins: [react(), tailwind()],
     build: { outDir: "dist", emptyOutDir: true },
     server: {

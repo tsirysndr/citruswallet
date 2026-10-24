@@ -1,3 +1,4 @@
+import { CloudBackup } from '../CloudBackup';
 import { OnboardingSignIn } from '../OnboardingSignIn';
 import { useAtomValue } from 'jotai';
 import { busyAtom } from '../../atoms';
@@ -27,7 +28,7 @@ export function WalletSetup({ onFinished, restart = false }: { onFinished?: () =
   const busy = useAtomValue(busyAtom);
   const existing = vault !== 'absent' || Boolean(localStorage.getItem('citrus:metamask-address'));
   const [kind, setKind] = useState<'citrus' | 'metamask'>(() => vault !== 'absent' && localStorage.getItem('citrus:wallet-mode') !== 'metamask' ? 'citrus' : 'metamask');
-  const [stage, setStage] = useState<'choice' | 'create' | 'import' | 'link' | 'signin' | 'done'>(() => !restart && existing ? session?.did ? 'link' : 'signin' : 'choice');
+  const [stage, setStage] = useState<'choice' | 'cloud' | 'create' | 'import' | 'link' | 'signin' | 'done'>(() => !restart && existing ? session?.did ? 'link' : 'signin' : 'choice');
   const [editing, setEditing] = useState(restart || Boolean(onFinished));
   const links = session?.links.filter(link => link.chain_id === session.network.chainId) || [];
   const current = configuredAddress();
@@ -47,7 +48,7 @@ export function WalletSetup({ onFinished, restart = false }: { onFinished?: () =
     void refresh();
     if (selection === 'citrus' && vault === 'locked') void requestUnlock().catch(() => {});
   };
-  const choose = (selection: 'citrus' | 'metamask', action?: 'import') => {
+  const choose = (selection: 'citrus' | 'metamask', action?: 'import' | 'cloud') => {
     setKind(selection); setEditing(true);
     localStorage.setItem('citrus:wallet-mode', selection);
     setStage(selection === 'metamask' || vault !== 'absent' ? 'link' : action || 'create');
@@ -102,7 +103,8 @@ export function WalletSetup({ onFinished, restart = false }: { onFinished?: () =
         <button type="button" onClick={() => choose('metamask')} className="flex items-center gap-4 rounded-2xl border border-edge bg-raised p-5 text-left transition hover:border-ink"><span className="rounded-xl bg-[#ffe0d7] p-3"><Link2 size={24} /></span><span className="flex-1"><strong className="block text-base">Connect MetaMask</strong><span className="mt-1 block text-sm text-ink-muted">Keep using the wallet you already know.</span></span><ArrowRight size={18} /></button>
       </div>
       {vault === 'absent' && <p className="mt-6 text-center text-sm text-ink-muted">Have a recovery phrase? <button type="button" className="font-semibold text-ink underline underline-offset-4" onClick={() => choose('citrus', 'import')}>Restore a wallet</button></p>}
-    </> : stage === 'create' || stage === 'import' ? <LocalWallet key={stage} initialAction={stage} onCreated={created} onCancel={() => setStage('choice')} /> : <Panel className="text-center">
+      {vault === 'absent' && <Button className="mt-3 w-full" variant="subtle" onClick={() => choose('citrus', 'cloud')}>Restore from Google Drive or Dropbox</Button>}
+    </> : stage === 'cloud' ? <><Button variant="subtle" onClick={() => setStage('choice')}><ArrowLeft size={18} />Back</Button><CloudBackup onRestored={created} /></> : stage === 'create' || stage === 'import' ? <LocalWallet key={stage} initialAction={stage} onCreated={created} onCancel={() => setStage('choice')} /> : <Panel className="text-center">
       <WalletIllustration variant="connect" className="mx-auto mb-4 w-60 max-w-full" />
       <h1 className="text-2xl font-semibold">{session?.did ? 'Your handle, meet your wallet.' : 'Bring your wallet along.'}</h1>
       <p className="mt-3 text-sm leading-6 text-ink-muted">{session?.did ? 'Your wallet address will be linked to your Atmosphere account and set as your default for receiving payments.' : 'Connect MetaMask to get started. You’ll link your Atmosphere account after signing in.'}</p>

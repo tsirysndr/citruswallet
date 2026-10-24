@@ -214,6 +214,7 @@ pub fn security(
   secure_headers(
     js.object([
       #("contentSecurityPolicy", content_security_policy(secure, image_sources)),
+      #("crossOriginOpenerPolicy", js.string("same-origin-allow-popups")),
       #("strictTransportSecurity", case secure {
         True -> js.string("max-age=15552000; includeSubDomains")
         False -> js.bool(False)
@@ -274,7 +275,17 @@ fn content_security_policy(secure: Bool, image_sources: List(String)) -> Js {
       ]),
     ),
     #("objectSrc", js.list([js.string("'none'")])),
-    #("scriptSrc", js.list([js.string("'self'")])),
+    #(
+      "scriptSrc",
+      js.list([
+        js.string("'self'"),
+        js.string("https://accounts.google.com/gsi/"),
+      ]),
+    ),
+    #(
+      "frameSrc",
+      js.list([js.string("'self'"), js.string("https://accounts.google.com")]),
+    ),
     #("scriptSrcAttr", js.list([js.string("'none'")])),
     #(
       "styleSrc",

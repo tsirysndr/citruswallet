@@ -15,12 +15,13 @@
     "test:ui:watch": "jest --watch"
   },
   "dependencies": {
-    "@peachlet/amounts": "file:packages/amounts",
-    "@peachlet/wallet-core": "file:packages/wallet-core",
     "@expo/vector-icons": "^15.0.3",
     "@hookform/resolvers": "6.0.0",
     "@metamask/connect-evm": "2.1.1",
+    "@peachlet/amounts": "file:packages/amounts",
+    "@peachlet/wallet-core": "file:packages/wallet-core",
     "@react-native-async-storage/async-storage": "2.2.0",
+    "@react-native-google-signin/google-signin": "^16.1.5",
     "@tanstack/react-query": "^5.90.0",
     "buffer": "^6.0.3",
     "expo": "~54.0.33",

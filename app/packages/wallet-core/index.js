@@ -127,3 +127,5 @@ export function feeQuoteParameters(quote, transaction, chainId, now = Date.now()
     throw new Error('Invalid network fee estimate.');
   return { gas, maxFeePerGas, maxPriorityFeePerGas, type: 'eip1559' };
 }
+
+export { driveScope, createCloudBackup, parseCloudBackup, restoreCloudBackup, dropboxAuthorization, exchangeDropboxCode, listCloudBackups, downloadCloudBackup, uploadCloudBackup } from './cloud-backup.js';
