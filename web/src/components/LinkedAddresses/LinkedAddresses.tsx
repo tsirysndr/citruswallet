@@ -72,7 +72,7 @@ export function LinkedAddresses({ className }: { className?: string }) {
                 {link.is_default ? " · Receiving default" : ""}
               </Hint>
               {here && balanceLoading && !balances && <ContentSkeleton variant="line" label="Loading balance" />}
-              {balance && <p className="mt-1 font-mono text-[13px] text-info tabular-nums">{balance}</p>}
+              {balance && <p className="mt-1 font-mono text-[13px] font-bold text-info tabular-nums">{balance}</p>}
               {here && !balanceLoading && !balance && !balances?.onNetwork && (
                 <Hint>Balance hidden · wallet connection unavailable.</Hint>
               )}

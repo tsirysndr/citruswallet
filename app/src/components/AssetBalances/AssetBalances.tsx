@@ -14,7 +14,7 @@ function WalletAssets({ session, address, hidden }: { session: Session; address:
     {query.isPending && <ContentSkeleton label="Loading assets" />}
     {(query.isError || query.data?.pages.some(page => !page.discoveryAvailable)) && <Text className="text-xs text-muted">Some token balances are unavailable. Try refreshing.</Text>}
     <ScrollView nestedScrollEnabled style={{ maxHeight: 280 }}>{entries.map(({ asset, balanceAtomic }) => <View key={asset.id} className="flex-row items-center gap-3 border-b border-edge py-3"><AssetLogo asset={asset} /><View className="min-w-0 flex-1 gap-1">
-      <View className="flex-row justify-between gap-3"><Text className="text-base font-semibold">{asset.symbol}</Text><Text className="flex-1 text-right font-mono text-sm">{hidden ? "••••••" : formatBalance(balanceAtomic, asset.decimals)}</Text></View>
+      <View className="flex-row justify-between gap-3"><Text className="text-base font-semibold">{asset.symbol}</Text><Text className="flex-1 text-right font-mono text-sm font-bold">{hidden ? "••••••" : formatBalance(balanceAtomic, asset.decimals)}</Text></View>
       <Text className="text-xs text-muted">{asset.name}</Text>
       {asset.contractAddress && <Text selectable className="font-mono text-xs text-muted">{asset.contractAddress}</Text>}
     </View></View>)}</ScrollView>

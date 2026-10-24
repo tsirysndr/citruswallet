@@ -196,7 +196,7 @@ export const Mono = ({
 );
 
 export const Balance = ({ children }: { children: ReactNode }) => (
-  <p className="mt-2.5 font-mono text-[13px] text-info tabular-nums">{children}</p>
+  <p className="mt-2.5 font-mono text-[13px] font-bold text-info tabular-nums">{children}</p>
 );
 
 export const FieldError = ({ children }: { children?: string }) =>

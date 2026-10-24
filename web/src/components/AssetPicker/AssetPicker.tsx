@@ -53,7 +53,7 @@ export function AssetPicker({ session, value, onChange }: { session: Session; va
       <div className="min-h-0 overflow-y-auto overscroll-contain" aria-busy={loading || inventory.isFetching}>
         {matches.map(({ asset, balanceAtomic }) => <button type="button" key={asset.id} disabled={loading} onClick={() => void pick(asset.id)} className="flex w-full items-center gap-3 rounded-lg p-3 text-left hover:bg-sunken">
           <AssetLogo asset={asset} /><span className="flex min-w-0 flex-1 flex-col gap-1">
-          <span className="flex w-full justify-between gap-3"><strong>{asset.symbol}</strong><span className="font-mono text-xs" title={formatBalance(balanceAtomic, asset.decimals)}>{formatBalance(balanceAtomic, asset.decimals, 6)}</span></span>
+          <span className="flex w-full justify-between gap-3"><strong>{asset.symbol}</strong><span className="font-mono text-xs font-bold" title={formatBalance(balanceAtomic, asset.decimals)}>{formatBalance(balanceAtomic, asset.decimals, 6)}</span></span>
           <span className="text-xs text-ink-muted">{asset.name}</span>
           {asset.contractAddress && <span className="break-all font-mono text-xs text-ink-faint">{asset.contractAddress}</span>}
           </span>

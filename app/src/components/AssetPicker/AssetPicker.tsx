@@ -45,7 +45,7 @@ export function AssetPicker({ session, value, onChange }: { session: Session; va
           {inventory.isPending && !!address && <ContentSkeleton label="Loading assets" />}
           {entries.filter(({ asset }) => `${asset.symbol} ${asset.name} ${asset.contractAddress ?? ''}`.toLowerCase().includes(search.toLowerCase())).map(({ asset, balanceAtomic }) => <Pressable key={asset.id} accessibilityRole="button" disabled={loading} onPress={() => void pick(asset.id)} className="flex-row items-center gap-3 rounded-xl bg-white p-4">
             <AssetLogo asset={asset} /><View className="min-w-0 flex-1 gap-2">
-            <View className="flex-row justify-between"><Text className="text-base font-semibold">{asset.symbol}</Text><Text className="font-mono text-sm">{formatBalance(balanceAtomic, asset.decimals, 6)}</Text></View>
+            <View className="flex-row justify-between"><Text className="text-base font-semibold">{asset.symbol}</Text><Text className="font-mono text-sm font-bold">{formatBalance(balanceAtomic, asset.decimals, 6)}</Text></View>
             <Text className="text-sm text-muted">{asset.name}</Text>
             {asset.contractAddress && <Text className="font-mono text-xs text-muted">{asset.contractAddress}</Text>}
             </View>

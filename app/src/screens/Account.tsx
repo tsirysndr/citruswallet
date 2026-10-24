@@ -138,7 +138,7 @@ export function Account() {
         {balanceLoading && balance === undefined && !hidden ? <ContentSkeleton variant="line" label="Loading balance" inverse /> : <Text
           numberOfLines={1}
           adjustsFontSizeToFit
-          className="font-mono text-4xl font-semibold text-white"
+          className="font-mono text-4xl font-bold text-white"
         >
           {hidden ? "•••••• ETH" : needsUnlock ? "Unlock to load balance" : balanceFailed ? "Balance unavailable" : balance !== undefined ? `${balance} ETH` : "Loading balance…"}
         </Text>}

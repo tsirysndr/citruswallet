@@ -11,3 +11,9 @@ test('forwards accessible input and editing', async () => {
   await fireEvent.changeText(screen.getByLabelText('Handle'), 'alice.test');
   expect(change).toHaveBeenCalledWith('alice.test');
 });
+
+test('preserves bold weight on monospaced balance amounts', () => {
+  render(<Text className="font-mono font-bold">1.234 ETH</Text>);
+  expect(screen.getByText('1.234 ETH')).toHaveStyle({ fontWeight: '700' });
+  expect(screen.getByText('1.234 ETH')).not.toHaveStyle({ fontFamily: 'RockfordBold' });
+});

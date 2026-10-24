@@ -12,7 +12,7 @@ function WalletAssets({ session, address, hidden }: { session: Session; address:
     {query.isPending && <ContentSkeleton label="Loading assets" />}
     {(query.isError || query.data?.pages.some(page => !page.discoveryAvailable)) && <p className="text-xs text-ink-muted">Some token balances are unavailable. Try refreshing.</p>}
     <div className="max-h-64 overflow-y-auto">{entries.map(({ asset, balanceAtomic }) => <div key={asset.id} className="flex items-center gap-3 border-b border-edge py-3"><AssetLogo asset={asset} /><div className="min-w-0 flex-1">
-      <div className="flex justify-between gap-3"><strong className="text-sm">{asset.symbol}</strong><span className="break-all text-right font-mono text-sm">{hidden ? "••••••" : formatBalance(balanceAtomic, asset.decimals)}</span></div>
+      <div className="flex justify-between gap-3"><strong className="text-sm">{asset.symbol}</strong><span className="break-all text-right font-mono text-sm font-bold">{hidden ? "••••••" : formatBalance(balanceAtomic, asset.decimals)}</span></div>
       <p className="text-xs text-ink-muted">{asset.name}</p>
       {asset.contractAddress && <p className="break-all font-mono text-xs text-ink-faint">{asset.contractAddress}</p>}
     </div></div>)}</div>
@@ -22,5 +22,5 @@ function WalletAssets({ session, address, hidden }: { session: Session; address:
 export function AssetBalances({ session, hidden }: { session: Session; hidden: boolean }) {
   const links = session.links.filter(link => link.chain_id === session.network.chainId);
   if (!links.length) return null;
-  return <section className="panel space-y-5 p-5"><h3 className="text-lg font-semibold">Your assets</h3>{links.map(link => <WalletAssets key={link.address} session={session} address={link.address} hidden={hidden} />)}</section>;
+  return <section className="ui-panel space-y-5 rounded-[28px] bg-white p-6 md:p-8"><h3 className="text-lg font-semibold">Your assets</h3>{links.map(link => <WalletAssets key={link.address} session={session} address={link.address} hidden={hidden} />)}</section>;
 }
