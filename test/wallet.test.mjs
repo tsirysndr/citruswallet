@@ -17,7 +17,7 @@ function walletFixture({ mobile = true, injected, connectError } = {}) {
   const client = { status: 'disconnected', getProvider: () => wallet,
     connect: async () => { calls.push('connect'); listeners.get('display_uri')?.('metamask://connect/mwp?p=original&c=1'); if (connectError) throw connectError; client.status = 'connected'; } };
   const source = stripTypeScriptTypes(readFileSync('web/src/wallet.ts', 'utf8'))
-    .replace(/^import .*;$/gm, '').replace(/export /g, '');
+    .replace(/^import\s[^;]*;/gm, '').replace(/export /g, '');
   const api = runInNewContext(source + '\n({ connectWallet, readBalances, checkWallet, walletAccount, provider })', {
     window: { ethereum: injected, dispatchEvent(event) { events.push(event); } }, Event, CustomEvent,
     localBalanceAddress: () => null, localWalletState: () => "absent", configureLocalNetwork() {},
@@ -68,7 +68,7 @@ test('account and network changes still stop signing/payment continuation', asyn
 
 test('mobile UI includes iPad desktop mode but does not treat desktop as app detection', async () => {
   const source = stripTypeScriptTypes(readFileSync('web/src/mobile-wallet.ts', 'utf8'))
-    .replace(/^import .*;$/gm, '').replace(/export /g, '');
+    .replace(/^import\s[^;]*;/gm, '').replace(/export /g, '');
   for (const [userAgent, platform, maxTouchPoints, expected] of [
     ['iPhone', 'iPhone', 5, true], ['Android', 'Linux', 5, true],
     ['Mozilla Macintosh', 'MacIntel', 5, true],
