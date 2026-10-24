@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { recoveryChallenge } from '@citruswallet/wallet-core';
 import { Button, Hint } from '../ui';
 
-export function RecoveryBackup({ phrase, onConfirmed, allowWhileBusy = false }: {
-  phrase: string; onConfirmed: (confirmed: boolean) => void; allowWhileBusy?: boolean;
+export function RecoveryBackup({ phrase, onConfirmed, onCancel, allowWhileBusy = false }: {
+  onCancel?: () => void; phrase: string; onConfirmed: (confirmed: boolean) => void; allowWhileBusy?: boolean;
 }) {
   const [prompts] = useState(() => recoveryChallenge(phrase));
   const [checking, setChecking] = useState(false);
@@ -38,13 +38,13 @@ export function RecoveryBackup({ phrase, onConfirmed, allowWhileBusy = false }: 
         </li>;
       })}
     </ol>
-    {!checking ? <Button keepEnabled={allowWhileBusy} onClick={() => { setChecking(true); onConfirmed(false); }}>I’ve saved my recovery phrase</Button> : <>
+    {!checking ? <div className="flex items-center justify-end gap-3">{onCancel && <Button keepEnabled={allowWhileBusy} variant="subtle" className="!bg-transparent" onClick={onCancel}>Cancel</Button>}<Button className="min-w-0 whitespace-normal" keepEnabled={allowWhileBusy} onClick={() => { setChecking(true); onConfirmed(false); }}>I’ve saved my recovery phrase</Button></div> : <>
       <p role="status" className="text-sm font-semibold">{complete ? 'Backup confirmed. You’re ready to save your wallet.' : `${Object.keys(answers).length} of 3 confirmed · Choose word ${current.index + 1}`}</p>
       {!complete && <div ref={choices} role="group" aria-label={`Choices for word ${current.index + 1}`} className="grid grid-cols-2 gap-2">
         {current.choices.map(word => <Button keepEnabled={allowWhileBusy} key={`${current.index}:${word}`} variant="subtle" className="min-h-12 font-sans" onClick={() => choose(word)}>{word}</Button>)}
       </div>}
       {error && <p role="alert" className="text-sm text-bad">{error}</p>}
-      <Button keepEnabled={allowWhileBusy} variant="subtle" onClick={review}>Review my recovery phrase</Button>
+      <div className="flex items-center justify-end gap-3">{onCancel && <Button keepEnabled={allowWhileBusy} variant="subtle" className="!bg-transparent" onClick={onCancel}>Cancel</Button>}<Button keepEnabled={allowWhileBusy} variant="subtle" className="min-w-0 whitespace-normal !bg-transparent" onClick={review}>Review my recovery phrase</Button></div>
     </>}
   </section>;
 }

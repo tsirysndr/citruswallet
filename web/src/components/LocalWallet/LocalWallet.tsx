@@ -46,7 +46,7 @@ export function LocalWallet({ allowWhileBusy = false, initialAction, onCreated, 
       <Button keepEnabled={allowWhileBusy} variant="subtle" onClick={() => setMode('import')}>I already have a wallet</Button>
     </div>}
     {state === 'absent' && (mode === 'create' || mode === 'import') && <form noValidate className="mt-4 flex flex-col gap-3" onSubmit={e => { e.preventDefault(); void save(); }}>
-      {mode === 'create' ? !confirmed && <RecoveryBackup key={phrase} phrase={phrase} onConfirmed={setConfirmed} allowWhileBusy={allowWhileBusy} /> : <>
+      {mode === 'create' ? !confirmed && <RecoveryBackup key={phrase} phrase={phrase} onConfirmed={setConfirmed} onCancel={() => { clear(); onCancel?.(); }} allowWhileBusy={allowWhileBusy} /> : <>
         <Label htmlFor="wallet-import-kind">Restore using</Label><select id="wallet-import-kind" value={kind} onChange={e => setKind(e.target.value as WalletSecret['kind'])}><option value="mnemonic">Recovery phrase</option><option value="privateKey">Private key</option></select>
         <Label htmlFor="wallet-secret">{kind === 'mnemonic' ? 'Recovery words, in order' : 'Private key'}</Label>
         <Input id="wallet-secret" type="password" secretLabel={kind === "mnemonic" ? "recovery words" : "private key"} {...phraseField} aria-invalid={!!form.formState.errors.phrase} autoComplete="off" spellCheck={false} autoCapitalize="none" />
@@ -56,7 +56,7 @@ export function LocalWallet({ allowWhileBusy = false, initialAction, onCreated, 
       <Label htmlFor="wallet-new-password">Protect this wallet with a password</Label><Input id="wallet-new-password" type="password" autoComplete="new-password" {...passwordField} aria-invalid={!!form.formState.errors.password} />
       <Hint>At least 12 characters. This password unlocks this browser only.</Hint>
       <Label htmlFor="wallet-repeat">Repeat password</Label><Input id="wallet-repeat" type="password" autoComplete="new-password" {...repeatField} aria-invalid={!!form.formState.errors.repeat} />
-      <Button keepEnabled={allowWhileBusy} type="submit" disabled={busy}>Save my wallet</Button>{mode === "create" && <Button variant="subtle" disabled={busy} onClick={() => setConfirmed(false)}>Back to recovery phrase</Button>}</>}<Button keepEnabled={allowWhileBusy} variant="subtle" disabled={busy} onClick={() => { clear(); onCancel?.(); }}>Cancel</Button>
+      <div className="mt-3 flex items-center justify-end gap-3"><Button keepEnabled={allowWhileBusy} variant="subtle" className="!bg-transparent" disabled={busy} onClick={() => { clear(); onCancel?.(); }}>Cancel</Button><Button keepEnabled={allowWhileBusy} type="submit" disabled={busy}>Save my wallet</Button></div>{mode === "create" && <Button variant="subtle" className="!bg-transparent" disabled={busy} onClick={() => setConfirmed(false)}>Back to recovery phrase</Button>}</>}
     </form>}
     {state === 'locked' && <form noValidate className="mt-4 flex flex-col gap-3" onSubmit={e => { e.preventDefault(); void validated(async () => { await unlockLocalWallet(password); clear(); }); }}>
       <Label htmlFor="wallet-password">Wallet password</Label><Input id="wallet-password" type="password" autoComplete="current-password" {...passwordField} aria-invalid={!!form.formState.errors.password} />

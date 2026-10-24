@@ -4,8 +4,8 @@ import { recoveryChallenge } from '@citruswallet/wallet-core';
 import { Text } from '../Typography';
 import { Button } from '../ui';
 
-export function RecoveryBackup({ phrase, onConfirmed, allowWhileBusy = false }: {
-  phrase: string; onConfirmed: (confirmed: boolean) => void; allowWhileBusy?: boolean;
+export function RecoveryBackup({ phrase, onConfirmed, onCancel, allowWhileBusy = false }: {
+  onCancel?: () => void; phrase: string; onConfirmed: (confirmed: boolean) => void; allowWhileBusy?: boolean;
 }) {
   const [prompts] = useState(() => recoveryChallenge(phrase));
   const [columns, setColumns] = useState(3);
@@ -32,11 +32,11 @@ export function RecoveryBackup({ phrase, onConfirmed, allowWhileBusy = false }: 
           : <View key={index} style={{ width: columns === 2 ? '48%' : '30%', minHeight: 48 }} className="items-start gap-1 rounded-md bg-canvas px-2 py-3">{content}</View>;
       })}
     </View>
-    {!checking ? <Button keepEnabled={allowWhileBusy} title="I’ve saved my recovery phrase" onPress={() => { setChecking(true); onConfirmed(false); }} /> : <>
+    {!checking ? <View className="flex-row items-center gap-3">{onCancel && <View className="flex-1"><Button keepEnabled={allowWhileBusy} title="Cancel" tone="ghost" onPress={onCancel} /></View>}<View className="flex-[2]"><Button multiline keepEnabled={allowWhileBusy} title="I’ve saved my recovery phrase" onPress={() => { setChecking(true); onConfirmed(false); }} /></View></View> : <>
       <Text accessibilityLiveRegion="polite" className="font-semibold">{complete ? 'Backup confirmed. You’re ready to save your wallet.' : `${Object.keys(answers).length} of 3 confirmed · Choose word ${current.index + 1}`}</Text>
       {!complete && <View testID="recovery-word-choices" className="flex-row flex-wrap" style={{ gap: 8 }} onLayout={event => setColumns(event.nativeEvent.layout.width < 300 ? 2 : 3)}>{current.choices.map(word => <View key={`${current.index}:${word}`} style={{ width: '48%' }}><Button keepEnabled={allowWhileBusy} title={word} tone="plain" onPress={() => choose(word)} /></View>)}</View>}
       {!!error && <Text accessibilityRole="alert" className="text-red-700">{error}</Text>}
-      <Button keepEnabled={allowWhileBusy} title="Review my recovery phrase" tone="plain" onPress={() => { setChecking(false); setAnswers({}); setActive(0); setError(''); onConfirmed(false); }} />
+      <View className="flex-row items-center gap-3">{onCancel && <View className="flex-1"><Button keepEnabled={allowWhileBusy} title="Cancel" tone="ghost" onPress={onCancel} /></View>}<View className="flex-[2]"><Button multiline keepEnabled={allowWhileBusy} title="Review my recovery phrase" tone="ghost" onPress={() => { setChecking(false); setAnswers({}); setActive(0); setError(''); onConfirmed(false); }} /></View></View>
     </>}
   </View>;
 }
