@@ -1,4 +1,4 @@
-# Peachlet for Android and iOS
+# Peachlet Wallet for Android and iOS
 
 Expo SDK 54, React Native, NativeWind 4, Jotai, TanStack Query and MetaMask Connect. The app has Account, Wallet, Payments and Activity tabs, a decimal-safe custom amount keypad, payment review/recovery, recipient suggestions, FTS activity search, filters and a notification inbox.
 
@@ -37,7 +37,7 @@ mise exec -- bunx eas-cli build --platform android --profile preview --local --o
 adb -s DEVICE_SERIAL install -r /tmp/peachlet-preview.apk
 ```
 
-`preview` produces a signed APK with the JavaScript bundle included. `production` produces a store app bundle. EAS manages the dedicated Peachlet signing key. For a Pixel-only preview, `ORG_GRADLE_PROJECT_reactNativeArchitectures=arm64-v8a` reduces local build time.
+`preview` produces a signed APK with the JavaScript bundle included. `production` produces a store app bundle. EAS manages the dedicated Peachlet Wallet signing key. For a Pixel-only preview, `ORG_GRADLE_PROJECT_reactNativeArchitectures=arm64-v8a` reduces local build time.
 
 The root `mise.toml` pins Temurin Java 21.0.12+8 LTS. Running the build through `mise exec` sets both Java and `JAVA_HOME` consistently.
 
@@ -52,7 +52,7 @@ MetaMask deep links preserve the SDK connection request and relay response. Link
 1. Create a Firebase project and add Android package `app.peachlet`.
 2. Save its Android configuration to `app/google-services.json` (ignored by Git), or set `GOOGLE_SERVICES_JSON` to a file path before building.
    The root `.easignore` includes this client configuration in EAS build archives while excluding service-account keys and signing credentials.
-3. Generate a Firebase service-account key and upload it to the Peachlet Expo project's Android FCM V1 credentials. Keep this private key outside the repository and the APK.
+3. Generate a Firebase service-account key and upload it to the Peachlet Wallet Expo project's Android FCM V1 credentials. Keep this private key outside the repository and the APK.
 4. Rebuild and install the APK after adding Firebase configuration.
 5. Sign in, open the notification bell, and choose **Enable push notifications**. Grant the Android permission.
 

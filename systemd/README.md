@@ -1,4 +1,4 @@
-# Peachlet service
+# Peachlet Wallet service
 
 `peachlet.service` uses root's interactive Bash environment, Doppler's `prd` configuration, journal logging, and automatic restart on failure.
 

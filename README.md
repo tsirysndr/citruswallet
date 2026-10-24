@@ -1,13 +1,13 @@
-# Peachlet
+# Peachlet Wallet
 
 [![API tests](https://github.com/tsirysndr/citruswallet/actions/workflows/api-tests.yml/badge.svg)](https://github.com/tsirysndr/citruswallet/actions/workflows/api-tests.yml)
 [![Web tests](https://github.com/tsirysndr/citruswallet/actions/workflows/web-tests.yml/badge.svg)](https://github.com/tsirysndr/citruswallet/actions/workflows/web-tests.yml)
 
 Pay someone by their AT Protocol handle instead of their Ethereum address.
 
-![Peachlet signed in: an account card showing an avatar, display name, handle, linked balance and DID, beside the panel for linking a MetaMask wallet](preview.png)
+![Peachlet Wallet signed in: an account card showing an avatar, display name, handle, linked balance and DID, beside the panel for linking a MetaMask wallet](preview.png)
 
-An Ethereum address is 42 characters of hex that nobody can check by eye, so sending ETH to a person means trusting an address copied from somewhere. An AT Protocol handle — `alice.bsky.social` — is something you already recognise. Peachlet connects the two: you prove you control an address by signing a message naming your AT Protocol account in Peachlet or optional MetaMask, and from then on people can pay you by handle.
+An Ethereum address is 42 characters of hex that nobody can check by eye, so sending ETH to a person means trusting an address copied from somewhere. An AT Protocol handle — `alice.bsky.social` — is something you already recognise. Peachlet Wallet connects the two: you prove you control an address by signing a message naming your AT Protocol account in Peachlet Wallet or optional MetaMask, and from then on people can pay you by handle.
 
 Sending works in the open. You type a handle, the server resolves it to the account's stable DID and the address that account chose to receive on, and shows you the full address, the pinned DID, the network and the amount. Nothing moves until you approve the transaction. Built-in wallets sign on your device; MetaMask remains an optional external signer.
 
@@ -84,7 +84,7 @@ The linked-addresses panel shows balances on the selected chain. Built-in wallet
 
 Web and Expo discover ERC-20 holdings for each linked wallet, with pagination and direct contract lookup in the payment asset picker. Ethereum mainnet discovery uses Blockscout's public API; `TOKEN_INDEXER_URL` can override its HTTPS `/api/v2` base URL. Discovery can lag the chain or be unavailable, and heavily used wallets may time out. The UI reports unavailable discovery and still supports direct contract lookup. Local Anvil uses contract lookup without a public indexer.
 
-A token is identified by its chain and contract, never its symbol. Selection reads metadata and balances from the configured Ethereum RPC. Creating an intent snapshots the token metadata; preparing it rechecks decimals, available balance, and transfer simulation. A successful receipt must contain the exact matching ERC-20 `Transfer` event before Peachlet marks it confirmed. No token approval or allowance is requested. ETH is still required for gas. Fee-on-transfer, rebasing, and other nonstandard tokens may not satisfy exact-transfer verification.
+A token is identified by its chain and contract, never its symbol. Selection reads metadata and balances from the configured Ethereum RPC. Creating an intent snapshots the token metadata; preparing it rechecks decimals, available balance, and transfer simulation. A successful receipt must contain the exact matching ERC-20 `Transfer` event before Peachlet Wallet marks it confirmed. No token approval or allowance is requested. ETH is still required for gas. Fee-on-transfer, rebasing, and other nonstandard tokens may not satisfy exact-transfer verification.
 
 The shared `@peachlet/amounts` package in `app/packages/amounts` uses an isolated BigNumber.js configuration. Amounts remain decimal strings, atomic units remain integer strings, and excess precision is rejected instead of rounded. The clients construct the expected transfer locally and compare it with the prepared wallet request. Account balances list assets separately; amounts in different assets are never added together.
 
@@ -254,7 +254,7 @@ The optional MetaMask installation prompt appears in the wallet panel when MetaM
 
 ## Payment descriptions and activity
 
-Payment creation accepts an optional `description` (up to 500 characters, with a 2,000-byte API limit). It is trimmed, blank values become NULL, and migration 0004 adds a nullable column without modifying old payment data. Descriptions are internal to Peachlet, visible only to payment participants, and never included in repository records or transaction data.
+Payment creation accepts an optional `description` (up to 500 characters, with a 2,000-byte API limit). It is trimmed, blank values become NULL, and migration 0004 adds a nullable column without modifying old payment data. Descriptions are internal to Peachlet Wallet, visible only to payment participants, and never included in repository records or transaction data.
 
 `app.peachlet.listPayments` lists both sent and received payments for the authenticated DID. It accepts `q`, `direction` (`all`, `sent`, `received`), `status`, `after`, `before`, `sort` (`newest`, `oldest`), `page`, and `pageSize` (1–50). The response includes `payments`, `total`, `page`, and `pageSize`. Date bounds are inclusive Unix milliseconds encoded as decimal **strings** to avoid the XRPC client's 32-bit integer serialization. Search uses FTS5 trigram indexes for literal substrings across descriptions, handles, names, DIDs, wallet addresses, and transaction hashes. Queries of fewer than three characters use a participant-scoped substring fallback. Search text is bound and quoted as a literal phrase, so punctuation and FTS operators never change query semantics. Filtering and stable creation-time/ID sorting happen in SQLite before pagination. Expiration is accounted for in status filters.
 
@@ -264,7 +264,7 @@ Recipients can read their incoming payment details, but only senders can prepare
 
 ## Installable web app
 
-The production frontend registers `/sw.js` and exposes `/manifest.webmanifest`, PNG icons derived from the Peachlet logo, an Apple touch icon, and an install control in the footer. Supported browsers show a native install prompt; other browsers get installation instructions. The built-in encrypted wallet works in the PWA; MetaMask is optional.
+The production frontend registers `/sw.js` and exposes `/manifest.webmanifest`, PNG icons derived from the Peachlet Wallet logo, an Apple touch icon, and an install control in the footer. Supported browsers show a native install prompt; other browsers get installation instructions. The built-in encrypted wallet works in the PWA; MetaMask is optional.
 
 The service worker only caches the static offline page and its public assets. It does **not** cache authenticated responses, wallet data, avatars, OAuth requests, or payment requests, and never queues transfers. Offline navigation shows a reconnect screen. Updates wait for existing windows to close instead of reloading an in-progress payment. The sign-in form includes a local, animated Atmosphere app-logo strip, with pause and reduced-motion support.
 
@@ -292,11 +292,11 @@ The floating keyboard button opens the shortcut guide. Press `G`, then `A`, `W`,
 
 Phones and tablets offer **Connect MetaMask** through the official MetaMask
 Connect EVM client. Connections open the mobile app using a native deep link;
-return to Peachlet after approving the connection, linking signature, or payment.
-If unlocking does not show the connection prompt, return to Peachlet and use
+return to Peachlet Wallet after approving the connection, linking signature, or payment.
+If unlocking does not show the connection prompt, return to Peachlet Wallet and use
 **Open MetaMask again** to reopen the same pending request.
 The MetaMask in-app browser continues to use its injected provider, and desktop
-browsers continue to use the extension. Device hints choose the UI; Peachlet does
+browsers continue to use the extension. Device hints choose the UI; Peachlet Wallet does
 not claim it can inspect which apps are installed. A download link is available
 in the wallet card if MetaMask is missing.
 
@@ -323,7 +323,7 @@ Migration `0008` creates a durable recipient notification log, push-device regis
 
 The authenticated `app.peachlet.subscribeNotifications` SSE endpoint supports `Last-Event-ID` or a `cursor`, heartbeats, replay, bounded batches, per-session connection limits, and session revocation/expiry. `listNotifications` returns the latest 50 notifications and unread count; `markNotificationRead` is recipient- and chain-scoped. Both clients invalidate cached activity/balances on new events. Caddy should stream the endpoint without response buffering; the API emits `X-Accel-Buffering: no` and `Cache-Control: no-store`.
 
-`registerPushToken` and `unregisterPushToken` manage Expo device tokens. Logout unregisters devices associated with that session. The worker queues unseen events from the last seven days, persists delivery tickets, checks Expo receipts, retries transient errors with backoff, and removes `DeviceNotRegistered` tokens. Delivery is at-least-once across ambiguous network failures; notification IDs support client deduplication. `EXPO_ACCESS_TOKEN` can be configured on the server if Expo enhanced push security is enabled. FCM v1 (Android) or APNs (iOS) credentials must also be configured on the dedicated Peachlet EAS project. No wallet keys, payment amounts or profile details are included in push bodies.
+`registerPushToken` and `unregisterPushToken` manage Expo device tokens. Logout unregisters devices associated with that session. The worker queues unseen events from the last seven days, persists delivery tickets, checks Expo receipts, retries transient errors with backoff, and removes `DeviceNotRegistered` tokens. Delivery is at-least-once across ambiguous network failures; notification IDs support client deduplication. `EXPO_ACCESS_TOKEN` can be configured on the server if Expo enhanced push security is enabled. FCM v1 (Android) or APNs (iOS) credentials must also be configured on the dedicated Peachlet Wallet EAS project. No wallet keys, payment amounts or profile details are included in push bodies.
 
 Browser Web Push is opt-in from the notification popover. `getWebPushConfig`, `registerWebPush`, and `unregisterWebPush` manage browser subscriptions with normal session/CSRF protections. The service worker displays a generic payment alert and opens a local payment page on click; it does not cache payment data. Chrome, Firefox and Safari push-service endpoints are allowlisted to prevent arbitrary outbound requests. Expired subscriptions are removed on HTTP 404/410. Signing keys are generated once and stored server-side in the database, so database backups preserve existing subscriptions. An explicit `WEB_PUSH_PUBLIC_KEY` / `WEB_PUSH_PRIVATE_KEY` pair can override them; rotating keys requires browsers to subscribe again. Only the public key is exposed to clients.
 
@@ -336,9 +336,9 @@ Create a 12-word BIP-39 wallet or import an English recovery phrase/private key 
 
 The shared `app/packages/wallet-core` uses viem accounts, scure BIP-39, and Noble AES-256-GCM/PBKDF2-SHA256 (600,000 iterations). Browser storage contains a versioned encrypted vault with fresh random salt and nonce; the password must have at least 12 characters. WebAuthn PRF can protect a second encrypted copy when the platform authenticator supports it, with required user verification. Touch ID/device PIN availability depends on the OS, browser, and authenticator; password unlock remains available. This is local wallet unlock, not server authentication.
 
-Expo offers device unlock or a wallet password (at least 12 characters). On Android 11+, device unlock uses the existing screen-lock PIN, pattern, password, or strong biometrics through react-native-keychain with an authentication-required AES-GCM Android Keystore key. Android grants a five-second key-use window after system authentication; Peachlet never receives the screen-lock PIN. Devices without supported screen-lock authentication use password protection. Password vaults use a random device-stored secret plus the chosen password for key derivation and increasing delays after failed attempts. Existing Peachlet PIN vaults remain readable and can be upgraded from Settings after authenticating the old vault. Device migration verifies the new protected copy before replacing the old vault. Wallets lock on backgrounding and after five minutes without wallet actions; logout locks without deleting the backup or vault. JavaScript strings cannot be reliably zeroized: lock removes application references, not a guarantee of physical memory erasure.
+Expo offers device unlock or a wallet password (at least 12 characters). On Android 11+, device unlock uses the existing screen-lock PIN, pattern, password, or strong biometrics through react-native-keychain with an authentication-required AES-GCM Android Keystore key. Android grants a five-second key-use window after system authentication; Peachlet Wallet never receives the screen-lock PIN. Devices without supported screen-lock authentication use password protection. Password vaults use a random device-stored secret plus the chosen password for key derivation and increasing delays after failed attempts. Existing Peachlet Wallet PIN vaults remain readable and can be upgraded from Settings after authenticating the old vault. Device migration verifies the new protected copy before replacing the old vault. Wallets lock on backgrounding and after five minutes without wallet actions; logout locks without deleting the backup or vault. JavaScript strings cannot be reliably zeroized: lock removes application references, not a guarantee of physical memory erasure.
 
-Secrets never enter API requests, React Query, telemetry, or public AT Protocol records. Keep the recovery backup offline: clearing browser data, uninstalling, losing the device, or losing the password/PIN can make the local vault inaccessible. Peachlet cannot reset a wallet password or recover funds. Browser self-custody also relies on the integrity of the served application and device; this implementation has not received an independent security audit.
+Secrets never enter API requests, React Query, telemetry, or public AT Protocol records. Keep the recovery backup offline: clearing browser data, uninstalling, losing the device, or losing the password/PIN can make the local vault inaccessible. Peachlet Wallet cannot reset a wallet password or recover funds. Browser self-custody also relies on the integrity of the served application and device; this implementation has not received an independent security audit.
 
 Network settings select MegaETH mainnet, MegaETH testnet, or Ethereum, with optional HTTPS RPC overrides verified against `eth_chainId`. Custom RPCs run only on the client; API verification uses fixed server-configured RPCs. Existing production environments with explicit `EVM_CHAIN_ID=1` retain that setting until it is changed. Background confirmation checks cover both mainnets and MegaETH testnet. MegaETH testnet discovers standard ERC-20 contracts from incoming Transfer logs on its public RPC, then reads metadata and current balances on-chain; results are paginated in batches of 20 contracts. RPC errors are reported as unavailable rather than an empty portfolio. Tokens without standard Transfer events can still be added by contract address. Signing preserves the server-reserved nonce, verifies sender/chain, estimates fees, requires confirmation, and aborts if the wallet locks before broadcast.
 
@@ -352,7 +352,7 @@ Responses echo the transaction and return `gasLimit`, `maxFeePerGas`, `maxPriori
 Token picker logos use chain-and-contract mappings generated from the Uniswap and official MegaETH token lists by `node scripts/token-logos.mjs`. Missing or failed logos use a circular symbol fallback. Logos do not establish token authenticity.
 
 
-## Peachlet transition
+## Peachlet Wallet transition
 
 The public origin is `https://peachlet.app`, the application namespace is `app.peachlet.*`, and native links use `peachlet://`. Set production `APP_URL=https://peachlet.app` and `EXPO_PUBLIC_API_URL=https://peachlet.app`; configure DNS and Caddy for that host before switching clients. The systemd definition is `systemd/peachlet.service`. Its working directory intentionally retains the existing server checkout location. Stop the old service before enabling the renamed service on the same port. GitHub repository links still point to the existing repository.
 
@@ -360,4 +360,4 @@ Keep the existing database and secrets. Accounts, payments and local links stay 
 
 Wallet encryption format identifiers and existing local storage keys are intentionally retained for compatibility. Browser storage and passkeys cannot move between domains: recover the wallet on the new domain with its recovery phrase/private key and configure device unlock again. The new Android package `app.peachlet` installs separately and cannot access the previous application's secure storage; keep the old application until recovery is verified.
 
-Before an Android release, register `app.peachlet` in Firebase and download its `google-services.json`. Configuration for the previous package is excluded from builds. The existing Expo project is displayed as Peachlet; its internal slug and project ID remain stable to preserve the project and push credentials. Verify the new package's signing fingerprint in the Android asset-links response. These external project, DNS and deployment changes are not performed by editing the repository.
+Before an Android release, register `app.peachlet` in Firebase and download its `google-services.json`. Configuration for the previous package is excluded from builds. The existing Expo project is displayed as Peachlet Wallet; its internal slug and project ID remain stable to preserve the project and push credentials. Verify the new package's signing fingerprint in the Android asset-links response. These external project, DNS and deployment changes are not performed by editing the repository.
