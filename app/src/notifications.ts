@@ -29,7 +29,7 @@ export async function pushStatus() {
   ]);
   return { enabled: permissions.granted && Boolean(token), registered: Boolean(token), blocked: !permissions.granted && !permissions.canAskAgain };
 }
-export async function enablePush() {
+export async function enablePush(devicePushToken?: Notifications.DevicePushToken) {
   if (Platform.OS === "android")
     await Notifications.setNotificationChannelAsync("payments", {
       name: "Payments received",
@@ -47,6 +47,7 @@ export async function enablePush() {
   if (!projectId) throw new Error("This build has no Expo project ID.");
   const { data: token } = await Notifications.getExpoPushTokenAsync({
     projectId,
+    devicePushToken,
   });
   await request("registerPushToken", { token, platform: Platform.OS });
   await AsyncStorage.setItem("citrus-push-token", token);
@@ -114,7 +115,20 @@ export function useNotifications(did?: string | null) {
       if (!disposed && status.enabled) await enablePush();
     };
     void refreshPush().catch(() => {});
-    const tokenChanged = Notifications.addPushTokenListener(() => { void refreshPush().catch(() => {}); });
+    // Android emits this event even when getDevicePushTokenAsync reads an
+    // unchanged token. Re-reading it here creates an endless registration loop.
+    let lastDeviceToken = "";
+    const tokenChanged = Notifications.addPushTokenListener((token) => {
+      const key = JSON.stringify(token);
+      if (disposed || key === lastDeviceToken) return;
+      lastDeviceToken = key;
+      void (async () => {
+        const status = await pushStatus();
+        if (!disposed && status.enabled) await enablePush(token);
+      })().catch(() => {
+        if (lastDeviceToken === key) lastDeviceToken = "";
+      });
+    });
     void connect();
     const state = AppState.addEventListener("change", (value) => {
       if (value === "active") void connect();
