@@ -8,7 +8,7 @@ Install Bun, Node.js 24+, Gleam 1.19+, and Doppler for the service user. From th
 
 Configure `APP_URL` to the public HTTPS origin and `ETH_RPC_URL` to your Ethereum mainnet RPC in Doppler. The API defaults to `127.0.0.1:4747`; put it behind your HTTPS reverse proxy. Set `TRUST_PROXY_HOPS` for that proxy topology. See `../.env.example` for the remaining settings. Optional process environment defaults can be supplied through `/etc/default/peachlet`; Doppler supplies the runtime configuration.
 
-On every start or restart, the service runs `bun run build`, then `bun run start` under Doppler. The Gleam API serves the compiled frontend from `web/dist`. No Vite development server or Anvil process is launched. Dependencies must already be installed; a failed build prevents the API from starting.
+On every start or restart, the service runs `bun install --frozen-lockfile`, then `bun run build`, then `bun run start` under Doppler. The install step is not optional: Bun copies the `app/packages/*` `file:` dependencies into `node_modules`, so a deployment that adds a file to one of them would otherwise build against a stale copy and fail to start. The Gleam API serves the compiled frontend from `web/dist`. No Vite development server or Anvil process is launched. A failed install or build prevents the API from starting.
 
 Install and start on the Linux host:
 

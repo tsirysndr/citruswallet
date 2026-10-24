@@ -7,6 +7,10 @@ Wants=network-online.target
 Type=simple
 User=root
 WorkingDirectory=/root/github/citruswallet
+# Refresh dependencies first: the local file: packages in app/packages are
+# copied into node_modules at install time, so a pull that adds a file to one
+# of them leaves a stale copy and the frontend build fails.
+ExecStartPre=/bin/bash -ic 'exec bun install --frozen-lockfile'
 # Build the static frontend and Gleam API before starting the server.
 ExecStartPre=/bin/bash -ic 'exec bun run build'
 # The API serves web/dist; do not start Vite or Anvil in this service.
