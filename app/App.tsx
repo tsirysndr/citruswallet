@@ -170,10 +170,10 @@ function Shell() {
     <SafeAreaView className="flex-1 bg-canvas" edges={["top", "bottom"]}>
       <WalletUnlock /><StatusBar style="dark" />
       {!compactRecipient && <View className="flex-row items-center justify-between px-5 py-4">
-        <View className="min-w-0 flex-1 flex-row items-center gap-3">
+        <Pressable accessibilityRole="button" accessibilityLabel="Citrus Wallet home" disabled={busy} onPress={() => { Keyboard.dismiss(); setScreen("Account"); }} className="min-w-0 flex-1 flex-row items-center gap-3">
           <Image source={require('./assets/icon.png')} accessibilityLabel="Citrus Wallet logo" style={{ width: 42, height: 42 }} />
           <Text numberOfLines={1} adjustsFontSizeToFit className="flex-shrink text-xl font-bold text-ink">Citrus Wallet</Text>
-        </View>
+        </Pressable>
         <View className="items-end pl-2">
           <View className="flex-row items-center gap-2"><NotificationsInbox /><Pressable accessibilityRole="button" accessibilityLabel="Settings" hitSlop={10} onPress={() => setScreen("Settings")}><SettingsIcon size={23} color="#292d26" /></Pressable></View>
           <Text className="text-xs text-muted">
