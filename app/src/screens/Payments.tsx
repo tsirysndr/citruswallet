@@ -290,7 +290,6 @@ export function Payments({ onStepChange, keyboardVisible = false }: { onStepChan
                     />
                   </>
                 )}
-              {finished && <Button title="Done" onPress={() => { Keyboard.dismiss(); resetDraft(); go("Activity"); }} />}
               {canEdit && <Button title="Edit details" tone="plain" onPress={() => navigateBack(3)} />}
               <Button
                 title="Refresh status"
@@ -299,11 +298,14 @@ export function Payments({ onStepChange, keyboardVisible = false }: { onStepChan
               />
             </>
           )}
-          <Button
+          <View className="flex-row items-center gap-3">
+          <View className="flex-1"><Button title="Done" onPress={() => { Keyboard.dismiss(); resetDraft(); go("Activity"); }} /></View>
+          <View className="flex-1"><Button
             title="New payment"
             tone="plain"
             onPress={resetDraft}
-          />
+          /></View>
+          </View>
         </>
       )}
     </View>

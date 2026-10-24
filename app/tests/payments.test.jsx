@@ -159,7 +159,7 @@ test('failed recipient resolution stays on recipient selection', async () => {
   expect(screen.getByLabelText('Step 1 of 4')).toBeTruthy();
 });
 
-test.each(['submitted', 'confirming', 'confirmed', 'failed', 'cancelled', 'expired'])('Done closes a %s payment without sending or changing its status', async state => {
+test.each(['waiting', 'ready', 'prepared', 'submitted', 'confirming', 'confirmed', 'failed', 'cancelled', 'expired'])('Done closes a %s payment without sending or changing its status', async state => {
   const store = createStore();
   store.set(reviewAtom, payment.id);
   store.set(screenAtom, 'Payments');
