@@ -42,7 +42,7 @@ test('anonymous connection ends with handle sign-in and does not finish onboardi
   renderComponent(<WalletSetup onFinished={finished} />);
   await fireEvent.press(screen.getByRole('button', { name: 'Connect MetaMask' }));
   await fireEvent.press(screen.getByRole('button', { name: 'Connect MetaMask' }));
-  expect(screen.getByText(/using an @handle instead of a long wallet address/)).toBeTruthy();
+  expect(screen.queryByText(/One last step:/)).toBeNull();
   expect(screen.queryByRole('button', { name: 'Open Peachlet' })).toBeNull();
   expect(screen.getByRole('button', { name: 'Sign In' })).toBeDisabled();
   await fireEvent.changeText(screen.getByLabelText('Handle'), 'alice.test');

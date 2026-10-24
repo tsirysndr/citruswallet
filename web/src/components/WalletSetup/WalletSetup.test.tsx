@@ -61,7 +61,7 @@ it('ends anonymous wallet connection at handle sign-in, and resumes there after 
   await view.user.click(screen.getByRole('button', { name: /Connect MetaMask/ }));
   await view.user.click(screen.getByRole('button', { name: 'Connect MetaMask' }));
   expect(await screen.findByRole('button', { name: 'Sign In' })).toBeVisible();
-  expect(screen.getByText(/using an @handle instead of a long wallet address/)).toBeVisible();
+  expect(screen.queryByText(/One last step:/)).not.toBeInTheDocument();
   expect(screen.queryByRole('button', { name: /Open Peachlet/ })).not.toBeInTheDocument();
   expect(finished).not.toHaveBeenCalled();
   view.unmount();

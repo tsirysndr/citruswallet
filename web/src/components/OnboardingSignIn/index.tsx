@@ -17,8 +17,6 @@ export function OnboardingSignIn() {
   });
   return <Panel className="font-sans">
     <h1 className="text-center text-3xl font-semibold">Your handle. Your wallet.</h1>
-    <p className="mt-3 text-center text-sm leading-6 text-ink-muted">One last step: sign in with your Atmosphere account. Send and receive crypto using an @handle instead of a long wallet address.</p>
-    <p className="mt-3 text-center text-sm leading-6 text-ink-muted">We’ll link your wallet to your account so friends can pay you by handle. Your keys stay on your device.</p>
     <AtmosphereApps />
     <form className="mt-5 flex flex-col gap-3" noValidate onSubmit={form.handleSubmit(start)}>
       <Label htmlFor="onboarding-handle">Handle</Label>
