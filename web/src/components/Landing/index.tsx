@@ -11,7 +11,7 @@ export function Landing({ onGetStarted }: { onGetStarted: () => void }) {
     <main className="landing-hero">
       <p className="mb-5 text-sm font-semibold">A little more human.</p>
       <h1>Send ETH.<br />To a handle.</h1>
-      <p className="landing-description">Send crypto to a short, readable AT Protocol handle instead of a long wallet address. Your wallet. Your keys. Your people.</p>
+      <p className="landing-description">Send crypto to a short, readable <a href="https://atproto.com" target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">AT Protocol</a> handle instead of a long wallet address. Your wallet. Your keys. Your people.</p>
       <div className="landing-example" aria-label="Use a handle instead of a long wallet address"><span className="line-through opacity-50">0x7F4a…9c2D</span><span aria-hidden="true">→</span><span>@alice.bsky.social</span></div>
     </main>
     <footer className="landing-footer"><span>A wallet that knows your name.</span><nav aria-label="Legal"><Link to="/privacy">Privacy</Link><Link to="/terms">Terms</Link></nav></footer>
