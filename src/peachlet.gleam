@@ -1,3 +1,8 @@
+import gleam/int
+import gleam/javascript/promise
+import gleam/list
+import gleam/option.{Some}
+import gleam/result
 import peachlet/app
 import peachlet/directory
 import peachlet/ffi/hono
@@ -12,11 +17,6 @@ import peachlet/payments
 import peachlet/store.{type Store}
 import peachlet/xrpc/context
 import peachlet/xrpc/notification
-import gleam/int
-import gleam/javascript/promise
-import gleam/list
-import gleam/option.{Some}
-import gleam/result
 
 pub fn main() -> Nil {
   case start() {

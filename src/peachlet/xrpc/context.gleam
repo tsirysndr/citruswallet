@@ -1,3 +1,12 @@
+import gleam/bool
+import gleam/dynamic/decode
+import gleam/int
+import gleam/javascript/promise.{type Promise}
+import gleam/json.{type Json}
+import gleam/list
+import gleam/option.{type Option, None, Some}
+import gleam/result
+import gleam/string
 import peachlet/chain.{type Chain}
 import peachlet/directory
 import peachlet/error.{type HttpError, HttpError}
@@ -13,15 +22,6 @@ import peachlet/payments.{type Payments}
 import peachlet/rate_limit.{type Limiter}
 import peachlet/store.{type Store}
 import peachlet/validate
-import gleam/bool
-import gleam/dynamic/decode
-import gleam/int
-import gleam/javascript/promise.{type Promise}
-import gleam/json.{type Json}
-import gleam/list
-import gleam/option.{type Option, None, Some}
-import gleam/result
-import gleam/string
 
 pub type Settings {
   Settings(

@@ -1,5 +1,5 @@
-import peachlet/ffi/js.{type Exception, type Js}
 import gleam/option
+import peachlet/ffi/js.{type Exception, type Js}
 
 pub type Client =
   Js

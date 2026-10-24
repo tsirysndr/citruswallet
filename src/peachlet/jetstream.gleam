@@ -1,11 +1,11 @@
+import gleam/javascript/promise.{type Promise}
+import gleam/option.{Some}
+import gleam/result
 import peachlet/directory.{type Directory}
 import peachlet/ffi/better_sqlite.{type Client}
 import peachlet/ffi/js.{type Exception, type Js}
 import peachlet/profiles
 import peachlet/store.{type Store}
-import gleam/javascript/promise.{type Promise}
-import gleam/option.{Some}
-import gleam/result
 
 pub type Listener =
   Js

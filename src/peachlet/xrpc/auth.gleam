@@ -1,3 +1,9 @@
+import gleam/dynamic/decode
+import gleam/javascript/promise.{type Promise}
+import gleam/json
+import gleam/list
+import gleam/option.{type Option, None, Some}
+import gleam/result
 import peachlet/address_records
 import peachlet/error.{type HttpError, HttpError}
 import peachlet/ffi/atproto
@@ -12,16 +18,8 @@ import peachlet/oauth
 import peachlet/profiles
 import peachlet/store
 import peachlet/xrpc/native
-import gleam/dynamic/decode
-import gleam/javascript/promise.{type Promise}
-import gleam/json
-import gleam/list
-import gleam/option.{type Option, None, Some}
-import gleam/result
 
-import peachlet/xrpc/context.{
-  type Reply, type Server, Elsewhere, Payload, Value,
-}
+import peachlet/xrpc/context.{type Reply, type Server, Elsewhere, Payload, Value}
 
 const binding_lifetime = 600_000
 

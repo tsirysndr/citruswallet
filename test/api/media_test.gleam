@@ -1,8 +1,8 @@
-import peachlet/payment_media
 import gleam/json
 import gleam/list
 import gleam/option.{None, Some}
 import gleam/string
+import peachlet/payment_media
 
 fn media(kind: String, slug: String, title: String, url: String) {
   Some(

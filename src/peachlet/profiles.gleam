@@ -1,3 +1,7 @@
+import gleam/dynamic/decode
+import gleam/javascript/promise.{type Promise}
+import gleam/option.{type Option, None, Some}
+import gleam/result
 import peachlet/directory.{type Actor, type Directory, Actor}
 import peachlet/drizzle/orm.{
   eq, from, insert, on_conflict_update, one, run, set, target, where,
@@ -6,10 +10,6 @@ import peachlet/drizzle/schema/user_profiles
 import peachlet/error.{type HttpError}
 import peachlet/ffi/node
 import peachlet/store.{type Store}
-import gleam/dynamic/decode
-import gleam/javascript/promise.{type Promise}
-import gleam/option.{type Option, None, Some}
-import gleam/result
 
 pub type Profile {
   Profile(actor: Actor, created_at: Option(Int), updated_at: Option(Int))

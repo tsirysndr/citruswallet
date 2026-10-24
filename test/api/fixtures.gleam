@@ -1,3 +1,6 @@
+import gleam/dynamic/decode
+import gleam/javascript/promise
+import gleam/option.{None, Some}
 import peachlet/chain
 import peachlet/drizzle/orm.{insert, run, set}
 import peachlet/drizzle/schema/links as schema
@@ -6,9 +9,6 @@ import peachlet/identity.{Identity}
 import peachlet/linking
 import peachlet/payments
 import peachlet/store
-import gleam/dynamic/decode
-import gleam/javascript/promise
-import gleam/option.{None, Some}
 
 pub const alice = "did:plc:alice"
 

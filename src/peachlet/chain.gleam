@@ -1,13 +1,13 @@
-import peachlet/error.{type HttpError}
-import peachlet/ffi/js.{type Js}
-import peachlet/ffi/url
-import peachlet/ffi/viem
 import gleam/dynamic/decode
 import gleam/int
 import gleam/javascript/promise.{type Promise}
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/result
+import peachlet/error.{type HttpError}
+import peachlet/ffi/js.{type Js}
+import peachlet/ffi/url
+import peachlet/ffi/viem
 
 pub type Chain {
   Chain(client: viem.Client)

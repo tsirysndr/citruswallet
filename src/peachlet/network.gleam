@@ -1,10 +1,10 @@
-import peachlet/chain
-import peachlet/ffi/node
-import peachlet/ffi/url
 import gleam/json.{type Json}
 import gleam/list
 import gleam/option.{Some}
 import gleam/result
+import peachlet/chain
+import peachlet/ffi/node
+import peachlet/ffi/url
 
 pub type Currency {
   Currency(name: String, symbol: String, decimals: Int)

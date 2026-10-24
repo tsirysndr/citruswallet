@@ -1,5 +1,5 @@
-import peachlet/ffi/js.{type Js}
 import gleam/javascript/promise.{type Promise}
+import peachlet/ffi/js.{type Js}
 
 @external(javascript, "../../notification_transport.mjs", "closeStreams")
 pub fn close_streams() -> Nil

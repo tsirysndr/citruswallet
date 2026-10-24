@@ -1,10 +1,10 @@
-import peachlet/ffi/better_sqlite.{type Client}
-import peachlet/ffi/js.{type Exception, type Js}
 import gleam/dynamic/decode.{type Decoder}
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/result
 import gleam/string
+import peachlet/ffi/better_sqlite.{type Client}
+import peachlet/ffi/js.{type Exception, type Js}
 
 pub type Database =
   Js

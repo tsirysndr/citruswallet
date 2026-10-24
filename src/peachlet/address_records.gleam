@@ -1,6 +1,6 @@
+import gleam/javascript/promise.{type Promise}
 import peachlet/ffi/atproto
 import peachlet/ffi/better_sqlite.{type Client}
-import gleam/javascript/promise.{type Promise}
 
 /// These writes participate in the caller's SQLite transaction. Only verified
 /// public links are queued for publication; private links queue a deletion.

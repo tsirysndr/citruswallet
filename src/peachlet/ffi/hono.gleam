@@ -1,7 +1,7 @@
-import peachlet/ffi/js.{type Exception, type Js}
 import gleam/javascript/promise.{type Promise}
 import gleam/list
 import gleam/option.{type Option, None, Some}
+import peachlet/ffi/js.{type Exception, type Js}
 
 pub type App =
   Js

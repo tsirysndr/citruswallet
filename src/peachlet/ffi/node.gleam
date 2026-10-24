@@ -1,5 +1,5 @@
-import peachlet/ffi/js.{type Js}
 import gleam/option.{type Option}
+import peachlet/ffi/js.{type Js}
 
 fn process() -> Js {
   js.global("process")

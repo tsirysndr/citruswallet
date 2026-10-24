@@ -1,6 +1,3 @@
-import peachlet/error.{type HttpError}
-import peachlet/ffi/atproto
-import peachlet/ffi/js
 import gleam/bool
 import gleam/javascript/promise.{type Promise}
 import gleam/json.{type Json}
@@ -8,6 +5,9 @@ import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/result
 import gleam/string
+import peachlet/error.{type HttpError}
+import peachlet/ffi/atproto
+import peachlet/ffi/js
 
 pub type Identity {
   Identity(did: String, handle: Option(String))

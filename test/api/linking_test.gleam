@@ -1,10 +1,10 @@
 import api/fixtures as f
-import peachlet/error
-import peachlet/linking
-import peachlet/store
 import gleam/javascript/promise
 import gleam/option.{Some}
 import gleam/string
+import peachlet/error
+import peachlet/linking
+import peachlet/store
 
 const stale = "Challenge expired or unavailable. Request a new signature."
 

@@ -1,8 +1,3 @@
-import peachlet/assets
-import peachlet/chain.{type Chain}
-import peachlet/error.{type HttpError}
-import peachlet/ffi/js
-import peachlet/ffi/viem
 import gleam/dynamic/decode
 import gleam/int
 import gleam/javascript/promise.{type Promise}
@@ -11,6 +6,11 @@ import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/result
 import gleam/string
+import peachlet/assets
+import peachlet/chain.{type Chain}
+import peachlet/error.{type HttpError}
+import peachlet/ffi/js
+import peachlet/ffi/viem
 
 pub fn offset(cursor: Option(String)) -> Result(Int, HttpError) {
   case cursor {

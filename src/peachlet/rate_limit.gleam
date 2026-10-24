@@ -1,8 +1,8 @@
-import peachlet/store.{type Store}
 import gleam/int
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/string
+import peachlet/store.{type Store}
 
 pub type Limiter {
   Limiter(

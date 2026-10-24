@@ -1,8 +1,8 @@
+import gleam/dynamic/decode.{type Decoder}
 import peachlet/drizzle/orm.{
   type Column, type Table, asc, composite_primary_key, index, int_column,
   integer, not_null, string_column, table as db_table, text,
 }
-import gleam/dynamic/decode.{type Decoder}
 
 pub type Kv(row) {
   Kv(

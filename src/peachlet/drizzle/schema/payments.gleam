@@ -1,11 +1,11 @@
+import gleam/dynamic/decode.{type Decoder}
+import gleam/option.{type Option}
 import peachlet/drizzle/orm.{
   type Column, type Table, asc, composite_unique, default_int, default_text,
   desc, index, int_column, integer, not_null, only_where, optional_int_column,
   optional_string_column, primary_key, string_column, table as db_table, text,
   unique_index, unique_value,
 }
-import gleam/dynamic/decode.{type Decoder}
-import gleam/option.{type Option}
 
 pub type Payments(row) {
   Payments(

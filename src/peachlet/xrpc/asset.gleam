@@ -1,3 +1,11 @@
+import gleam/dynamic/decode
+import gleam/int
+import gleam/javascript/promise.{type Promise}
+import gleam/json
+import gleam/list
+import gleam/option.{type Option, None, Some}
+import gleam/result
+import gleam/string
 import peachlet/assets
 import peachlet/chain
 import peachlet/error.{type HttpError}
@@ -11,14 +19,6 @@ import peachlet/ffi/viem
 import peachlet/linking
 import peachlet/rpc_assets
 import peachlet/xrpc/context.{type Reply, type Server, Payload}
-import gleam/dynamic/decode
-import gleam/int
-import gleam/javascript/promise.{type Promise}
-import gleam/json
-import gleam/list
-import gleam/option.{type Option, None, Some}
-import gleam/result
-import gleam/string
 
 fn address(server: Server, ctx: Context) -> Result(String, HttpError) {
   use #(_, did) <- result.try(context.authenticated(server, ctx))

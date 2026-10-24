@@ -1,12 +1,12 @@
 import api/fixtures as f
-import peachlet/error
-import peachlet/linking
-import peachlet/payments
-import peachlet/store
 import gleam/javascript/promise
 import gleam/list
 import gleam/option.{None, Some}
 import gleam/string
+import peachlet/error
+import peachlet/linking
+import peachlet/payments
+import peachlet/store
 
 pub fn preparation_is_idempotent_and_reserves_one_nonce_test() {
   let service = f.ready()

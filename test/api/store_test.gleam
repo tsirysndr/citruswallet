@@ -1,6 +1,6 @@
 import api/fixtures as f
-import peachlet/store
 import gleam/option.{None, Some}
+import peachlet/store
 
 pub fn transaction_error_rolls_back_every_write_test() {
   let service = f.open()

@@ -1,3 +1,4 @@
+import gleam/javascript/promise
 import peachlet/directory
 import peachlet/error.{HttpError}
 import peachlet/ffi/hono
@@ -6,7 +7,6 @@ import peachlet/xrpc/auth
 import peachlet/xrpc/context
 import peachlet/xrpc/native
 import peachlet/xrpc/register
-import gleam/javascript/promise
 
 pub type Settings =
   context.Settings

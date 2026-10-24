@@ -1,11 +1,11 @@
+import gleam/javascript/promise.{type Promise}
+import gleam/option.{None, Some}
+import gleam/string
 import peachlet/ffi/atproto
 import peachlet/ffi/js.{type Js}
 import peachlet/ffi/node
 import peachlet/ffi/url
 import peachlet/store.{type Store}
-import gleam/javascript/promise.{type Promise}
-import gleam/option.{None, Some}
-import gleam/string
 
 const scope = "atproto repo:app.peachlet.address"
 

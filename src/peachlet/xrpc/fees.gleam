@@ -1,3 +1,8 @@
+import gleam/javascript/promise.{type Promise}
+import gleam/json
+import gleam/option.{None, Some}
+import gleam/result
+import gleam/string
 import peachlet/chain
 import peachlet/error.{type HttpError}
 import peachlet/ffi/amounts
@@ -8,11 +13,6 @@ import peachlet/ffi/viem
 import peachlet/linking
 import peachlet/validate
 import peachlet/xrpc/context.{type Reply, type Server, Payload}
-import gleam/javascript/promise.{type Promise}
-import gleam/json
-import gleam/option.{None, Some}
-import gleam/result
-import gleam/string
 
 // Only bounded ETH and ERC-20 transfers are accepted, never arbitrary RPC URLs
 // or contract deployment/simulation requests.

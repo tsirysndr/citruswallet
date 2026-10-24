@@ -1,3 +1,7 @@
+import gleam/javascript/promise
+import gleam/json
+import gleam/option.{None, Some}
+import gleam/result
 import peachlet/error
 import peachlet/ffi/better_sqlite.{type Client}
 import peachlet/ffi/hono.{type Context}
@@ -9,10 +13,6 @@ import peachlet/notifications
 import peachlet/oauth
 import peachlet/store
 import peachlet/xrpc/context.{type Server, Elsewhere, Value}
-import gleam/javascript/promise
-import gleam/json
-import gleam/option.{None, Some}
-import gleam/result
 
 @external(javascript, "../../native-auth.mjs", "begin")
 fn begin(client: Client, url: String, state: String) -> Bool

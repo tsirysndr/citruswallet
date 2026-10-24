@@ -1,11 +1,11 @@
+import gleam/javascript/promise.{type Promise}
+import gleam/option.{Some}
+import gleam/string
 import peachlet/ffi/better_sqlite.{type Client, first, run}
 import peachlet/ffi/js.{type Js}
 import peachlet/ffi/node
 import peachlet/ffi/notification_transport as transport
 import peachlet/notifications.{number, text}
-import gleam/javascript/promise.{type Promise}
-import gleam/option.{Some}
-import gleam/string
 
 pub fn vapid(db: Client) -> Js {
   case

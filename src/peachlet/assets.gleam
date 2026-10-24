@@ -1,7 +1,3 @@
-import peachlet/chain.{type Chain}
-import peachlet/error.{type HttpError}
-import peachlet/ffi/js
-import peachlet/ffi/viem
 import gleam/int
 import gleam/javascript/promise.{type Promise}
 import gleam/json
@@ -9,6 +5,10 @@ import gleam/option.{type Option, None, Some}
 import gleam/order
 import gleam/result
 import gleam/string
+import peachlet/chain.{type Chain}
+import peachlet/error.{type HttpError}
+import peachlet/ffi/js
+import peachlet/ffi/viem
 
 pub type Asset {
   Asset(

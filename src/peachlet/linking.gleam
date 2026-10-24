@@ -1,3 +1,10 @@
+import gleam/bool
+import gleam/dynamic/decode.{type Decoder}
+import gleam/javascript/promise.{type Promise}
+import gleam/json.{type Json}
+import gleam/option.{type Option, None, Some}
+import gleam/result
+import gleam/string
 import peachlet/address_records
 import peachlet/drizzle/orm.{
   type Assignment, all, bool_decoder, delete, descending, eq, from, gt, insert,
@@ -12,13 +19,6 @@ import peachlet/ffi/url
 import peachlet/ffi/viem
 import peachlet/store.{type Store}
 import peachlet/validate
-import gleam/bool
-import gleam/dynamic/decode.{type Decoder}
-import gleam/javascript/promise.{type Promise}
-import gleam/json.{type Json}
-import gleam/option.{type Option, None, Some}
-import gleam/result
-import gleam/string
 
 pub type Links {
   Links(store: Store, origin: String, chain_id: Int, now: fn() -> Int)

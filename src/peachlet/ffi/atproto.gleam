@@ -1,6 +1,6 @@
-import peachlet/ffi/js.{type Exception, type Js}
 import gleam/javascript/promise.{type Promise}
 import gleam/option.{type Option}
+import peachlet/ffi/js.{type Exception, type Js}
 
 @external(javascript, "@atproto/syntax", "isValidHandle")
 pub fn is_valid_handle(handle: String) -> Bool

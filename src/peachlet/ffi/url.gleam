@@ -1,5 +1,5 @@
-import peachlet/ffi/js.{type Js}
 import gleam/option
+import peachlet/ffi/js.{type Js}
 
 pub type Url =
   Js

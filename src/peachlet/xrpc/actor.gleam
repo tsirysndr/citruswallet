@@ -1,12 +1,12 @@
+import gleam/javascript/promise.{type Promise}
+import gleam/json
+import gleam/option
+import gleam/string
 import peachlet/directory
 import peachlet/error.{type HttpError}
 import peachlet/ffi/hono.{type Context}
 import peachlet/identity
 import peachlet/profiles
-import gleam/javascript/promise.{type Promise}
-import gleam/json
-import gleam/option
-import gleam/string
 
 import peachlet/xrpc/context.{type Reply, type Server, Payload}
 

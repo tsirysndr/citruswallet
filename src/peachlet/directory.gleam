@@ -1,8 +1,3 @@
-import peachlet/error.{type HttpError}
-import peachlet/ffi/atproto
-import peachlet/ffi/http
-import peachlet/ffi/url
-import peachlet/identity
 import gleam/dynamic/decode.{type Decoder}
 import gleam/int
 import gleam/javascript/promise.{type Promise}
@@ -10,6 +5,11 @@ import gleam/json.{type Json}
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/string
+import peachlet/error.{type HttpError}
+import peachlet/ffi/atproto
+import peachlet/ffi/http
+import peachlet/ffi/url
+import peachlet/identity
 
 pub type Actor {
   Actor(

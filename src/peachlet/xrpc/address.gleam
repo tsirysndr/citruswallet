@@ -1,15 +1,15 @@
-import peachlet/address_records
-import peachlet/error.{type HttpError}
-import peachlet/ffi/hono.{type Context}
-import peachlet/ffi/js.{type Js}
-import peachlet/identity
-import peachlet/linking
 import gleam/bool
 import gleam/javascript/promise.{type Promise}
 import gleam/json
 import gleam/option.{None, Some}
 import gleam/result
 import gleam/string
+import peachlet/address_records
+import peachlet/error.{type HttpError}
+import peachlet/ffi/hono.{type Context}
+import peachlet/ffi/js.{type Js}
+import peachlet/identity
+import peachlet/linking
 
 import peachlet/xrpc/context.{type Reply, type Server, Payload}
 

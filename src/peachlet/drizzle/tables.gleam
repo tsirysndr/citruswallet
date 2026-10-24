@@ -1,3 +1,4 @@
+import gleam/dynamic/decode
 import peachlet/drizzle/orm.{underlying}
 import peachlet/drizzle/schema/address_repository_records
 import peachlet/drizzle/schema/challenges
@@ -7,7 +8,6 @@ import peachlet/drizzle/schema/notifications as notification_schema
 import peachlet/drizzle/schema/payments
 import peachlet/drizzle/schema/user_profiles
 import peachlet/ffi/js.{type Js}
-import gleam/dynamic/decode
 
 pub fn kv() -> Js {
   underlying(kv.define(decode.success(Nil)).table)

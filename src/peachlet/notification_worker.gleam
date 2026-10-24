@@ -1,14 +1,14 @@
+import gleam/int
+import gleam/javascript/promise.{type Promise}
+import gleam/list
+import gleam/option.{Some}
+import gleam/string
 import peachlet/ffi/better_sqlite.{type Client, query, run}
 import peachlet/ffi/js.{type Js}
 import peachlet/ffi/node
 import peachlet/ffi/notification_transport as transport
 import peachlet/notifications.{number, text}
 import peachlet/web_push
-import gleam/int
-import gleam/javascript/promise.{type Promise}
-import gleam/list
-import gleam/option.{Some}
-import gleam/string
 
 pub fn retry_delay(attempts: Int) -> Int {
   case attempts >= 10 {

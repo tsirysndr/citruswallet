@@ -1,10 +1,3 @@
-import peachlet/error.{type HttpError}
-import peachlet/ffi/hono.{type Context}
-import peachlet/ffi/js
-import peachlet/ffi/node
-import peachlet/identity
-import peachlet/payments
-import peachlet/profiles
 import gleam/int
 import gleam/javascript/promise.{type Promise}
 import gleam/json
@@ -12,6 +5,13 @@ import gleam/list
 import gleam/option.{Some}
 import gleam/result
 import gleam/string
+import peachlet/error.{type HttpError}
+import peachlet/ffi/hono.{type Context}
+import peachlet/ffi/js
+import peachlet/ffi/node
+import peachlet/identity
+import peachlet/payments
+import peachlet/profiles
 
 import peachlet/xrpc/context.{type Reply, type Server, Payload}
 

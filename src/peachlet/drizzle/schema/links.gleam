@@ -1,9 +1,9 @@
+import gleam/dynamic/decode.{type Decoder}
 import peachlet/drizzle/orm.{
   type Column, type Table, asc, bool_column, composite_primary_key,
   composite_unique, default_int, desc, index, int_column, integer, not_null,
   only_where, string_column, table as db_table, text, unique_index,
 }
-import gleam/dynamic/decode.{type Decoder}
 
 pub type Links(row) {
   Links(

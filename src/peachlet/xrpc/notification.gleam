@@ -1,3 +1,5 @@
+import gleam/javascript/promise.{type Promise}
+import gleam/option
 import peachlet/error
 import peachlet/ffi/better_sqlite.{type Client}
 import peachlet/ffi/hono.{type Context, type Response}
@@ -6,8 +8,6 @@ import peachlet/notification_worker
 import peachlet/notifications
 import peachlet/web_push
 import peachlet/xrpc/context.{type Server, Value}
-import gleam/javascript/promise.{type Promise}
-import gleam/option
 
 pub fn listing(server: Server, ctx: Context) {
   use #(_, did) <- context.attempt(context.authenticated(server, ctx))

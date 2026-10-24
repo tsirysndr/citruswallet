@@ -1,3 +1,7 @@
+import gleam/dynamic/decode
+import gleam/int
+import gleam/option.{type Option, None, Some}
+import gleam/result
 import peachlet/drizzle/orm.{
   type Database, connect, delete as db_delete, eq, gt, insert, lte, migrate,
   on_conflict_update, one, pick, run as db_run, select, set, target,
@@ -7,10 +11,6 @@ import peachlet/drizzle/schema/challenges
 import peachlet/drizzle/schema/kv
 import peachlet/ffi/better_sqlite.{type Client}
 import peachlet/ffi/js.{type Exception}
-import gleam/dynamic/decode
-import gleam/int
-import gleam/option.{type Option, None, Some}
-import gleam/result
 
 pub type Store {
   Store(client: Client, database: Database)

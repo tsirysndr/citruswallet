@@ -1,8 +1,8 @@
+import gleam/dynamic/decode
 import peachlet/drizzle/orm.{
   asc, composite_primary_key, index, integer, not_null, primary_key, table, text,
   unique_index,
 }
-import gleam/dynamic/decode
 
 pub fn notifications() {
   table(

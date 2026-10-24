@@ -1,3 +1,10 @@
+import gleam/dynamic/decode
+import gleam/javascript/promise
+import gleam/list
+import gleam/option.{type Option, None, Some}
+import gleam/result
+import gleam/string
+import gleeunit
 import peachlet/directory.{type Actor, Actor}
 import peachlet/drizzle/orm.{insert, run, set}
 import peachlet/drizzle/schema/links as links_schema
@@ -12,13 +19,6 @@ import peachlet/rate_limit
 import peachlet/store
 import peachlet/validate
 import peachlet/xrpc/fees
-import gleam/dynamic/decode
-import gleam/javascript/promise
-import gleam/list
-import gleam/option.{type Option, None, Some}
-import gleam/result
-import gleam/string
-import gleeunit
 
 pub fn main() -> Nil {
   gleeunit.main()

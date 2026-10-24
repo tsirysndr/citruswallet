@@ -1,12 +1,12 @@
+import gleam/int
+import gleam/list
+import gleam/option
+import gleam/string
 import peachlet/ffi/better_sqlite.{type Client, first, query, run}
 import peachlet/ffi/hono
 import peachlet/ffi/js.{type Js}
 import peachlet/ffi/node
 import peachlet/ffi/notification_transport as transport
-import gleam/int
-import gleam/list
-import gleam/option
-import gleam/string
 
 pub fn text(row: Js, key: String) -> String {
   case js.is_nullish(row) {

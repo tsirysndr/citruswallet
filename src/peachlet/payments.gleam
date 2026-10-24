@@ -1,3 +1,12 @@
+import gleam/bool
+import gleam/dynamic/decode.{type Decoder}
+import gleam/int
+import gleam/javascript/promise.{type Promise}
+import gleam/json.{type Json}
+import gleam/list
+import gleam/option.{type Option, None, Some}
+import gleam/result
+import gleam/string
 import peachlet/assets.{type Asset}
 import peachlet/chain.{type Chain}
 import peachlet/directory
@@ -20,15 +29,6 @@ import peachlet/payment_media
 import peachlet/profiles
 import peachlet/store.{type Store}
 import peachlet/validate
-import gleam/bool
-import gleam/dynamic/decode.{type Decoder}
-import gleam/int
-import gleam/javascript/promise.{type Promise}
-import gleam/json.{type Json}
-import gleam/list
-import gleam/option.{type Option, None, Some}
-import gleam/result
-import gleam/string
 
 pub type State {
   Waiting
