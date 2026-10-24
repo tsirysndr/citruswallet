@@ -9,8 +9,10 @@ import peachlet/xrpc/methods
 import peachlet/xrpc/native
 import peachlet/xrpc/notification
 import peachlet/xrpc/payment
+import peachlet/xrpc/price
 
 pub fn register(app: hono.App, server: Server) -> Nil {
+  hono.xrpc(app, methods.get_eth_price, context.serve(server, price.get))
   hono.xrpc(app, methods.estimate_fees, context.serve(server, fees.estimate))
   hono.xrpc(
     app,

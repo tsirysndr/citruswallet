@@ -85,3 +85,34 @@ export function expectedTransfer(payment) {
     data: '0xa9059cbb' + payment.address.slice(2).toLowerCase().padStart(64, '0') + BigInt(amount).toString(16).padStart(64, '0'),
   };
 }
+
+// Sum full-precision valuations, then round once for display. Never value by ticker.
+export function portfolioUsd(nativeAtomic, ethPrice, assets, chainId) {
+  if (![1, 4326].includes(chainId)) return { usd: null, missing: 0 };
+  let total = new Decimal(0), priced = false, missing = 0;
+  const add = (value, decimals, price) => {
+    try {
+      const quantity = atomic(value); precision(decimals);
+      if (quantity.isZero()) { priced = true; return; }
+      if (typeof price !== 'string' || !/^(0|[1-9]\d*)(\.\d+)?$/.test(price) || !new Decimal(price).gt(0)) { missing++; return; }
+      total = total.plus(quantity.shiftedBy(-decimals).times(price)); priced = true;
+    } catch { missing++; }
+  };
+  if (nativeAtomic !== null) add(nativeAtomic, 18, ethPrice); else missing++;
+  const seen = new Set();
+  for (const row of assets) {
+    const asset = row.asset;
+    if (asset.kind === 'native') continue; // Already counted from on-chain native balances.
+    const key = `${row.address.toLowerCase()}:${asset.id}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    if (asset.chainId !== chainId || asset.id !== `eip155:${chainId}/erc20:${asset.contractAddress?.toLowerCase()}`) { missing++; continue; }
+    add(row.balanceAtomic, asset.decimals, row.usdPrice);
+  }
+  return { usd: priced ? total.toFixed(2, Decimal.ROUND_HALF_UP) : null, missing };
+}
+export function formatUsd(value) {
+  if (!/^\d+\.\d{2}$/.test(value)) throw new Error('Invalid USD value');
+  const [whole, cents] = value.split('.');
+  return '$' + whole.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + cents;
+}

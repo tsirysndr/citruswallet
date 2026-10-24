@@ -190,11 +190,24 @@ pub fn balance_json(
   address: String,
   balance: String,
 ) -> json.Json {
-  json.object([
+  priced_balance_json(asset, address, balance, None)
+}
+
+pub fn priced_balance_json(
+  asset: Asset,
+  address: String,
+  balance: String,
+  price: Option(String),
+) -> json.Json {
+  let fields = [
     #("asset", to_json(asset)),
     #("address", json.string(address)),
     #("balanceAtomic", json.string(balance)),
-  ])
+  ]
+  json.object(case price {
+    Some(value) -> [#("usdPrice", json.string(value)), ..fields]
+    None -> fields
+  })
 }
 
 pub fn preflight(

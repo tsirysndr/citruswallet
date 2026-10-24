@@ -22,6 +22,8 @@ pub const get_asset = "app.peachlet.getAsset"
 
 pub const get_assets = "app.peachlet.getAssets"
 
+pub const get_eth_price = "app.peachlet.getEthPrice"
+
 pub const get_invitation = "app.peachlet.getInvitation"
 
 pub const get_payment = "app.peachlet.getPayment"

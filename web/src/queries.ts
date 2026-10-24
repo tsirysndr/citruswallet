@@ -75,6 +75,8 @@ export function useBalances(session: Session | undefined) {
     queryKey: ["balances", session?.did, session?.network.chainId, addresses],
     enabled: Boolean(session?.did),
     queryFn: () => readBalances(session!),
+    staleTime: 30_000,
+    refetchInterval: 30_000,
   });
 }
 

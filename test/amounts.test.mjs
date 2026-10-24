@@ -31,3 +31,16 @@ test('legacy ETH review remains a native transfer, without rounding or calldata'
   const tx = expectedTransfer({ ...payment, asset: 'ETH', amount: '1', amountWei: '1000000000000000000', amountAtomic: undefined, assetDetails: undefined });
   assert.deepEqual(tx, { to: payment.address, value: '1000000000000000000', data: '0x' });
 });
+
+test('portfolio totals include native ETH and tokens once, rounding only the final sum', async () => {
+  const { portfolioUsd, formatUsd } = await import('../app/packages/amounts/index.js');
+  const contract = '0x4444444444444444444444444444444444444444';
+  const row = { address: '0xabc', balanceAtomic: '1000000', usdPrice: '1.004', asset: { id: `eip155:1/erc20:${contract}`, chainId: 1, kind: 'erc20', contractAddress: contract, decimals: 6 } };
+  assert.deepEqual(portfolioUsd('1000000000000000000', '2000.004', [row, row], 1), { usd: '2001.01', missing: 0 });
+  assert.equal(formatUsd('12345678901234567890.12'), '$12,345,678,901,234,567,890.12');
+  assert.deepEqual(portfolioUsd('0', undefined, [], 1), { usd: '0.00', missing: 0 });
+  assert.deepEqual(portfolioUsd('1000000000000000000', '2000', [ { ...row, usdPrice: undefined } ], 1), { usd: '2000.00', missing: 1 });
+  assert.deepEqual(portfolioUsd('1000000000000000000', undefined, [], 1), { usd: null, missing: 1 });
+  assert.equal(portfolioUsd('1000000000000000000', '2000', [row], 6343).usd, null);
+  assert.equal(portfolioUsd('0', '2000', [{ ...row, asset: { ...row.asset, chainId: 4326 } }], 1).missing, 1);
+});

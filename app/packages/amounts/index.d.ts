@@ -10,3 +10,5 @@ export function expectedTransfer(payment: {
   amountWei: string; amountAtomic?: string; assetId?: string;
   assetDetails?: { id: string; chain: string; chainId: number; kind: string; contractAddress: string | null; decimals: number };
 }): { to: string; value: string; data: string };
+export function portfolioUsd(nativeAtomic: string | null, ethPrice: string | undefined, assets: Array<{ address: string; balanceAtomic: string; usdPrice?: string; asset: { id: string; kind: string; chainId: number; contractAddress: string | null; decimals: number } }>, chainId: number): { usd: string | null; missing: number };
+export function formatUsd(value: string): string;

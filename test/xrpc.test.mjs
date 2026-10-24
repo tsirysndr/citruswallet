@@ -437,13 +437,14 @@ test('asset discovery is wallet-scoped, paginated, and rechecks metadata on-chai
   const originalFetch = globalThis.fetch;
   t.after(() => { globalThis.fetch = originalFetch; });
   const urls = [];
-  const token = { token: { address_hash: contract, decimals: '6', name: 'Indexer name', symbol: 'FAKE', type: 'ERC-20' }, value: '1234567' };
+  const token = { token: { address_hash: contract, decimals: '6', name: 'Indexer name', symbol: 'FAKE', type: 'ERC-20', exchange_rate: '1.01' }, value: '1234567' };
   globalThis.fetch = async url => {
     urls.push(url);
     return Response.json({ items: [token, { ...token, value: '0' }, { ...token, value: (2n ** 256n).toString() }, { token: null }, { ...token, token: { ...token.token, type: 'ERC-721' } }], next_page_params: { id: 42, items_count: 50, value: '1234567', fiat_value: '1.23' } });
   };
   const page = await f.query('getAssets', { address: account.address });
   assert.equal(page.discoveryAvailable, true); assert.equal(page.assets.length, 2);
+  assert.equal(page.assets[1].usdPrice, '1.01');
   assert.equal(page.assets[0].asset.kind, 'native'); assert.equal(page.assets[1].asset.symbol, 'FAKE');
   await f.query('getAssets', { address: account.address, cursor: page.cursor });
   assert.match(urls[1], /&id=42/);
@@ -594,4 +595,25 @@ test('domain migration never republishes an old signed proof and requires a fres
   assert.equal(f.writes.length, 1);
   assert.equal(f.writes[0].body.collection, 'app.peachlet.address');
   assert.equal(f.writes[0].body.record.message, challenge.message);
+});
+
+test('ETH quotes require login, cache valid prices and reject upstream failures', async t => {
+  const f = fixture(t);
+  await assert.rejects(f.query('getEthPrice'), e => e.status === 401);
+  await f.login();
+  const original = globalThis.fetch;
+  t.after(() => { globalThis.fetch = original; });
+  let hits = 0;
+  globalThis.fetch = async url => {
+    assert.equal(url, 'https://api.coinbase.com/v2/prices/ETH-USD/spot'); hits++;
+    return Response.json({ data: { base: 'ETH', currency: 'USD', amount: '2345.67' } });
+  };
+  const quote = await f.query('getEthPrice');
+  assert.equal(quote.usd, '2345.67'); assert.equal(quote.source, 'Coinbase');
+  assert.equal((await f.query('getEthPrice')).updatedAt, quote.updatedAt); assert.equal(hits, 1);
+  f.store.client.prepare("DELETE FROM kv WHERE namespace='market-price'").run();
+  globalThis.fetch = async () => Response.json({ data: { base: 'BTC', currency: 'USD', amount: '2345' } });
+  await assert.rejects(f.query('getEthPrice'), e => e.status === 503);
+  globalThis.fetch = async () => new Response('Unavailable', { status: 503 });
+  await assert.rejects(f.query('getEthPrice'), e => e.status === 503);
 });

@@ -137,6 +137,7 @@ export function validateAsset(v: unknown): ValidationResult {
 export interface AssetBalance {
   asset: Asset
   balanceAtomic: string
+  usdPrice?: string
   address: string
   [k: string]: unknown
 }

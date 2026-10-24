@@ -155,6 +155,7 @@ defs = new Dynamic {
       `asset` = new Dynamic { `type` = "ref"
         `ref` = "app.peachlet.defs#asset" }
       `balanceAtomic` = new Dynamic { `type` = "string" }
+      `usdPrice` = new Dynamic { `type` = "string" }
       `address` = new Dynamic { `type` = "string" }
     }
   }

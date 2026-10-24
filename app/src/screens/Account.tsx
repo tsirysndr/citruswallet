@@ -1,3 +1,4 @@
+import { usePortfolio } from "../portfolio";
 import { IdentitySheet } from "../components/IdentitySheet";
 import { walletMode } from "../wallet-preferences";
 import { useController, useForm } from 'react-hook-form';
@@ -66,10 +67,12 @@ export function Account() {
           throw new Error("Balance unavailable");
         total += BigInt(data.result);
       }
-      return formatWei(total);
+      return total.toString();
     },
     staleTime: 30000,
+    refetchInterval: 30000,
   });
+  const portfolio = usePortfolio(session, needsUnlock || balanceFailed ? null : balance ?? null, localAddress);
   if (!session?.did)
     return (
       <View className="gap-6">
@@ -129,20 +132,22 @@ export function Account() {
       </View>
       <View className="gap-4 rounded-3xl bg-ink p-6">
         <View className="flex-row items-center justify-between">
-          <Text className="text-lg text-white">ETH balance</Text>
+          <Text className="text-lg text-white">Total balance</Text>
           <Pressable accessibilityRole="button" accessibilityLabel={hidden ? "Show balance" : "Hide balance"}
             onPress={() => setHidden(!hidden)} hitSlop={8}
             className="h-12 w-12 items-center justify-center rounded-full bg-white/15">
             <Ionicons name={hidden ? "eye-off-outline" : "eye-outline"} size={28} color="#ffffff" />
           </Pressable>
         </View>
-        {balanceLoading && balance === undefined && !hidden ? <ContentSkeleton variant="line" label="Loading balance" inverse /> : <Text
+        {(portfolio.loading || balanceLoading && balance === undefined) && !hidden ? <ContentSkeleton variant="line" label="Loading balance" inverse /> : <Text
           numberOfLines={1}
           adjustsFontSizeToFit
           className="font-mono text-4xl font-bold text-white"
         >
-          {hidden ? "•••••• ETH" : needsUnlock ? "Unlock to load balance" : balanceFailed ? "Balance unavailable" : balance !== undefined ? `${balance} ETH` : "Loading balance…"}
+          {hidden ? "••••••" : needsUnlock ? "Unlock to load balance" : portfolio.supported ? portfolio.formatted ?? "USD unavailable" : balanceFailed ? "Balance unavailable" : balance !== undefined ? `${formatWei(BigInt(balance))} ETH` : "Loading balance…"}
         </Text>}
+        {!hidden && <Text className="font-mono text-sm font-semibold text-white">{portfolio.supported ? balance !== undefined && !balanceFailed && !needsUnlock ? `${formatWei(BigInt(balance))} ETH` : 'ETH balance unavailable' : 'Testnet or unsupported network · no USD value'}</Text>}
+        {!hidden && portfolio.supported && portfolio.formatted && <Text className="text-xs text-white/70">{portfolio.partial ? 'Partial estimate · some assets could not be valued' : 'Estimated USD value · ETH + tokens'}</Text>}
         {walletLocked && <Button title="Unlock wallet" tone="plain" onPress={() => run(async () => {
           await requestUnlock();
           await Promise.all([

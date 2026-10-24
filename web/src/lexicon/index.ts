@@ -14,6 +14,7 @@ import * as AppPeachletExchangeNativeSession from './types/app/peachlet/exchange
 import * as AppPeachletGetAddresses from './types/app/peachlet/getAddresses'
 import * as AppPeachletGetAsset from './types/app/peachlet/getAsset'
 import * as AppPeachletGetAssets from './types/app/peachlet/getAssets'
+import * as AppPeachletGetEthPrice from './types/app/peachlet/getEthPrice'
 import * as AppPeachletGetInvitation from './types/app/peachlet/getInvitation'
 import * as AppPeachletGetPayment from './types/app/peachlet/getPayment'
 import * as AppPeachletGetProfile from './types/app/peachlet/getProfile'
@@ -52,6 +53,7 @@ export * as AppPeachletExchangeNativeSession from './types/app/peachlet/exchange
 export * as AppPeachletGetAddresses from './types/app/peachlet/getAddresses'
 export * as AppPeachletGetAsset from './types/app/peachlet/getAsset'
 export * as AppPeachletGetAssets from './types/app/peachlet/getAssets'
+export * as AppPeachletGetEthPrice from './types/app/peachlet/getEthPrice'
 export * as AppPeachletGetInvitation from './types/app/peachlet/getInvitation'
 export * as AppPeachletGetPayment from './types/app/peachlet/getPayment'
 export * as AppPeachletGetProfile from './types/app/peachlet/getProfile'
@@ -208,6 +210,18 @@ export class AppPeachletNS {
     opts?: AppPeachletGetAssets.CallOptions,
   ): Promise<AppPeachletGetAssets.Response> {
     return this._client.call('app.peachlet.getAssets', params, undefined, opts)
+  }
+
+  getEthPrice(
+    params?: AppPeachletGetEthPrice.QueryParams,
+    opts?: AppPeachletGetEthPrice.CallOptions,
+  ): Promise<AppPeachletGetEthPrice.Response> {
+    return this._client.call(
+      'app.peachlet.getEthPrice',
+      params,
+      undefined,
+      opts,
+    )
   }
 
   getInvitation(

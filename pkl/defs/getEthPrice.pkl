@@ -1,0 +1,19 @@
+lexicon = 1
+id = "app.peachlet.getEthPrice"
+defs = new Dynamic {
+  `main` = new Dynamic {
+    `type` = "query"
+    `output` = new Dynamic {
+      `encoding` = "application/json"
+      `schema` = new Dynamic {
+        `type` = "object"
+        `required` = List("usd", "updatedAt", "source")
+        `properties` = new Dynamic {
+          `usd` = new Dynamic { `type` = "string" }
+          `updatedAt` = new Dynamic { `type` = "integer" }
+          `source` = new Dynamic { `type` = "string" }
+        }
+      }
+    }
+  }
+}

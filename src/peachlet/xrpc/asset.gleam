@@ -19,6 +19,7 @@ import peachlet/ffi/viem
 import peachlet/linking
 import peachlet/rpc_assets
 import peachlet/xrpc/context.{type Reply, type Server, Payload}
+import peachlet/xrpc/price
 
 fn address(server: Server, ctx: Context) -> Result(String, HttpError) {
   use #(_, did) <- result.try(context.authenticated(server, ctx))
@@ -203,7 +204,15 @@ fn token(item: Js, address: String, chain_id: Int) -> Result(json.Json, Nil) {
         js.string_field(token, "name")
         |> option.unwrap("ERC-20 token")
         |> string.slice(0, 128)
-      Ok(assets.balance_json(
+      let usd_price = case js.string_field(token, "exchange_rate") {
+        Some(value) ->
+          case price.valid_rate(value) {
+            True -> Some(value)
+            False -> None
+          }
+        None -> None
+      }
+      Ok(assets.priced_balance_json(
         assets.Asset(
           chain_id,
           Some(string.lowercase(contract)),
@@ -213,6 +222,7 @@ fn token(item: Js, address: String, chain_id: Int) -> Result(json.Json, Nil) {
         ),
         address,
         value,
+        usd_price,
       ))
     }
   }

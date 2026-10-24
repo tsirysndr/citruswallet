@@ -484,6 +484,9 @@ export const schemas = [
           "balanceAtomic": {
             "type": "string"
           },
+          "usdPrice": {
+            "type": "string"
+          },
           "address": {
             "type": "string"
           }
@@ -1104,6 +1107,37 @@ export const schemas = [
               },
               "discoveryAvailable": {
                 "type": "boolean"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "lexicon": 1,
+    "id": "app.peachlet.getEthPrice",
+    "defs": {
+      "main": {
+        "type": "query",
+        "output": {
+          "encoding": "application/json",
+          "schema": {
+            "type": "object",
+            "required": [
+              "usd",
+              "updatedAt",
+              "source"
+            ],
+            "properties": {
+              "usd": {
+                "type": "string"
+              },
+              "updatedAt": {
+                "type": "integer"
+              },
+              "source": {
+                "type": "string"
               }
             }
           }

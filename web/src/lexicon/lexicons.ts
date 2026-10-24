@@ -439,6 +439,9 @@ export const schemaDict = {
           balanceAtomic: {
             type: 'string',
           },
+          usdPrice: {
+            type: 'string',
+          },
           address: {
             type: 'string',
           },
@@ -989,6 +992,33 @@ export const schemaDict = {
               },
               discoveryAvailable: {
                 type: 'boolean',
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  AppPeachletGetEthPrice: {
+    lexicon: 1,
+    id: 'app.peachlet.getEthPrice',
+    defs: {
+      main: {
+        type: 'query',
+        output: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['usd', 'updatedAt', 'source'],
+            properties: {
+              usd: {
+                type: 'string',
+              },
+              updatedAt: {
+                type: 'integer',
+              },
+              source: {
+                type: 'string',
               },
             },
           },
@@ -1824,6 +1854,7 @@ export const ids = {
   AppPeachletGetAddresses: 'app.peachlet.getAddresses',
   AppPeachletGetAsset: 'app.peachlet.getAsset',
   AppPeachletGetAssets: 'app.peachlet.getAssets',
+  AppPeachletGetEthPrice: 'app.peachlet.getEthPrice',
   AppPeachletGetInvitation: 'app.peachlet.getInvitation',
   AppPeachletGetPayment: 'app.peachlet.getPayment',
   AppPeachletGetProfile: 'app.peachlet.getProfile',

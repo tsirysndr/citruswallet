@@ -7,7 +7,8 @@ import { useState } from "react";
 import { IdentityPanel } from "../components/IdentityPanel";
 import { HistoryPanel } from "../components/HistoryPanel";
 import { IdentityPopover } from "../components/IdentityPopover";
-import { accountBalance } from "../balances";
+import { usePortfolio } from "../portfolio";
+import { accountBalance, accountBalanceDetails } from "../balances";
 import { useBalances, useProfile, useSession } from "../queries";
 
 export function Account() {
@@ -16,6 +17,7 @@ export function Account() {
   const { data: balances, isFetching: balanceLoading, refetch: refreshBalance } = useBalances(session);
   const [hidden, setHidden] = useState(false);
   const total = session?.did ? accountBalance(session, balances) : null;
+  const portfolio = usePortfolio(session, session ? accountBalanceDetails(session, balances)?.wei ?? null : null, balances?.address);
   const [amount, detail] = total ? total.split(" across ") : [null, null];
   const name = profile?.displayName?.split(" ")[0] || profile?.handle || "there";
 
@@ -25,8 +27,10 @@ export function Account() {
         {session?.did ? <IdentityPopover /> : <span className="greeting-icon" aria-hidden="true"><AtSign size={24} /></span>}
       </div>
       <div className="balance-stack"><div className="balance-card">
-        <div className="balance-label">ETH balance <button type="button" onClick={() => setHidden(!hidden)} aria-label={hidden ? "Show balance" : "Hide balance"}>{hidden ? <EyeOff size={17} /> : <Eye size={17} />}</button></div>
-        {balanceLoading && !balances && !hidden ? <ContentSkeleton variant="line" label="Loading balance" inverse /> : <p className="balance-amount">{hidden ? "••••••" : amount ?? (session?.did ? "Balance unavailable" : "—")}</p>}
+        <div className="balance-label">Total balance <button type="button" onClick={() => setHidden(!hidden)} aria-label={hidden ? "Show balance" : "Hide balance"}>{hidden ? <EyeOff size={17} /> : <Eye size={17} />}</button></div>
+        {(portfolio.loading || balanceLoading && !balances) && !hidden ? <ContentSkeleton variant="line" label="Loading balance" inverse /> : <p className="balance-amount">{hidden ? "••••••" : portfolio.supported ? portfolio.formatted ?? "USD unavailable" : amount ?? (session?.did ? "Balance unavailable" : "—")}</p>}
+        {!hidden && <p className="font-mono text-sm font-semibold">{portfolio.supported ? amount : "Testnet or unsupported network · no USD value"}</p>}
+        {!hidden && portfolio.supported && portfolio.formatted && <p className="balance-note">{portfolio.partial ? "Partial estimate · some assets could not be valued" : "Estimated USD value · ETH + tokens"}</p>}
         <div className="balance-bottom"><span className="network-pill"><i />{session?.network.name ?? "Ethereum"}</span></div>
         <p className="balance-note">{session?.did ? detail ? `Across ${detail}` : balanceLoading ? "Loading your balance…" : "Your balance could not be loaded." : "Sign in to see your balance"}</p>
         {session?.did && <BalanceAccess session={session} balances={balances} available={total !== null} loading={balanceLoading} refresh={refreshBalance} />}
