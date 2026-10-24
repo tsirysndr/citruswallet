@@ -29,3 +29,12 @@ test('failed decryption never creates a local wallet', async () => {
   expect(await screen.findByText('Wrong backup password')).toBeTruthy();
   expect(createProtectedNativeVault).not.toHaveBeenCalled();
 });
+
+test('shows both provider buttons with horizontal logo and label content', async () => {
+  renderComponent(<CloudBackup />);
+  expect(screen.getByRole('button', { name: 'Google Drive' })).toHaveStyle({ backgroundColor: '#ffffff', minHeight: 52 });
+  expect(screen.getByRole('button', { name: 'Dropbox' })).toHaveStyle({ backgroundColor: '#0061ff', minHeight: 52 });
+  expect(screen.getByTestId('google-button-content')).toHaveStyle({ flexDirection: 'row', alignItems: 'center' });
+  expect(screen.getByTestId('dropbox-button-content')).toHaveStyle({ flexDirection: 'row', alignItems: 'center' });
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Dropbox' })).toBeEnabled());
+});
