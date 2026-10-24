@@ -21,7 +21,7 @@ export const needsPublication = (db, did, chain, address) => !db.prepare(
 
 async function verifiedRecord(record, did, origin) {
   if (!record || record.$type !== ADDRESS_COLLECTION || !lexicons.validate(ADDRESS_COLLECTION, record).success) return null;
-  if (!/^eip155:(1|31337)$/.test(record.chain) || !/^0x[0-9a-fA-F]{40}$/.test(record.address)) return null;
+  if (!/^eip155:(1|4326|6343|31337)$/.test(record.chain) || !/^0x[0-9a-fA-F]{40}$/.test(record.address)) return null;
   const proof = parseSiweMessage(record.message);
   if (proof.address?.toLowerCase() !== record.address.toLowerCase()
     || proof.chainId !== Number(record.chain.slice(7)) || proof.version !== '1'
@@ -88,7 +88,7 @@ export async function applyAddressEvent(db, event, origin, checkpoint = () => {}
     else if (!record) {
       // A delete can be the first event after deployment for an existing local
       // link. Only our deterministic key can identify that otherwise-unseen row.
-      const match = /^eip155-(1|31337)-(0x[0-9a-f]{40})$/.exec(commit.rkey);
+      const match = /^eip155-(1|4326|6343|31337)-(0x[0-9a-f]{40})$/.exec(commit.rkey);
       if (match) project(db, did, Number(match[1]), match[2]);
     }
     if (record) project(db, did, Number(record.chain.slice(7)), record.address);

@@ -352,6 +352,9 @@ export const schemas = [
           "signature": {
             "type": "string"
           },
+          "requires_relink": {
+            "type": "boolean"
+          },
           "linked_at": {
             "type": "string"
           },

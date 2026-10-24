@@ -128,3 +128,28 @@ pub fn challenge_cannot_survive_a_network_configuration_change_test() {
     ))
   store.close(service.store)
 }
+
+pub fn challenge_rejects_changed_origin_test() {
+  let service = f.open()
+  let assert Ok(challenge) =
+    linking.create(
+      service.links,
+      "session",
+      f.alice,
+      Some(f.alice_wallet),
+      True,
+    )
+  let moved = linking.Links(..service.links, origin: "https://new.peachlet.app")
+  use outcome <- promise.map(linking.verify(
+    moved,
+    "session",
+    f.alice,
+    Some(challenge.id),
+    Some("0x" <> string.repeat("0", 130)),
+  ))
+  assert outcome
+    == Error(error.bad_request(
+      "Wallet domain changed. Request a new signature.",
+    ))
+  store.close(service.store)
+}

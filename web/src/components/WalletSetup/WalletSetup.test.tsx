@@ -4,7 +4,7 @@ import { WalletSetup } from './index';
 import { renderComponent, screen, waitFor } from '../../test/render';
 import { server } from '../../test/mocks/server';
 import { xrpc } from '../../test/mocks/handlers';
-import { address, signedOut } from '../../test/mocks/fixtures';
+import { address, signedOut, session, linkedAddress } from '../../test/mocks/fixtures';
 
 function wallet() {
   window.ethereum = { isMetaMask: true, request: vi.fn(async ({ method }: { method: string }) => {
@@ -67,4 +67,17 @@ it('ends anonymous wallet connection at handle sign-in, and resumes there after 
   view.unmount();
   await renderComponent(<WalletSetup onFinished={finished} />);
   expect(await screen.findByRole('button', { name: 'Sign In' })).toBeVisible();
+});
+
+
+it('shows relinking instead of declaring an old-domain wallet ready', async () => {
+  wallet();
+  localStorage.setItem('citrus:metamask-address', address);
+  localStorage.setItem('citrus:wallet-mode', 'metamask');
+  server.use(http.get(xrpc('getSession'), () => HttpResponse.json({
+    ...session, links: [{ ...linkedAddress, requires_relink: true }],
+  })));
+  await renderComponent(<WalletSetup />);
+  expect(await screen.findByRole('button', { name: 'Relink to Peachlet' })).toBeVisible();
+  expect(screen.queryByText('Your wallet is ready.')).not.toBeInTheDocument();
 });

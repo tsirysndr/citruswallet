@@ -55,7 +55,7 @@ pub fn current_session(
           Some(did) ->
             json.array(
               linking.list(server.links, did, public_only: False),
-              linking.to_json,
+              linking.to_json(_, server.links.origin),
             )
           None -> json.preprocessed_array([])
         }),
@@ -153,7 +153,8 @@ pub fn finish_login(
     linking.list(server.links, callback.did, public_only: True),
     fn(link) {
       case
-        address_records.needs_publication(
+        linking.proof_matches_origin(link.message, server.links.origin)
+        && address_records.needs_publication(
           server.settings.store.client,
           link.did,
           link.chain_id,
@@ -175,11 +176,14 @@ pub fn finish_login(
       }
     },
   )
-  use _ <- promise.await(address_records.sync(
-    server.settings.store.client,
-    server.settings.oauth,
-    callback.did,
-  ))
+  use _ <- promise.await(
+    address_records.sync(
+      server.settings.store.client,
+      server.settings.oauth,
+      callback.did,
+      linking.proof_matches_origin(_, server.links.origin),
+    ),
+  )
   context.done(
     Ok(
       Elsewhere(native.complete(

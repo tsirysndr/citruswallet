@@ -5,7 +5,8 @@ import { privateKeyToAccount } from 'viem/accounts';
 import { XrpcClient } from '@atproto/xrpc';
 import { schemas } from '../src/generated/lexicons.mjs';
 import { lexicons } from '../src/xrpc.mjs';
-import { syncAddresses, queueRemovedAddress, addressSyncPending } from '../src/address-records.mjs';
+import { syncAddresses, queueRemovedAddress, queueVerifiedAddress, addressSyncPending } from '../src/address-records.mjs';
+import { proof_matches_origin } from '../build/dev/javascript/peachlet/peachlet/linking.mjs';
 import { build } from '../build/dev/javascript/peachlet/peachlet/app.mjs';
 import { Chain } from '../build/dev/javascript/peachlet/peachlet/chain.mjs';
 import { Settings } from '../build/dev/javascript/peachlet/peachlet/xrpc/context.mjs';
@@ -210,7 +211,7 @@ test('concurrent address changes cannot let an old put overtake the latest delet
       return Response.json({});
     },
   }) };
-  await Promise.all(Array.from({ length: 3 }, () => syncAddresses(f.store.client, oauth, alice)));
+  await Promise.all(Array.from({ length: 3 }, () => syncAddresses(f.store.client, oauth, alice, message => proof_matches_origin(message, origin))));
   assert.equal(peak, 1);
   assert.deepEqual(actions.map(s => s.split('.').at(-1)), ['putRecord', 'deleteRecord']);
   assert.equal(addressSyncPending(f.store.client, alice), false);
@@ -562,4 +563,35 @@ test('web CSP permits curated token logos without allowing arbitrary image hosts
   for (const host of ['raw.githubusercontent.com', 'assets.coingecko.com', 'coin-images.coingecko.com', 'assets.kraken.com', 's2.coinmarketcap.com', 'www.geckoterminal.com', 'arbitrum.foundation']) assert.ok(images.includes('https://' + host));
   assert.ok(!images.split(' ').includes('https:'));
   assert.ok(policy.includes("script-src 'self'"));
+});
+
+
+test('domain migration never republishes an old signed proof and requires a fresh signature', async t => {
+  const f = fixture(t, new None(), megaeth_testnet);
+  await f.login();
+  const current = await f.call('createChallenge', { address: account.address, public: true });
+  const oldMessage = current.message.replaceAll('peachlet.app', 'citruswallet.app');
+  const oldSignature = await account.signMessage({ message: oldMessage });
+  const created = new Date().toISOString();
+  f.store.client.prepare('INSERT INTO links(did,address,chain_id,message,signature,linked_at,public,is_default) VALUES(?,?,?,?,?,?,1,1)')
+    .run(alice, account.address.toLowerCase(), 6343, oldMessage, oldSignature, created);
+  queueVerifiedAddress(f.store.client, alice, 6343, account.address, true, oldMessage, oldSignature, created);
+  assert.equal((await f.query('getSession')).links[0].requires_relink, true);
+  assert.equal((await f.call('syncAddresses', {})).addressSyncPending, false);
+  assert.equal(f.writes.length, 0);
+  let authorization;
+  f.oauth.authorize = async (_identifier, options) => { authorization = options; return new URL('https://provider.example/authorize'); };
+  await f.call('startLogin', { identifier: 'alice.test' });
+  f.oauth.callback = async () => ({ session: { did: alice }, state: authorization.state });
+  await f.raw('/auth/callback?code=example&state=' + authorization.state);
+  assert.equal(f.writes.length, 0);
+  await f.login();
+  const challenge = await f.call('createChallenge', { address: account.address, public: true });
+  assert.match(challenge.message, /^peachlet.app wants you to sign in/);
+  assert.match(challenge.message, /URI: https:\/\/peachlet.app\/wallet-link/);
+  await f.call('verifyChallenge', { id: challenge.id, signature: await account.signMessage({ message: challenge.message }) });
+  assert.equal((await f.query('getSession')).links[0].requires_relink, false);
+  assert.equal(f.writes.length, 1);
+  assert.equal(f.writes[0].body.collection, 'app.peachlet.address');
+  assert.equal(f.writes[0].body.record.message, challenge.message);
 });

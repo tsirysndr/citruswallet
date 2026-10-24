@@ -60,11 +60,14 @@ pub fn verify_challenge(
     id: js.string_field(body, "id"),
     signature: js.string_field(body, "signature"),
   ))
-  use _ <- promise.await(address_records.sync(
-    server.settings.store.client,
-    server.settings.oauth,
-    did,
-  ))
+  use _ <- promise.await(
+    address_records.sync(
+      server.settings.store.client,
+      server.settings.oauth,
+      did,
+      linking.proof_matches_origin(_, server.links.origin),
+    ),
+  )
   context.done(Ok(linked_status(server, did, links)))
 }
 
@@ -78,11 +81,14 @@ pub fn unlink_wallet(
     did,
     option.unwrap(hono.parameter(ctx, "address"), ""),
   ))
-  use _ <- promise.await(address_records.sync(
-    server.settings.store.client,
-    server.settings.oauth,
-    did,
-  ))
+  use _ <- promise.await(
+    address_records.sync(
+      server.settings.store.client,
+      server.settings.oauth,
+      did,
+      linking.proof_matches_origin(_, server.links.origin),
+    ),
+  )
   context.done(
     Ok(linked_status(
       server,
@@ -104,7 +110,7 @@ pub fn choose_default(
       did,
       js.string_field(body, "address"),
     ))
-    linked(links)
+    linked(server, links)
   })
 }
 
@@ -116,7 +122,7 @@ pub fn linked_status(
   Payload(
     200,
     json.object([
-      #("links", json.array(links, linking.to_json)),
+      #("links", json.array(links, linking.to_json(_, server.links.origin))),
       #(
         "addressSyncPending",
         json.bool(address_records.pending(server.settings.store.client, did)),
@@ -130,11 +136,14 @@ pub fn sync_addresses(
   ctx: Context,
 ) -> Promise(Result(Reply, HttpError)) {
   use #(_, did) <- context.attempt(context.authenticated(server, ctx))
-  use _ <- promise.await(address_records.sync(
-    server.settings.store.client,
-    server.settings.oauth,
-    did,
-  ))
+  use _ <- promise.await(
+    address_records.sync(
+      server.settings.store.client,
+      server.settings.oauth,
+      did,
+      linking.proof_matches_origin(_, server.links.origin),
+    ),
+  )
   context.done(
     Ok(Payload(
       200,
@@ -148,8 +157,13 @@ pub fn sync_addresses(
   )
 }
 
-pub fn linked(links: List(linking.Link)) -> Reply {
-  Payload(200, json.object([#("links", json.array(links, linking.to_json))]))
+pub fn linked(server: Server, links: List(linking.Link)) -> Reply {
+  Payload(
+    200,
+    json.object([
+      #("links", json.array(links, linking.to_json(_, server.links.origin))),
+    ]),
+  )
 }
 
 pub fn public_links(
@@ -170,7 +184,7 @@ pub fn public_links(
           "links",
           json.array(
             linking.list(server.links, did, public_only: True),
-            linking.to_json,
+            linking.to_json(_, server.links.origin),
           ),
         ),
       ]),

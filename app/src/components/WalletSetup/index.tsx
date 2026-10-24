@@ -32,7 +32,7 @@ export function WalletSetup({ onFinished, restart = false }: { onFinished?: () =
   const links = session?.links.filter(link => link.chain_id === session.network.chainId) || [];
   const linked = links.find(link => current && link.address.toLowerCase() === current.toLowerCase()) || (!existing ? links.find(link => link.is_default) || links[0] : undefined);
   const [address, setAddress] = useState(current || linked?.address || '');
-  const ready = Boolean(session?.did) && (stage === 'done' || (!editing && Boolean(linked)));
+  const ready = Boolean(session?.did) && !linked?.requires_relink && (stage === 'done' || (!editing && Boolean(linked)));
   const returningSignIn = !session?.did && existing;
   const signingIn = !session?.did && (existing || stage === 'signin');
   const switchWallet = (value: 'citrus' | 'metamask') => {
@@ -42,7 +42,7 @@ export function WalletSetup({ onFinished, restart = false }: { onFinished?: () =
       setKind(value);
       const nextAddress = value === 'citrus' ? nativeBalanceAddress() : configuredAddress();
       setAddress(nextAddress || '');
-      const alreadyLinked = links.some(link => nextAddress && link.address.toLowerCase() === nextAddress.toLowerCase());
+      const alreadyLinked = links.some(link => !link.requires_relink && nextAddress && link.address.toLowerCase() === nextAddress.toLowerCase());
       setEditing(!alreadyLinked);
       setStage(alreadyLinked ? 'done' : value === 'citrus' && vault === 'absent' ? 'choice' : 'link');
       await query.invalidateQueries();
@@ -94,7 +94,8 @@ export function WalletSetup({ onFinished, restart = false }: { onFinished?: () =
     </> : stage === 'create' || stage === 'import' ? <LocalWallet key={stage} initialAction={stage} onCreated={() => { setAddress(nativeBalanceAddress() || ''); setStage(session?.did ? 'link' : 'signin'); }} onCancel={() => setStage('choice')} /> : <View className="gap-5 rounded-3xl bg-white p-6">
       <View className="items-center"><WalletIllustration variant="connect" /></View><Text className="text-center text-2xl font-semibold">{session?.did ? 'Your handle, meet your wallet.' : 'Bring your wallet along.'}</Text>
       <Text className="text-center text-base leading-6 text-muted">{session?.did ? 'Your wallet address will be public, linked to your Atmosphere account, and set as your receiving default. Linking is free and never moves funds.' : 'Connect MetaMask to get started. You’ll link your Atmosphere account after signing in.'}</Text>
-      <Button title={session?.did ? 'Link my wallet' : 'Connect MetaMask'} onPress={finish} />
+      {linked?.requires_relink && <Text className="text-center text-sm leading-6 text-muted">Confirm a new signature for Peachlet to update your public address record. This is free and never moves funds.</Text>}
+      <Button title={linked?.requires_relink ? 'Relink to Peachlet' : session?.did ? 'Link my wallet' : 'Connect MetaMask'} onPress={finish} />
       {kind === 'metamask' && <Pressable accessibilityRole="link" onPress={() => void Linking.openURL('https://metamask.io/download/')}><Text className="text-center text-sm text-muted underline">Need the MetaMask app?</Text></Pressable>}
       <Pressable accessibilityRole="button" onPress={() => setStage('choice')}><Text className="text-center text-sm text-muted">Choose a different wallet</Text></Pressable>
     </View>}

@@ -65,6 +65,7 @@ export interface Link {
   chain_id: number
   message: string
   signature: string
+  requires_relink?: boolean
   linked_at: string
   public: boolean
   is_default: boolean

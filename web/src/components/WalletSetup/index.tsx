@@ -32,7 +32,7 @@ export function WalletSetup({ onFinished, restart = false }: { onFinished?: () =
   const links = session?.links.filter(link => link.chain_id === session.network.chainId) || [];
   const current = configuredAddress();
   const linked = links.find(link => current && link.address.toLowerCase() === current.toLowerCase()) || (!existing ? links.find(link => link.is_default) || links[0] : undefined);
-  const ready = Boolean(session?.did) && (stage === 'done' || (!editing && Boolean(linked)));
+  const ready = Boolean(session?.did) && !linked?.requires_relink && (stage === 'done' || (!editing && Boolean(linked)));
   const signingIn = !session?.did && stage === 'signin';
   const [address, setAddress] = useState(current || linked?.address || '');
   const switchWallet = (selection: 'citrus' | 'metamask') => {
@@ -41,7 +41,7 @@ export function WalletSetup({ onFinished, restart = false }: { onFinished?: () =
     setKind(selection);
     const nextAddress = configuredAddress();
     setAddress(nextAddress || '');
-    const alreadyLinked = links.some(link => nextAddress && link.address.toLowerCase() === nextAddress.toLowerCase());
+    const alreadyLinked = links.some(link => !link.requires_relink && nextAddress && link.address.toLowerCase() === nextAddress.toLowerCase());
     setEditing(!alreadyLinked);
     setStage(alreadyLinked ? 'done' : selection === 'citrus' && vault === 'absent' ? 'choice' : 'link');
     void refresh();
@@ -107,7 +107,8 @@ export function WalletSetup({ onFinished, restart = false }: { onFinished?: () =
       <h1 className="text-2xl font-semibold">{session?.did ? 'Your handle, meet your wallet.' : 'Bring your wallet along.'}</h1>
       <p className="mt-3 text-sm leading-6 text-ink-muted">{session?.did ? 'Your wallet address will be linked to your Atmosphere account and set as your default for receiving payments.' : 'Connect MetaMask to get started. You’ll link your Atmosphere account after signing in.'}</p>
       {session?.did && <Hint className="mt-3">Your receiving address will be public. Linking is free and never moves funds.</Hint>}
-      {needsInstall ? <a href={metamaskStoreUrl()} target="_blank" rel="noreferrer" className="mt-6 flex items-center justify-center gap-2 rounded-md bg-ink px-4 py-3 font-semibold text-white"><img src="/metamask.png" alt="" className="size-6" />Install MetaMask</a> : <Button className="mt-6 w-full" onClick={connect}>{session?.did ? 'Link my wallet' : 'Connect MetaMask'}</Button>}
+      {linked?.requires_relink && <Hint className="mt-4">Confirm a new signature for Peachlet to update your public address record. This is free and never moves funds.</Hint>}
+      {needsInstall ? <a href={metamaskStoreUrl()} target="_blank" rel="noreferrer" className="mt-6 flex items-center justify-center gap-2 rounded-md bg-ink px-4 py-3 font-semibold text-white"><img src="/metamask.png" alt="" className="size-6" />Install MetaMask</a> : <Button className="mt-6 w-full" onClick={connect}>{linked?.requires_relink ? 'Relink to Peachlet' : session?.did ? 'Link my wallet' : 'Connect MetaMask'}</Button>}
       <button type="button" className="mt-5 inline-flex items-center gap-2 text-sm text-ink-muted" onClick={() => setStage('choice')}><ArrowLeft size={15} />Choose a different wallet</button>
     </Panel>}
   </div>;

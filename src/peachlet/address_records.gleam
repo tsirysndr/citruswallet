@@ -32,6 +32,7 @@ pub fn sync(
   database: Client,
   oauth: atproto.Client,
   did: String,
+  accept_message: fn(String) -> Bool,
 ) -> Promise(Bool)
 
 @external(javascript, "../address-records.mjs", "needsPublication")

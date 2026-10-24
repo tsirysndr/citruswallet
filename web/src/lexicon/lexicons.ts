@@ -318,6 +318,9 @@ export const schemaDict = {
           signature: {
             type: 'string',
           },
+          requires_relink: {
+            type: 'boolean',
+          },
           linked_at: {
             type: 'string',
           },

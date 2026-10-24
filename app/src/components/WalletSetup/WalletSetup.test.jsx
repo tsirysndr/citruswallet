@@ -111,3 +111,12 @@ test.each([false, true])('shows sign-in for an existing locked wallet after sign
   expect(require('../../wallet-unlock').requestUnlock).not.toHaveBeenCalled();
   expect(require('../../wallet-preferences').selectWallet).not.toHaveBeenCalled();
 });
+
+
+test('requires relinking a wallet whose signed proof belongs to the previous domain', () => {
+  mockVault = 'locked'; mockMode = 'citrus';
+  mockLinks = [{ address: mockLocalAddress, chain_id: 1, is_default: true, public: true, requires_relink: true }];
+  renderComponent(<WalletSetup />);
+  expect(screen.getByRole('button', { name: 'Relink to Peachlet' })).toBeTruthy();
+  expect(screen.queryByText('Your wallet is ready.')).toBeNull();
+});

@@ -183,3 +183,15 @@ test('legacy address records do not count as published in the Peachlet namespace
   saveRecordHead(db, did, key, rev(2), value);
   assert.equal(needsPublication(db, did, 1, value.address), false);
 });
+
+test('Peachlet address records are indexed on MegaETH mainnet and testnet', async t => {
+  const db = database(t);
+  for (const chain of [4326, 6343]) {
+    const value = await record();
+    value.chain = `eip155:${chain}`;
+    value.message = value.message.replace('Chain ID: 1\n', `Chain ID: ${chain}\n`);
+    value.signature = await account.signMessage({ message: value.message });
+    assert.equal(await applyAddressEvent(db, event('create', 2, value, recordKey(chain, value.address)), origin), 'applied');
+    assert.ok(row(db).some(link => link.chain_id === chain && link.address === value.address));
+  }
+});

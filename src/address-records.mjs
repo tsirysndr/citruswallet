@@ -28,16 +28,16 @@ export const queueRemovedAddress = (db, did, chain, address) => queueAddress(db,
 export const addressSyncPending = (db, did) => Boolean(db.prepare('SELECT 1 FROM kv WHERE namespace=? LIMIT 1').get(namespace(did)));
 
 const running = new Map();
-export async function syncAddresses(db, client, did) {
+export async function syncAddresses(db, client, did, acceptMessage) {
   // A single writer per DID prevents old puts overtaking newer deletes.
   const prior = running.get(did) ?? Promise.resolve();
-  const task = prior.then(() => flush(db, client, did));
+  const task = prior.then(() => flush(db, client, did, acceptMessage));
   running.set(did, task);
   try { return await task; }
   finally { if (running.get(did) === task) running.delete(did); }
 }
 
-async function flush(db, client, did) {
+async function flush(db, client, did, acceptMessage) {
   if (!addressSyncPending(db, did)) return true;
   try {
     const session = await client.restore(did);
@@ -49,6 +49,11 @@ async function flush(db, client, did) {
       const item = db.prepare('SELECT key,value FROM kv WHERE namespace=? ORDER BY key LIMIT 1').get(namespace(did));
       if (!item) return true;
       const { record } = JSON.parse(item.value);
+      // Gleam validates the signed origin. Never rewrite a signed proof to migrate it.
+      if (record && (record.$type !== collection || !acceptMessage?.(record.message))) {
+        db.prepare('DELETE FROM kv WHERE namespace=? AND key=? AND value=?').run(namespace(did), item.key, item.value);
+        continue;
+      }
       if (record) lexicons.assertValidRecord(collection, record);
       const method = record ? 'putRecord' : 'deleteRecord';
       const body = { repo: did, collection, rkey: item.key };

@@ -322,3 +322,16 @@ pub fn received_token_logs(
     fn(value) { Some(value) },
   )
 }
+
+pub fn siwe_origin_matches(
+  message: String,
+  domain: String,
+  uri: String,
+) -> Bool {
+  case js.attempt(fn() { parse_siwe_message(message) }) {
+    Ok(parsed) ->
+      js.string_field(parsed, "domain") == Some(domain)
+      && js.string_field(parsed, "uri") == Some(uri)
+    Error(_) -> False
+  }
+}

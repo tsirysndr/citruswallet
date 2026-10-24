@@ -97,7 +97,7 @@ export function App() {
     checkedAccount.current = session.did;
     const address = configuredAddress();
     const configured = vaultState !== 'absent' || Boolean(address) || session.links.length > 0;
-    const linkedDefault = session.links.some(link => link.chain_id === session.network.chainId && link.is_default && link.public && (!address || link.address.toLowerCase() === address.toLowerCase()));
+    const linkedDefault = session.links.some(link => !link.requires_relink && link.chain_id === session.network.chainId && link.is_default && link.public && (!address || link.address.toLowerCase() === address.toLowerCase()));
     setNeedsSetup(!configured || !session.did || !linkedDefault);
   }, [session, needsSetup, vaultState]);
   if (needsSetup === null && !error && !['/privacy', '/terms'].includes(location.pathname)) return <div className="min-h-dvh bg-canvas p-8"><ContentSkeleton variant="card" label="Opening Peachlet" /></div>;

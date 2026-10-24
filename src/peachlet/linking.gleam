@@ -212,6 +212,12 @@ fn pending(
       "Network configuration changed. Request a new signature.",
     )),
   )
+  use <- bool.guard(
+    when: !proof_matches_origin(challenge.message, links.origin),
+    return: Error(error.bad_request(
+      "Wallet domain changed. Request a new signature.",
+    )),
+  )
   Ok(#(challenge, signature))
 }
 
@@ -453,7 +459,11 @@ pub fn unlink(
   )
 }
 
-pub fn to_json(link: Link) -> Json {
+pub fn proof_matches_origin(message: String, origin: String) -> Bool {
+  viem.siwe_origin_matches(message, host_of(origin), origin <> "/wallet-link")
+}
+
+pub fn to_json(link: Link, origin: String) -> Json {
   json.object([
     #("did", json.string(link.did)),
     #("address", json.string(viem.checksum(link.address))),
@@ -461,6 +471,7 @@ pub fn to_json(link: Link) -> Json {
     #("message", json.string(link.message)),
     #("signature", json.string(link.signature)),
     #("linked_at", json.string(link.linked_at)),
+    #("requires_relink", json.bool(!proof_matches_origin(link.message, origin))),
     #("public", json.bool(link.is_public)),
     #("is_default", json.bool(link.is_default)),
   ])

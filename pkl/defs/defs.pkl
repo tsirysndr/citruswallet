@@ -80,6 +80,9 @@ defs = new Dynamic {
       `signature` = new Dynamic {
         `type` = "string"
       }
+      `requires_relink` = new Dynamic {
+        `type` = "boolean"
+      }
       `linked_at` = new Dynamic {
         `type` = "string"
       }
