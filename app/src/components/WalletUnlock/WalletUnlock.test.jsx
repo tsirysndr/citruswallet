@@ -23,6 +23,16 @@ test('directly triggers system authentication for a device-protected wallet', as
   mockProtection = 'device'; mount();
   await waitFor(() => expect(require('../../local-wallet').unlockNativeVault).toHaveBeenCalledWith(''));
   expect(require('../../local-wallet').unlockNativeVault).toHaveBeenCalledTimes(1);
+  expect(screen.queryByText('Wallet unlock form')).toBeNull();
+});
+test('cancelling system authentication ends the request without opening a modal or prompting again', async () => {
+  mockProtection = 'device';
+  require('../../local-wallet').unlockNativeVault.mockRejectedValueOnce(new Error('Cancelled'));
+  mount();
+  await waitFor(() => expect(require('../../local-wallet').unlockNativeVault).toHaveBeenCalledTimes(1));
+  await waitFor(() => expect(unlockSnapshot()).toBe(false));
+  expect(screen.queryByText('Wallet unlock form')).toBeNull();
+  expect(require('../../local-wallet').unlockNativeVault).toHaveBeenCalledTimes(1);
 });
 test('does not prompt for an unselected local wallet', () => {
   mockMode = 'metamask'; mount(); expect(unlockSnapshot()).toBe(false);
