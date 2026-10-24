@@ -552,3 +552,14 @@ test('testnet discovers ERC20 holdings through RPC without an indexer key', asyn
   assert.equal(unavailable.discoveryAvailable, false);
   assert.equal(unavailable.assets.length, 1);
 });
+
+
+test('web CSP permits curated token logos without allowing arbitrary image hosts', async t => {
+  const f = fixture(t);
+  const response = await f.raw('/');
+  const policy = response.headers.get('content-security-policy');
+  const images = policy.split(';').find(rule => rule.trim().startsWith('img-src'));
+  for (const host of ['raw.githubusercontent.com', 'assets.coingecko.com', 'coin-images.coingecko.com', 'assets.kraken.com', 's2.coinmarketcap.com', 'www.geckoterminal.com', 'arbitrum.foundation']) assert.ok(images.includes('https://' + host));
+  assert.ok(!images.split(' ').includes('https:'));
+  assert.ok(policy.includes("script-src 'self'"));
+});
