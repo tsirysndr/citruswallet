@@ -39,7 +39,7 @@ it.each([false, true])("shows the connected account and signs out when collapsed
     }),
   );
   const { user } = await renderComponent(<SidebarNav marks={{}} collapsed={collapsed} onToggle={() => {}} network="Ethereum" />);
-  const profile = await screen.findByRole("link", { name: "Your account: Alice" });
+  const profile = await screen.findByRole("button", { name: "Your account: Alice" });
   expect(profile.querySelector("img")).toHaveAttribute("src", "/avatar.jpg");
   if (!collapsed) expect(screen.getByText("@alice.test")).toBeInTheDocument();
   else expect(profile).toHaveAttribute("title", "Alice (@alice.test)");

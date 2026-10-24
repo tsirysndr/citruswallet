@@ -63,3 +63,12 @@ test('does not offer local-wallet unlock when MetaMask is selected', async () =>
   mount(); await screen.findByText('0 ETH');
   expect(screen.queryByRole('button', { name: 'Unlock wallet' })).toBeNull();
 });
+
+test('keeps identity off the account page until its avatar is tapped', async () => {
+  mount();
+  await screen.findByText('0 ETH');
+  expect(screen.queryByText('Your identity')).toBeNull();
+  await fireEvent.press(screen.getByRole('button', { name: 'Account information' }));
+  expect(screen.getByText('Your identity')).toBeTruthy();
+  expect(screen.getByText('@me.test')).toBeTruthy();
+});

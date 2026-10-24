@@ -7,7 +7,7 @@ import { useState } from "react";
 import { IdentityPanel } from "../components/IdentityPanel";
 import { HistoryPanel } from "../components/HistoryPanel";
 import { CitrusMark } from "../components/CitrusMark";
-import { Avatar } from "../components/Avatar";
+import { IdentityPopover } from "../components/IdentityPopover";
 import { accountBalance } from "../balances";
 import { useBalances, useProfile, useSession } from "../queries";
 
@@ -23,7 +23,7 @@ export function Account() {
   return <div className="home-grid">
     <section className="dashboard">
       <div className="dashboard-greeting"><div><p className="eyebrow">YOUR EVERYDAY WALLET</p><h2>Hello, {name}<span className="greeting-dot">.</span></h2></div>
-        {profile ? <Avatar actor={profile} size="size-12" /> : <span className="greeting-icon" aria-hidden="true"><AtSign size={24} /></span>}
+        {session?.did ? <IdentityPopover /> : <span className="greeting-icon" aria-hidden="true"><AtSign size={24} /></span>}
       </div>
       <div className="balance-stack"><div className="balance-card">
         <div className="balance-label">ETH balance <button type="button" onClick={() => setHidden(!hidden)} aria-label={hidden ? "Show balance" : "Hide balance"}>{hidden ? <EyeOff size={17} /> : <Eye size={17} />}</button></div>
@@ -38,7 +38,7 @@ export function Account() {
         <Link to="/wallet" className="action-tile action-receive"><ArrowDownLeft /><span>Receive</span></Link>
       </div>
       {session?.did && <AssetBalances session={session} hidden={hidden} />}
-      <IdentityPanel className="identity-card" />
+      {!session?.did && <IdentityPanel className="identity-card" />}
       {session?.did ? <HistoryPanel className="home-history" /> : <div className="welcome-note"><span className="welcome-symbol">@</span><div><h3>A familiar way to pay.</h3><p>Your handle is all you need to get started.</p></div><ArrowUpRight size={20} /></div>}
     </section>
   </div>;

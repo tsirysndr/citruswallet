@@ -1,3 +1,4 @@
+import { IdentityPopover } from "../IdentityPopover";
 import { useAtomValue } from "jotai";
 import { busyAtom } from "../../atoms";
 import { rpc } from "../../api";
@@ -29,13 +30,13 @@ function SidebarAccount({ collapsed }: { collapsed: boolean }) {
   const actor = profile ?? { did: session.did, handle: "", displayName: null, avatar: null };
   const name = actor.displayName || actor.handle || "Signed in";
   return <section className="sidebar-account" aria-label="Connected account">
-    <Link to="/" className="sidebar-profile" aria-label={`Your account: ${name}`} title={collapsed ? `${name}${actor.handle ? ` (@${actor.handle})` : ""}` : undefined}>
+    <IdentityPopover above className="sidebar-profile" label={`Your account: ${name}`} title={collapsed ? `${name}${actor.handle ? ` (@${actor.handle})` : ""}` : undefined}>
       <Avatar actor={actor} size="size-10" />
       {!collapsed && <span className="sidebar-profile-text">
         <span className="sidebar-display-name" title={name}>{name}</span>
         <span className="sidebar-handle" title={actor.handle || actor.did}>{actor.handle ? `@${actor.handle}` : actor.did}</span>
       </span>}
-    </Link>
+    </IdentityPopover>
     <button type="button" className="sidebar-signout" aria-label="Sign out" title="Sign out" disabled={busy}
       onClick={() => run(async () => {
         await rpc.logout({});

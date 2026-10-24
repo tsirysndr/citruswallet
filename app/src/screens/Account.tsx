@@ -1,3 +1,4 @@
+import { IdentitySheet } from "../components/IdentitySheet";
 import { walletMode } from "../wallet-preferences";
 import { useController, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -13,18 +14,17 @@ import { Linking, Pressable, View } from "react-native";
 import { Text } from "../components/Typography";
 import { useSetAtom } from "jotai";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { request, saveToken } from "../api";
 import { signIn } from "../auth";
 import { useAction, useProfile, useSession } from "../hooks";
 import { screenAtom, walletSetupAtom } from "../state";
 import { formatWei } from "../amount";
-import { Avatar, Button, Heading } from "../components/ui";
+import { Button, Heading } from "../components/ui";
 import { HandleInput } from "../components/HandleInput";
 import { AtmosphereApps } from "../components/AtmosphereApps";
 import { WalletAction } from "../components/WalletAction";
 export function Account() {
   const { data: session } = useSession(),
-    { data: profile, isFetching: profileLoading } = useProfile();
+    { data: profile } = useProfile();
   const form = useForm({ resolver: zodResolver(signInForm), defaultValues: { identifier: '' } });
   const { field } = useController({ control: form.control, name: 'identifier' });
   const handle = field.value, setHandle = field.onChange;
@@ -124,7 +124,7 @@ export function Account() {
         <Heading
           title={`Hello, ${profile?.displayName?.split(" ")[0] || "there"}.`}
         />
-        <Avatar actor={profile} />
+        <IdentitySheet />
       </View>
       <View className="gap-4 rounded-3xl bg-ink p-6">
         <View className="flex-row items-center justify-between">
@@ -161,34 +161,6 @@ export function Account() {
         </View>
       </View>
       <AssetBalances session={session} hidden={hidden} />
-      <View className="gap-4 rounded-3xl bg-white p-5">
-        <Text className="text-xl font-semibold">Your identity</Text>
-        {profileLoading && !profile ? <ContentSkeleton rows={1} label="Loading profile" /> : <View className="flex-row items-center gap-3">
-          <Avatar actor={profile} />
-          <View className="flex-1">
-            <Text className="text-lg font-semibold">
-              {profile?.displayName || profile?.handle || "Connected"}
-            </Text>
-            <Text className="text-sm text-muted">
-              @{profile?.handle || "…"}
-            </Text>
-          </View>
-        </View>}
-        <Text selectable className="text-xs text-muted">
-          {session.did}
-        </Text>
-        <Button
-          title="Sign out"
-          tone="plain"
-          onPress={() =>
-            run(async () => {
-              await request("logout", {});
-              await saveToken(null);
-              await query.resetQueries();
-            })
-          }
-        />
-      </View>
       <Button
         title="View activity"
         tone="plain"
