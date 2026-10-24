@@ -9,7 +9,7 @@ export function Landing({ onGetStarted }: { onGetStarted: () => void }) {
     <StatusBar style="dark" />
     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 20, gap: 12 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}><Image source={require('../../../assets/icon.png')} style={{ width: 36, height: 36 }} /><Text className="font-bold" style={{ fontSize: 20, color: '#191916' }}>Peachlet</Text></View>
-      <Pressable accessibilityRole="button" onPress={onGetStarted} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#191916', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 14 }}><Text className="font-bold" style={{ color: '#fff', fontSize: 14 }}>Get started</Text><ArrowUpRight size={16} color="#fff" /></Pressable>
+      <Pressable accessibilityRole="button" onPress={onGetStarted} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#191916', borderRadius: 999, paddingHorizontal: 18, paddingVertical: 14 }}><Text className="font-bold" style={{ color: '#fff', fontSize: 14 }}>Get started</Text><ArrowUpRight size={16} color="#fff" /></Pressable>
     </View>
     <ScrollView contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 24 }}>
       <View style={{ flex: 1, justifyContent: 'center', paddingVertical: 36 }}>

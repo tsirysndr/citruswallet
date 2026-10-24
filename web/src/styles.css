@@ -429,7 +429,7 @@ dialog .klipy-empty button { background: transparent; }
 
 .peachlet-landing { min-height: 100svh; display: flex; flex-direction: column; background: #ffb995; color: #191916; padding: clamp(20px, 4vw, 56px); }
 .landing-header, .landing-footer { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-.landing-start { display: inline-flex; align-items: center; gap: 10px; padding: 14px 20px; background: #191916; color: white; border: 0; border-radius: 8px; font-weight: 600; cursor: pointer; }
+.landing-start { display: inline-flex; align-items: center; gap: 10px; padding: 14px 20px; background: #191916; color: white; border: 0; border-radius: 999px; font-weight: 600; cursor: pointer; }
 .landing-start:hover { background: #482719; }
 .landing-start:focus-visible { outline: 2px solid #191916; outline-offset: 4px; }
 .landing-hero { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: clamp(48px, 8vh, 100px) 0; max-width: 1100px; width: 100%; margin: auto; }
