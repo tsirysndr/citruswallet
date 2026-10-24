@@ -6,7 +6,6 @@ import { ArrowDownLeft, ArrowUpRight, Eye, EyeOff, Plus, AtSign } from "lucide-r
 import { useState } from "react";
 import { IdentityPanel } from "../components/IdentityPanel";
 import { HistoryPanel } from "../components/HistoryPanel";
-import { PeachletMark } from "../components/PeachletMark";
 import { IdentityPopover } from "../components/IdentityPopover";
 import { accountBalance } from "../balances";
 import { useBalances, useProfile, useSession } from "../queries";
@@ -28,7 +27,7 @@ export function Account() {
       <div className="balance-stack"><div className="balance-card">
         <div className="balance-label">ETH balance <button type="button" onClick={() => setHidden(!hidden)} aria-label={hidden ? "Show balance" : "Hide balance"}>{hidden ? <EyeOff size={17} /> : <Eye size={17} />}</button></div>
         {balanceLoading && !balances && !hidden ? <ContentSkeleton variant="line" label="Loading balance" inverse /> : <p className="balance-amount">{hidden ? "••••••" : amount ?? (session?.did ? "Balance unavailable" : "—")}</p>}
-        <div className="balance-bottom"><span className="network-pill"><i />{session?.network.name ?? "Ethereum"}</span><PeachletMark className="balance-seal" /></div>
+        <div className="balance-bottom"><span className="network-pill"><i />{session?.network.name ?? "Ethereum"}</span></div>
         <p className="balance-note">{session?.did ? detail ? `Across ${detail}` : balanceLoading ? "Loading your balance…" : "Your balance could not be loaded." : "Sign in to see your balance"}</p>
         {session?.did && <BalanceAccess session={session} balances={balances} available={total !== null} loading={balanceLoading} refresh={refreshBalance} />}
       </div></div>
