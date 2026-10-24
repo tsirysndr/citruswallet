@@ -1,3 +1,4 @@
+import { useWalletOnboarding } from "./src/useWalletOnboarding";
 import { Settings } from './src/screens/Settings';
 import SettingsIcon from 'lucide-react-native/icons/settings';
 import { WalletEntry } from './src/components/WalletEntry';
@@ -116,18 +117,7 @@ function Shell() {
     };
   }, []);
   const vault = useSyncExternalStore(subscribeNativeVault, nativeVaultState);
-  const [needsSetup, setNeedsSetup] = useState<boolean | null>(null);
-  const checkedAccount = useRef<string | null | undefined>(undefined);
-  useEffect(() => {
-    const data = session.data;
-    if (!ready || session.isPending || (needsSetup !== null && checkedAccount.current === data?.did)) return;
-    checkedAccount.current = data?.did;
-    if (!data?.did) { setNeedsSetup(true); return; }
-    const address = configuredAddress();
-    const configured = vault !== 'absent' || !!address || data.links.length > 0;
-    const linked = data.links.some(link => !link.requires_relink && link.chain_id === data.network.chainId && link.public && link.is_default && (!address || link.address.toLowerCase() === address.toLowerCase()));
-    setNeedsSetup(!configured || !data.did || !linked);
-  }, [ready, session.data, session.isPending, needsSetup, vault]);
+  const [needsSetup, setNeedsSetup] = useWalletOnboarding(ready, session.isPending, session.data, vault, configuredAddress());
   const compactRecipient = screen === "Payments" && paymentStep === 1 && keyboardVisible;
   const feedback = <>
           {refreshing && <ContentSkeleton label="Refreshing content" rows={1} />}

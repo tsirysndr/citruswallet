@@ -93,12 +93,11 @@ export function App() {
   const navigate = useNavigate();
   const location = useLocation();
   useEffect(() => {
-    if (!session || (needsSetup !== null && checkedAccount.current === session.did)) return;
+    if (!session || (needsSetup === false && checkedAccount.current === session.did)) return;
     checkedAccount.current = session.did;
     const address = configuredAddress();
     const configured = vaultState !== 'absent' || Boolean(address) || session.links.length > 0;
-    const linkedDefault = session.links.some(link => !link.requires_relink && link.chain_id === session.network.chainId && link.is_default && link.public && (!address || link.address.toLowerCase() === address.toLowerCase()));
-    setNeedsSetup(!configured || !session.did || !linkedDefault);
+    setNeedsSetup(!configured || !session.did);
   }, [session, needsSetup, vaultState]);
   if (needsSetup === null && !error && !['/privacy', '/terms'].includes(location.pathname)) return <div className="min-h-dvh bg-canvas p-8"><ContentSkeleton variant="card" label="Opening Peachlet" /></div>;
   if (needsSetup && session && !['/privacy', '/terms'].includes(location.pathname)) return <div className="min-h-dvh bg-canvas px-5 py-8 font-sans md:py-12">

@@ -64,3 +64,29 @@ it("requires full-screen wallet setup when no wallet is configured", async () =>
   expect(screen.queryByRole('button', { name: 'Collapse sidebar' })).not.toBeInTheDocument();
   expect(screen.queryByRole('button', { name: 'Search activity' })).not.toBeInTheDocument();
 });
+
+it.each([
+  { label: 'a private, non-default linked address on another network', links: [{ ...linkedAddress, chain_id: 6343, public: false, is_default: false }] },
+  { label: 'an address needing a new domain proof', links: [{ ...linkedAddress, requires_relink: true }] },
+])('opens the app with $label', async ({ links }) => {
+  server.use(http.get(xrpc('getSession'), () => HttpResponse.json({ ...session, links })));
+  await renderComponent(<App />);
+  expect(await screen.findByRole('button', { name: 'Collapse sidebar' })).toBeVisible();
+});
+
+it('opens the app with a configured wallet and no linked addresses', async () => {
+  localStorage.setItem('citrus:wallet-mode', 'metamask');
+  localStorage.setItem('citrus:metamask-address', linkedAddress.address);
+  await renderComponent(<App />);
+  expect(await screen.findByRole('button', { name: 'Collapse sidebar' })).toBeVisible();
+});
+
+it('leaves onboarding when a link arrives for the same signed-in account', async () => {
+  let current = session;
+  server.use(http.get(xrpc('getSession'), () => HttpResponse.json(current)));
+  const { client } = await renderComponent(<App />);
+  expect(await screen.findByRole('button', { name: /Create a Peachlet wallet/ })).toBeVisible();
+  current = { ...session, links: [linkedAddress] };
+  await act(async () => { await client.invalidateQueries({ queryKey: ['session'] }); });
+  expect(await screen.findByRole('button', { name: 'Collapse sidebar' })).toBeVisible();
+});
