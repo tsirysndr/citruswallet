@@ -60,7 +60,7 @@ export function LocalWallet({ allowWhileBusy = false, initialAction, onCreated, 
     </form>}
     {state === 'locked' && <form noValidate className="mt-4 flex flex-col gap-3" onSubmit={e => { e.preventDefault(); void validated(async () => { await unlockLocalWallet(password); clear(); }); }}>
       <Label htmlFor="wallet-password">Wallet password</Label><Input id="wallet-password" type="password" autoComplete="current-password" {...passwordField} aria-invalid={!!form.formState.errors.password} />
-      <div className="flex items-center justify-end gap-3">{onDismiss && <Button keepEnabled variant="subtle" onClick={onDismiss}>Cancel</Button>}<Button keepEnabled={allowWhileBusy} type="submit" disabled={busy}>Unlock wallet</Button></div>
+      <div className="mt-3 flex items-center justify-end gap-3">{onDismiss && <Button keepEnabled variant="subtle" onClick={onDismiss}>Cancel</Button>}<Button keepEnabled={allowWhileBusy} type="submit" disabled={busy}>Unlock wallet</Button></div>
       {hasWalletPasskey() && <Button keepEnabled={allowWhileBusy} variant="subtle" disabled={busy} onClick={() => act(unlockWithPasskey)}>Unlock with your device</Button>}
     </form>}
     {state === 'unlocked' && <div className="mt-4 flex flex-col gap-3">

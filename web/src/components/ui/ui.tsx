@@ -74,7 +74,7 @@ export function Badge({
 }
 
 const variants = {
-  solid: "bg-accent px-4 py-3 font-[650] text-accent-ink enabled:hover:brightness-[1.07]",
+  solid: "bg-accent px-4 py-3 text-accent-ink enabled:hover:brightness-[1.07]",
   subtle:
     "bg-highlight-bg px-3 py-2 text-[12px] text-highlight enabled:hover:brightness-[1.07]",
 };
@@ -101,7 +101,7 @@ export function Button({
       data-variant={variant}
       disabled={disabled || (!keepEnabled && busy)}
       className={cx(
-        "cursor-pointer rounded-[6px] border-0 whitespace-nowrap disabled:cursor-not-allowed disabled:opacity-45",
+        "cursor-pointer rounded-[6px] border-0 font-[650] whitespace-nowrap disabled:cursor-not-allowed disabled:opacity-45",
         variants[variant],
         className,
       )}

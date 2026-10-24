@@ -2,7 +2,9 @@ import React from 'react';
 import { render, fireEventAsync as fireEvent, screen, waitFor, within, act } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BackHandler } from 'react-native';
-import { Provider } from 'jotai';
+import { Provider, createStore } from 'jotai';
+import { reviewAtom, screenAtom } from '../src/state';
+import { sendPayment } from '../src/wallet';
 import { Payments } from '../src/screens/Payments';
 import { request } from '../src/api';
 
@@ -14,9 +16,9 @@ jest.mock('../src/wallet', () => ({ pending: jest.fn(async () => null), recover:
 jest.mock('../src/klipy', () => ({ recordShare: jest.fn(), klipyEnabled: false, mediaKinds: [], fetchMedia: jest.fn() }));
 const alice = { did: 'did:plc:alice', handle: 'alice.bsky.social', displayName: 'Alice', avatar: 'https://example.com/alice.jpg' };
 const payment = { id: 'payment1', senderDid: 'did:plc:me', recipientDid: alice.did, recipient: alice, recipientLabel: alice.handle, amount: '1', state: 'ready', address: '0x123', revision: 1 };
-function mount(element) {
+function mount(element, store = createStore()) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
-  return render(<Provider><QueryClientProvider client={client}>{element}</QueryClientProvider></Provider>);
+  return render(<Provider store={store}><QueryClientProvider client={client}>{element}</QueryClientProvider></Provider>);
 }
 beforeEach(() => {
   request.mockReset();
@@ -155,4 +157,20 @@ test('failed recipient resolution stays on recipient selection', async () => {
   await fireEvent(screen.getByLabelText('Recipient handle'), 'submitEditing');
   expect(mockActionError).toHaveBeenCalled();
   expect(screen.getByLabelText('Step 1 of 4')).toBeTruthy();
+});
+
+test.each(['submitted', 'confirming', 'confirmed', 'failed', 'cancelled', 'expired'])('Done closes a %s payment without sending or changing its status', async state => {
+  const store = createStore();
+  store.set(reviewAtom, payment.id);
+  store.set(screenAtom, 'Payments');
+  sendPayment.mockClear();
+  request.mockResolvedValue({ payment: { ...payment, state } });
+  mount(<Payments />, store);
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Done' })).toBeTruthy());
+  request.mockClear();
+  await fireEvent.press(screen.getByRole('button', { name: 'Done' }));
+  expect(store.get(reviewAtom)).toBeNull();
+  expect(store.get(screenAtom)).toBe('Activity');
+  expect(sendPayment).not.toHaveBeenCalled();
+  expect(request).not.toHaveBeenCalled();
 });

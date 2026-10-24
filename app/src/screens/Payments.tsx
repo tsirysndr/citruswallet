@@ -64,6 +64,12 @@ export function Payments({ onStepChange, keyboardVisible = false }: { onStepChan
     if (session?.did)
       void pending(session.did).then((value) => setPending(!!value));
   }, [session?.did, payment]);
+  const finished = !!payment && ["submitted", "confirming", "confirmed", "failed", "cancelled", "expired"].includes(payment.state);
+  const resetDraft = () => {
+    setId(null); setStep(1); setActor(null); setAmount("0");
+    setRecipient(null); setHandle(""); setDescription(""); setMedia(null);
+    setAck(false); setHash(""); setInvitation(null);
+  };
   const currentStep = id ? 4 : step;
   const canEdit = !!recipient && payment?.senderDid === session?.did &&
     ["waiting", "ready"].includes(payment?.state || "") && !hasPending;
@@ -131,8 +137,8 @@ export function Payments({ onStepChange, keyboardVisible = false }: { onStepChan
           </Pressable>;
         })}
       </View>
-      <Heading title={id ? "Review payment" : step === 1 ? "Who are you paying?" : step === 2 ? "How much?" : "Add a note"}
-        subtitle={id ? "Check every detail before approving payment." : step === 1 ? "Find someone by their Atmosphere account." : step === 2 ? "Enter the amount you want to send." : "Make it personal with a message or GIF. You can leave this blank."} />
+      <Heading title={id ? finished ? "Payment details" : "Review payment" : step === 1 ? "Who are you paying?" : step === 2 ? "How much?" : "Add a note"}
+        subtitle={id ? finished ? "You can follow this payment in Activity." : "Check every detail before approving payment." : step === 1 ? "Find someone by their Atmosphere account." : step === 2 ? "Enter the amount you want to send." : "Make it personal with a message or GIF. You can leave this blank."} />
       </>}
       {hasPending && !compact && (
         <View className="gap-3 rounded-2xl bg-peach p-4">
@@ -286,6 +292,7 @@ export function Payments({ onStepChange, keyboardVisible = false }: { onStepChan
                     />
                   </>
                 )}
+              {finished && <Button title="Done" onPress={() => { Keyboard.dismiss(); resetDraft(); go("Activity"); }} />}
               {canEdit && <Button title="Edit details" tone="plain" onPress={() => navigateBack(3)} />}
               <Button
                 title="Refresh status"
@@ -297,16 +304,7 @@ export function Payments({ onStepChange, keyboardVisible = false }: { onStepChan
           <Button
             title="New payment"
             tone="plain"
-            onPress={() => {
-              setId(null);
-              setStep(1);
-              setActor(null);
-              setAmount("0");
-              setRecipient(null);
-              setHandle("");
-              setDescription("");
-              setMedia(null);
-            }}
+            onPress={resetDraft}
           />
         </>
       )}

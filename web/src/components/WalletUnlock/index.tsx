@@ -26,7 +26,7 @@ export function WalletUnlock() {
     if (open && state === 'unlocked') finishUnlock(true);
     else if (open) dialog.current?.showModal(); else dialog.current?.close();
   }, [open, state]);
-  return <dialog ref={dialog} aria-label="Unlock Citrus wallet" className="m-auto max-h-[90dvh] w-[min(94vw,480px)] rounded-2xl border border-edge bg-white p-4 text-ink backdrop:bg-black/25" onCancel={event => { event.preventDefault(); lockLocalWallet(); finishUnlock(false); }}>
+  return <dialog ref={dialog} aria-label="Unlock Citrus wallet" className="m-auto max-h-[90dvh] w-[min(94vw,480px)] rounded-2xl border border-edge bg-white p-5 [&>section]:p-0 text-ink backdrop:bg-black/25" onCancel={event => { event.preventDefault(); lockLocalWallet(); finishUnlock(false); }}>
     {open && <LocalWallet allowWhileBusy onDismiss={() => { lockLocalWallet(); finishUnlock(false); }} />}
   </dialog>;
 }

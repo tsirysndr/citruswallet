@@ -33,7 +33,7 @@ export function WalletUnlock() {
   const cancel = () => { lockNativeWallet(); finishUnlock(false); };
   return <Modal visible={open} transparent animationType="slide" onRequestClose={cancel}>
     <View className="flex-1 justify-center bg-black/25 px-4 py-12"><ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }} keyboardShouldPersistTaps="handled">
-      <View className="rounded-3xl bg-white p-4">{open && <LocalWallet allowWhileBusy onDismiss={cancel} />}{!!error && <Text accessibilityRole="alert" className="text-sm text-red-700">{error}</Text>}</View>
+      <View className="rounded-3xl bg-white p-5">{open && <LocalWallet allowWhileBusy onDismiss={cancel} />}{!!error && <Text accessibilityRole="alert" className="text-sm text-red-700">{error}</Text>}</View>
     </ScrollView></View>
   </Modal>;
 }
