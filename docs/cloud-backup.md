@@ -36,7 +36,9 @@ References: [Drive app-data storage](https://developers.google.com/workspace/dri
 4. Copy the **App key** (not App secret) into `VITE_DROPBOX_APP_KEY` in root `.env.prod`, and `EXPO_PUBLIC_DROPBOX_APP_KEY` in the app's build environment.
 5. Rebuild web and native. Add test users / apply for production access in Dropbox as required before offering the integration publicly.
 
-Authorization uses a fresh random state and PKCE S256 verifier for each attempt. Tokens are exchanged directly with Dropbox without an app secret. Web callbacks check both popup identity and origin, then validate OAuth state and the exact callback URL. Native uses an external browser session and validates the custom-scheme callback.
+Authorization uses a fresh random state and PKCE S256 verifier for each attempt. Tokens are exchanged directly with Dropbox without an app secret. Native uses an external browser session and validates the custom-scheme callback.
+
+On the web, Dropbox serves its sign-in pages with their own `Cross-Origin-Opener-Policy`, so the browser moves the popup into a separate browsing context group: `window.opener` becomes null in `cloud-callback.html` and the handle held by the app reports the popup as closed while the user is still signing in. The callback therefore relays its URL over `postMessage`, a `BroadcastChannel`, and `localStorage`, and the app accepts whichever channel the browser left intact; callbacks older than five minutes are discarded. Because a closed-looking popup is not a cancellation under that policy, the app waits for the relay (up to five minutes) and offers an explicit **Cancel sign-in** button instead. Every accepted callback is still checked for same-origin postMessage identity, the exact redirect path, and the OAuth state before the code is exchanged, and the popup may stay open after approval since a window whose session history grew past the provider redirects is not always script-closable.
 
 Backups are stored inside the scoped application's folder (`Apps/<your Dropbox app name>`), under unique `peachlet-*.json` filenames. Don't rename files if you want the in-app restore list to find them.
 

@@ -12,7 +12,7 @@ export function CloudBackup({ onRestored }: { onRestored?: () => void }) {
   const [connection, setConnection] = useState<{ provider: CloudProvider; token: string } | null>(null);
   const [files, setFiles] = useState<CloudFile[]>([]), [file, setFile] = useState('');
   const [busy, setBusy] = useState(false), [error, setError] = useState(''), [message, setMessage] = useState('');
-  const [googleReady, setGoogleReady] = useState(false);
+  const [googleReady, setGoogleReady] = useState(false), [waiting, setWaiting] = useState<AbortController | null>(null);
   const active = useRef(true);
   const schema = z.object({ credential: z.string().max(1024), password: z.string().min(12, 'Use at least 12 characters.').max(1024), repeat: z.string().max(1024) }).superRefine((value, ctx) => {
     if (!restoring && !value.credential) ctx.addIssue({ code: 'custom', path: ['credential'], message: 'Enter your current wallet password.' });
@@ -24,7 +24,11 @@ export function CloudBackup({ onRestored }: { onRestored?: () => void }) {
   useEffect(() => { const hide = () => { if (document.hidden) form.reset(); }; document.addEventListener('visibilitychange', hide); return () => document.removeEventListener('visibilitychange', hide); }, []);
   const run = async (fn: () => Promise<void>) => { if (busy) return; setBusy(true); setError(''); setMessage(''); try { await fn(); } catch (e) { if (active.current) setError(e instanceof Error ? e.message : 'Cloud backup failed. Try again.'); } finally { if (active.current) setBusy(false); } };
   const connect = (provider: CloudProvider) => run(async () => {
-    const token = await connectCloud(provider); if (!active.current) return;
+    /* Dropbox's popup cannot report its own closing, so the wait needs a way out. */
+    const controller = new AbortController(); if (provider === 'dropbox') setWaiting(controller);
+    let token: string;
+    try { token = await connectCloud(provider, controller.signal); } finally { if (active.current) setWaiting(null); }
+    if (!active.current) return;
     setConnection({ provider, token }); form.reset(); setFiles([]); setFile('');
     if (restoring) { const entries = await listCloudBackups(provider, token); if (active.current) setFiles(entries); }
   });
@@ -49,7 +53,7 @@ export function CloudBackup({ onRestored }: { onRestored?: () => void }) {
   return <Panel><Heading>{restoring ? 'Restore from the cloud' : 'Cloud backup'}</Heading>
     <Hint className="mt-2">{restoring ? 'Choose the same cloud account used for your backup. Your backup password will also protect this wallet in this browser.' : 'Your recovery information is encrypted on this device before it reaches Google Drive or Dropbox. Use a separate backup password of at least 12 characters.'}</Hint>
     <Hint className="mt-2">Peachlet and your cloud provider cannot recover a forgotten backup password. Keep an offline copy of your recovery information too.</Hint>
-    {!connection ? <div className="mt-4 grid grid-cols-2 gap-3">{(['google', 'dropbox'] as const).map(provider => <div key={provider} className="min-w-0"><ProviderButton provider={provider} disabled={busy || !cloudConfigured(provider) || provider === 'google' && !googleReady} onClick={() => connect(provider)} />{!cloudConfigured(provider) && <Hint>Not available yet</Hint>}</div>)}</div> : <form noValidate onSubmit={e => { e.preventDefault(); void submit(); }} className="mt-4 flex flex-col gap-3">
+    {!connection ? <><div className="mt-4 grid grid-cols-2 gap-3">{(['google', 'dropbox'] as const).map(provider => <div key={provider} className="min-w-0"><ProviderButton provider={provider} disabled={busy || !cloudConfigured(provider) || provider === 'google' && !googleReady} onClick={() => connect(provider)} />{!cloudConfigured(provider) && <Hint>Not available yet</Hint>}</div>)}</div>{!!waiting && <><Hint className="mt-3">Finish the sign-in in the Dropbox window, then return here. You can close that window once it says the sign-in is complete.</Hint><Button type="button" variant="subtle" className="mt-2 w-full" onClick={() => waiting.abort()}>Cancel sign-in</Button></>}</> : <form noValidate onSubmit={e => { e.preventDefault(); void submit(); }} className="mt-4 flex flex-col gap-3">
       <p className="text-sm font-semibold">Connected to {connection.provider === 'google' ? 'Google Drive' : 'Dropbox'}</p>
       {restoring ? <>{files.length ? <><Label htmlFor="cloud-file">Backup to restore</Label><select id="cloud-file" disabled={busy} value={file} onChange={e => setFile(e.target.value)} className="rounded-md border border-edge bg-sunken p-3"><option value="">Choose a backup</option>{files.map(entry => <option key={entry.id} value={entry.id}>{entry.name}</option>)}</select></> : <Hint>No Peachlet backups found in this cloud account.</Hint>}</> : <><Label htmlFor="cloud-credential">Current wallet password</Label><Input id="cloud-credential" type="password" autoComplete="current-password" {...form.register('credential')} /></>}
       <Label htmlFor="cloud-password">Backup password</Label><Input id="cloud-password" type="password" autoComplete={restoring ? 'current-password' : 'new-password'} {...form.register('password')} />
