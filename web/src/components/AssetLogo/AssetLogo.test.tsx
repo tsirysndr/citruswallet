@@ -2,7 +2,7 @@ import { fireEvent, render } from '@testing-library/react';
 import { expect, it } from 'vitest';
 import { AssetLogo } from './index';
 import { nativeAsset } from '../../assets';
-import { tokenLogo } from '../../../../app/src/token-logos';
+import { tokenLogo } from '../../token-logos';
 it('renders circular logos and falls back if an image fails', () => {
   const { container } = render(<AssetLogo asset={nativeAsset(6343)} />);
   const image = container.querySelector('img')!;

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { tokenLogo } from '../../../../app/src/token-logos';
+import { tokenLogo } from '../../token-logos';
 import type { Asset } from '../../assets';
 export function AssetLogo({ asset }: { asset: Asset }) {
   const url = tokenLogo(asset);
