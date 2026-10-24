@@ -141,7 +141,7 @@ test('selecting a recipient advances immediately using their DID without a conti
   await waitFor(() => expect(screen.getByRole('button', { name: `Use @${alice.handle}` })).toBeTruthy());
   await fireEvent.press(screen.getByRole('button', { name: `Use @${alice.handle}` }));
   await waitFor(() => expect(screen.getByLabelText('Step 2 of 4')).toBeTruthy());
-  expect(request).toHaveBeenCalledWith('resolveRecipient', { identifier: alice.did });
+  expect(request).toHaveBeenCalledWith('resolveRecipient', { identifier: alice.did }, undefined, expect.objectContaining({ timeoutMs: 15000 }));
 });
 test('keyboard mode hides recipient headings and step navigation', () => {
   mount(<Payments keyboardVisible />);
@@ -173,4 +173,28 @@ test.each(['waiting', 'ready', 'prepared', 'submitted', 'confirming', 'confirmed
   expect(store.get(screenAtom)).toBe('Activity');
   expect(sendPayment).not.toHaveBeenCalled();
   expect(request).not.toHaveBeenCalled();
+});
+
+test('cancelled recipient lookup ignores a late response and permits another selection', async () => {
+  let complete;
+  request.mockImplementation(() => new Promise(resolve => { complete = resolve; }));
+  mount(<Payments />);
+  await fireEvent.changeText(screen.getByLabelText('Recipient handle'), alice.handle);
+  await fireEvent(screen.getByLabelText('Recipient handle'), 'submitEditing');
+  expect(await screen.findByText('Verifying recipient…')).toBeTruthy();
+  await fireEvent.press(screen.getByRole('button', { name: 'Cancel lookup' }));
+  await act(async () => { complete({ did: alice.did, handle: alice.handle }); });
+  expect(screen.getByLabelText('Step 1 of 4')).toBeTruthy();
+  request.mockResolvedValue({ did: alice.did, handle: alice.handle });
+  await fireEvent(screen.getByLabelText('Recipient handle'), 'submitEditing');
+  expect(await screen.findByLabelText('Step 2 of 4')).toBeTruthy();
+});
+
+test('failed lookup provides an explicit retry without losing the handle', async () => {
+  request.mockRejectedValueOnce(new Error('Recipient lookup timed out. Please try again.'));
+  mount(<Payments />);
+  await fireEvent.changeText(screen.getByLabelText('Recipient handle'), alice.handle);
+  await fireEvent(screen.getByLabelText('Recipient handle'), 'submitEditing');
+  await fireEvent.press(await screen.findByRole('button', { name: 'Retry recipient lookup' }));
+  expect(await screen.findByLabelText('Step 2 of 4')).toBeTruthy();
 });

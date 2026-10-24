@@ -4,7 +4,7 @@ import { ContentSkeleton } from "../components/ContentSkeleton";
 import { PaymentStatus } from "../components/PaymentStatus";
 import * as Clipboard from "expo-clipboard";
 import { ThemeSwitch } from "../components/ThemeSwitch";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Alert, BackHandler, Keyboard, Pressable, Share, View } from "react-native";
 import { Text } from "../components/Typography";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
@@ -47,6 +47,13 @@ export function Payments({ onStepChange, keyboardVisible = false }: { onStepChan
     setInvitation({ id: paymentId, url: data.invitationUrl });
     return data.invitationUrl;
   }
+  const resolvingRequest = useRef<AbortController | null>(null);
+  const [resolving, setResolving] = useState(false);
+  const [resolveError, setResolveError] = useState('');
+  useEffect(() => () => { resolvingRequest.current?.abort(); resolvingRequest.current = null; }, []);
+  const cancelResolve = () => {
+    resolvingRequest.current?.abort(); resolvingRequest.current = null; setResolving(false);
+  };
   const [actor, setActor] = useState<Actor | null>(null);
   useEffect(() => { onStepChange?.(id ? 4 : step); }, [step, id]);
   const { data: detail, isFetching } = useQuery({
@@ -101,18 +108,32 @@ export function Payments({ onStepChange, keyboardVisible = false }: { onStepChan
     await query.invalidateQueries();
     setPending(!!(await pending(session.did!)));
   };
-  const resolve = (selected?: Actor) =>
-    run(async () => {
-      const result = await request<Recipient>("resolveRecipient", {
-        identifier: selected?.did || actor?.did || handle,
-      });
-      if (result.did === session.did)
-        throw new Error("You cannot send ETH to yourself.");
-      if (selected) { setActor(selected); setHandle(selected.handle); }
-      setRecipient(result);
-      Keyboard.dismiss();
-      setStep(2);
+  const resolve = (selected?: Actor) => {
+    if (resolvingRequest.current || busy) return;
+    const controller = new AbortController();
+    resolvingRequest.current = controller;
+    setResolving(true); setResolveError('');
+    if (selected) { setActor(selected); setHandle(selected.handle); }
+    Keyboard.dismiss();
+    return run(async () => {
+      try {
+        const result = await request<Recipient>("resolveRecipient", {
+          identifier: selected?.did || actor?.did || handle,
+        }, undefined, { signal: controller.signal, timeoutMs: 15_000 });
+        if (controller.signal.aborted || resolvingRequest.current !== controller) return;
+        if (result.did === session.did) throw new Error("You cannot send ETH to yourself.");
+        setRecipient(result); setStep(2);
+      } catch (error) {
+        if (controller.signal.aborted) return;
+        setResolveError(error instanceof Error ? error.message : 'Could not verify recipient. Try again.');
+        throw error;
+      } finally {
+        if (resolvingRequest.current === controller) {
+          resolvingRequest.current = null; setResolving(false);
+        }
+      }
     });
+  };
   const recoverPayment = () => run(async () => { await recover(session.did!, hash || undefined); await reload(); });
   const compact = keyboardVisible && currentStep === 1;
   return (
@@ -159,9 +180,18 @@ export function Payments({ onStepChange, keyboardVisible = false }: { onStepChan
           />
         </View>
       )}
+      {!id && step === 1 && resolving && <View className="gap-3">
+        <ContentSkeleton variant="line" label="Verifying recipient" />
+        <Text className="text-sm text-muted">Verifying recipient…</Text>
+        <Pressable accessibilityRole="button" onPress={cancelResolve} className="min-h-12 items-center justify-center"><Text className="font-bold">Cancel lookup</Text></Pressable>
+      </View>}
+      {!id && step === 1 && !!resolveError && !resolving && <View className="gap-2">
+        <Text accessibilityRole="alert" className="text-sm text-red-700">{resolveError}</Text>
+        <Button title="Retry recipient lookup" tone="plain" onPress={() => void resolve()} />
+      </View>}
       {!id ? (
         step === 1 ? <RecipientStep handle={handle} ownDid={session.did} compact={compact}
-          onChange={value => { setHandle(value); setActor(null); setRecipient(null); }}
+          onChange={value => { cancelResolve(); setResolveError(''); setHandle(value); setActor(null); setRecipient(null); }}
           onSelect={selected => { if (!busy) void resolve(selected); }} onSubmit={() => { if (!busy && handle.trim()) void resolve(); }} /> :
         step === 2 ? <AmountStep actor={actor} handle={recipient?.handle || handle} amount={amount}
           decimals={asset.decimals} symbol={asset.symbol} assetPicker={<AssetPicker session={session} value={asset} onChange={value => { setSelectedAsset(value); setAmount("0"); }} />}

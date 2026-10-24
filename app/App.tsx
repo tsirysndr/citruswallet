@@ -139,7 +139,7 @@ function Shell() {
               accessibilityLiveRegion="polite"
               className="mb-4 text-sm text-muted"
             >
-              Follow the wallet prompt to continue.
+              {screen === 'Payments' && paymentStep === 1 ? 'Verifying the recipient’s account…' : 'Follow the wallet prompt to continue.'}
             </Text>
           )}
           {session.error && (
