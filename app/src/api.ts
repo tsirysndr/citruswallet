@@ -7,14 +7,25 @@ export const origin = (
 if (!origin.startsWith("https://") && !__DEV__)
   throw new Error("Production API must use HTTPS.");
 let token: string | null = null;
+let returningUser = false;
+export function hasSignedIn() { return returningUser; }
 export function currentToken() {
   return token;
 }
 export async function loadToken() {
   token = await SecureStore.getItemAsync("citrus-session");
+  returningUser = Boolean(token) || await SecureStore.getItemAsync('citrus-has-signed-in') === 'true';
+  // Older installations may already be signed out and have no history marker.
+  // A saved wallet choice is enough to offer sign-in; it is not proof of a vault.
+  const previousWallet = await SecureStore.getItemAsync('citrus-wallet-mode');
+  returningUser ||= previousWallet === 'citrus' || previousWallet === 'metamask';
+  if (token) await SecureStore.setItemAsync('citrus-has-signed-in', 'true');
   return token;
 }
 export async function saveToken(value: string | null) {
+  // Retain returning-user navigation independently of wallet type or session.
+  await SecureStore.setItemAsync('citrus-has-signed-in', 'true');
+  returningUser = true;
   if (value) await SecureStore.setItemAsync("citrus-session", value);
   else { lockNativeWallet(); await SecureStore.deleteItemAsync("citrus-session"); }
   token = value;

@@ -1,6 +1,6 @@
 import { Settings } from './src/screens/Settings';
 import SettingsIcon from 'lucide-react-native/icons/settings';
-import { WalletSetup } from './src/components/WalletSetup';
+import { WalletEntry } from './src/components/WalletEntry';
 import { configuredAddress, loadWalletPreference } from './src/wallet-preferences';
 import { WalletUnlock } from "./src/components/WalletUnlock";
 import { loadNetwork, saveNetwork } from "./src/network";
@@ -120,13 +120,14 @@ function Shell() {
   const checkedAccount = useRef<string | null | undefined>(undefined);
   useEffect(() => {
     const data = session.data;
-    if (!ready || !data || (needsSetup !== null && checkedAccount.current === data.did)) return;
-    checkedAccount.current = data.did;
+    if (!ready || session.isPending || (needsSetup !== null && checkedAccount.current === data?.did)) return;
+    checkedAccount.current = data?.did;
+    if (!data?.did) { setNeedsSetup(true); return; }
     const address = configuredAddress();
     const configured = vault !== 'absent' || !!address || data.links.length > 0;
     const linked = data.links.some(link => link.chain_id === data.network.chainId && link.public && link.is_default && (!address || link.address.toLowerCase() === address.toLowerCase()));
     setNeedsSetup(!configured || !data.did || !linked);
-  }, [ready, session.data, needsSetup, vault]);
+  }, [ready, session.data, session.isPending, needsSetup, vault]);
   const compactRecipient = screen === "Payments" && paymentStep === 1 && keyboardVisible;
   const feedback = <>
           {refreshing && <ContentSkeleton label="Refreshing content" rows={1} />}
@@ -161,7 +162,7 @@ function Shell() {
     {session.data?.did && <WalletUnlock />}<StatusBar style="dark" />
     <View className="flex-row items-center gap-3 px-5 py-4"><Image source={require('./assets/icon.png')} style={{ width: 42, height: 42 }} /><Text className="text-xl font-bold">Citrus Wallet</Text></View>
     <KeyboardAvoidingView className="flex-1" behavior={Platform.OS === 'ios' ? 'padding' : undefined}><ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: 20 }}>
-      {needsSetup && session.data ? <WalletSetup key={session.data.did || 'signed-out'} onFinished={() => { setNeedsSetup(false); setScreen(invite ? 'Wallet' : 'Account'); }} /> : <ContentSkeleton label="Opening Citrus" />}
+      {ready && !session.isPending && !session.error ? <WalletEntry onFinished={() => { setNeedsSetup(false); setScreen(invite ? 'Wallet' : 'Account'); }} /> : <ContentSkeleton label="Opening Citrus" />}
       {feedback}
     </ScrollView></KeyboardAvoidingView>
   </SafeAreaView>;
