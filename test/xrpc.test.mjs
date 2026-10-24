@@ -514,3 +514,41 @@ for (const network of [mainnet, megaeth, megaeth_testnet]) test(`fee estimates u
   actualChain = network.chain_id; fail = true;
   await assert.rejects(f.call('estimateFees', input), e => e.status === 503);
 });
+
+test('testnet discovers ERC20 holdings through RPC without an indexer key', async t => {
+  const contracts = Array.from({ length: 22 }, (_, i) => '0x' + (i + 1).toString(16).padStart(40, '0'));
+  const calls = [];
+  let fail = false;
+  const client = {
+    getChainId: async () => 6343,
+    getBalance: async () => 0n,
+    request: async input => {
+      calls.push(input);
+      if (fail) throw new Error('RPC unavailable');
+      const logs = contracts.map(address => ({ address, topics: ['transfer', 'from', 'to'] }));
+      return [...logs, logs[0], { address: contracts[0], topics: ['transfer', 'from', 'to', 'nft-id'] }];
+    },
+    readContract: async ({ functionName, address }) => ({ decimals: 6, symbol: 'TEST', name: 'Test token', balanceOf: address.toLowerCase() === contracts[0] ? 0n : 1234567n })[functionName],
+  };
+  const f = fixture(t, new Some(new Chain(client)), megaeth_testnet);
+  await f.login();
+  await assert.rejects(f.query('getAssets', { address: account.address }), e => e.status === 403);
+  assert.equal(calls.length, 0);
+  const challenge = await f.call('createChallenge', { address: account.address, public: false });
+  await f.call('verifyChallenge', { id: challenge.id, signature: await account.signMessage({ message: challenge.message }) });
+  const page = await f.query('getAssets', { address: account.address });
+  assert.equal(page.discoveryAvailable, true);
+  assert.equal(page.assets.length, 20); // native + 19 nonzero ERC20s
+  assert.equal(page.cursor, 'rpc:20');
+  assert.equal(calls[0].method, 'eth_getLogs');
+  assert.equal(calls[0].params[0].topics[2], '0x' + account.address.toLowerCase().slice(2).padStart(64, '0'));
+  assert.equal(page.assets[1].asset.chainId, 6343);
+  const next = await f.query('getAssets', { address: account.address, cursor: page.cursor });
+  assert.equal(next.assets.length, 3);
+  assert.equal(next.cursor, undefined);
+  await assert.rejects(f.query('getAssets', { address: account.address, cursor: 'rpc:-1' }), e => e.status === 400);
+  fail = true;
+  const unavailable = await f.query('getAssets', { address: account.address });
+  assert.equal(unavailable.discoveryAvailable, false);
+  assert.equal(unavailable.assets.length, 1);
+});

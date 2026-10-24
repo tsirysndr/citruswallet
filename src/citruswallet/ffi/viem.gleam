@@ -3,6 +3,7 @@ import gleam/int
 import gleam/javascript/promise.{type Promise}
 import gleam/list
 import gleam/option.{type Option, None, Some}
+import gleam/string
 
 @external(javascript, "viem", "isAddress")
 pub fn is_address(value: String) -> Bool
@@ -282,4 +283,42 @@ pub fn estimate_gas(
   read(client, "estimateGas", [parameters], fn(value) {
     Some(js.big_int_digits(value))
   })
+}
+
+pub fn received_token_logs(
+  client: Client,
+  address: String,
+) -> Promise(Result(Js, Exception)) {
+  read(
+    client,
+    "request",
+    [
+      js.object([
+        #("method", js.string("eth_getLogs")),
+        #(
+          "params",
+          js.list([
+            js.object([
+              #("fromBlock", js.string("0x0")),
+              #("toBlock", js.string("latest")),
+              #(
+                "topics",
+                js.list([
+                  js.string(
+                    "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+                  ),
+                  js.null(),
+                  js.string(
+                    "0x000000000000000000000000"
+                    <> string.drop_start(address, 2),
+                  ),
+                ]),
+              ),
+            ]),
+          ]),
+        ),
+      ]),
+    ],
+    fn(value) { Some(value) },
+  )
 }

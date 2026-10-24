@@ -9,6 +9,7 @@ import citruswallet/ffi/node
 import citruswallet/ffi/url
 import citruswallet/ffi/viem
 import citruswallet/linking
+import citruswallet/rpc_assets
 import citruswallet/xrpc/context.{type Reply, type Server, Payload}
 import gleam/dynamic/decode
 import gleam/int
@@ -65,6 +66,31 @@ pub fn listing(
   let native = assets.native(chain_id)
   use balance <- promise.try_await(assets.balance(chain, native, address))
   let native_balance = assets.balance_json(native, address, balance)
+  case chain_id {
+    6343 -> {
+      use offset <- context.attempt(
+        rpc_assets.offset(hono.parameter(ctx, "cursor")),
+      )
+      use #(tokens, next, available) <- promise.await(rpc_assets.discover(
+        chain,
+        address,
+        chain_id,
+        offset,
+      ))
+      context.done(
+        Ok(Payload(200, page([native_balance, ..tokens], next, available))),
+      )
+    }
+    _ -> indexed(ctx, chain_id, address, native_balance)
+  }
+}
+
+fn indexed(
+  ctx: Context,
+  chain_id: Int,
+  address: String,
+  native_balance: json.Json,
+) -> Promise(Result(Reply, HttpError)) {
   use suffix <- context.attempt(cursor_query(hono.parameter(ctx, "cursor")))
   let base = case chain_id {
     4326 ->
