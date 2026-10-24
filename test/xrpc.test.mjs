@@ -11,7 +11,7 @@ import { Chain } from '../build/dev/javascript/citruswallet/citruswallet/chain.m
 import { Settings } from '../build/dev/javascript/citruswallet/citruswallet/xrpc/context.mjs';
 import * as storeModule from '../build/dev/javascript/citruswallet/citruswallet/store.mjs';
 import * as oauthModule from '../build/dev/javascript/citruswallet/citruswallet/oauth.mjs';
-import { mainnet, megaeth } from '../build/dev/javascript/citruswallet/citruswallet/network.mjs';
+import { mainnet, megaeth, megaeth_testnet } from '../build/dev/javascript/citruswallet/citruswallet/network.mjs';
 import { Directory } from '../build/dev/javascript/citruswallet/citruswallet/directory.mjs';
 import { Identity } from '../build/dev/javascript/citruswallet/citruswallet/identity.mjs';
 import { None, Some } from '../build/dev/javascript/gleam_stdlib/gleam/option.mjs';
@@ -464,6 +464,12 @@ test('network selection is explicit and cannot supply arbitrary server RPC targe
   const session = await response.json();
   assert.equal(session.network.chainId, 4326);
   assert.deepEqual(session.network.rpcUrls, ['https://mainnet.megaeth.com/rpc']);
+  const testnetResponse = await f.raw('/xrpc/app.citruswallet.getSession', { headers: { 'x-citrus-chain-id': '6343' } });
+  assert.equal(testnetResponse.status, 200);
+  const testnetSession = await testnetResponse.json();
+  assert.equal(testnetSession.network.chainId, 6343);
+  assert.equal(testnetSession.network.chainIdHex, '0x18c7');
+  assert.deepEqual(testnetSession.network.rpcUrls, ['https://carrot.megaeth.com/rpc']);
   assert.equal((await f.query('getSession')).network.chainId, 1);
   for (const invalid of ['31337', '999999', 'https://127.0.0.1/rpc']) {
     const rejected = await f.raw('/xrpc/app.citruswallet.getSession', { headers: { 'x-citrus-chain-id': invalid } });
@@ -472,7 +478,7 @@ test('network selection is explicit and cannot supply arbitrary server RPC targe
 });
 
 
-for (const network of [mainnet, megaeth]) test(`fee estimates use chain ${network.chain_id} and exact ETH/ERC-20 transactions`, async t => {
+for (const network of [mainnet, megaeth, megaeth_testnet]) test(`fee estimates use chain ${network.chain_id} and exact ETH/ERC-20 transactions`, async t => {
   const estimates = [];
   let actualChain = network.chain_id, fail = false;
   const gas = network.chain_id === 1 ? 21000n : 63349n;

@@ -13,5 +13,5 @@ export function invitationToken(url: string): string | null {
 export function invitationChain(url: string): string | null {
   if (!invitationToken(url)) return null;
   const chain = new URL(url).searchParams.get("chainId") || "1";
-  return ["1", "4326"].includes(chain) ? chain : null;
+  return ["1", "4326", "6343"].includes(chain) ? chain : null;
 }

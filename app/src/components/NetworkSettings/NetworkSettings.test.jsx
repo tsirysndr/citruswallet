@@ -16,3 +16,12 @@ test('blocks insecure custom RPCs before saving, and accepts an empty default UR
   await fireEvent(screen.getByLabelText('Custom HTTPS RPC (optional)'), 'submitEditing');
   expect(saveNetwork).toHaveBeenCalledWith('4326', '');
 });
+
+test('selects and saves MegaETH testnet separately from mainnet', async () => {
+  saveNetwork.mockClear();
+  renderComponent(<NetworkSettings />);
+  await fireEvent.press(screen.getByRole('button', { name: 'MegaETH testnet' }));
+  expect(screen.getByText('For testing only. Testnet ETH has no real value.')).toBeTruthy();
+  await fireEvent.press(screen.getByRole('button', { name: 'Save network' }));
+  expect(saveNetwork).toHaveBeenCalledWith('6343', '');
+});

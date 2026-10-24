@@ -115,7 +115,7 @@ export function useNotifications(did?: string | null) {
       const data = response.notification.request.content.data;
       if (typeof data.paymentId === "string") {
         const chain = String(data.chainId || 1);
-        if (["1", "4326"].includes(chain) && selectedChain() !== chain) {
+        if (["1", "4326", "6343"].includes(chain) && selectedChain() !== chain) {
           await saveNetwork(chain, "");
           await query.cancelQueries(); query.clear();
         }

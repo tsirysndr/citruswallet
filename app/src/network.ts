@@ -12,7 +12,7 @@ export function deviceNetwork(network: Network): Network {
   return String(network.chainId) === chain && customRpc ? { ...network, rpcUrls: [customRpc] } : network;
 }
 export async function saveNetwork(id: string, raw: string) {
-  if (!['1', '4326'].includes(id)) throw new Error('Unsupported network.');
+  if (!['1', '4326', '6343'].includes(id)) throw new Error('Unsupported network.');
   const value = raw.trim();
   if (value) {
     const url = new URL(value);

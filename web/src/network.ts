@@ -2,7 +2,7 @@ import type { Network } from './types';
 export function selectedChain(): string | null {
   const params = new URLSearchParams(window.location.search);
   const chain = params.get('chainId');
-  if (params.has('notificationPayment') && chain && ['1', '4326'].includes(chain)) localStorage.setItem('citrus:chain', chain);
+  if (params.has('notificationPayment') && chain && ['1', '4326', '6343'].includes(chain)) localStorage.setItem('citrus:chain', chain);
   return localStorage.getItem('citrus:chain');
 }
 export function deviceNetwork(network: Network): Network {

@@ -38,9 +38,19 @@ pub const megaeth =
     Currency("Ether", "ETH", 18),
   )
 
+pub const megaeth_testnet =
+  Network(
+    6343,
+    "0x18c7",
+    "MegaETH testnet",
+    ["https://carrot.megaeth.com/rpc"],
+    Currency("Testnet Ether", "ETH", 18),
+  )
+
 pub fn reader(network: Network) {
   let variable = case network.chain_id {
     4326 -> "MEGAETH_RPC_URL"
+    6343 -> "MEGAETH_TESTNET_RPC_URL"
     _ -> "ETH_RPC_URL"
   }
   case node.environment(variable), network.rpc_urls {
@@ -63,10 +73,11 @@ pub fn configured(origin: String, chain_id: String) -> Result(Network, String) {
   case chain_id, loopback(origin) {
     "1", _ -> Ok(mainnet)
     "4326", _ -> Ok(megaeth)
+    "6343", _ -> Ok(megaeth_testnet)
     "31337", True -> Ok(anvil)
     _, _ ->
       Error(
-        "EVM_CHAIN_ID must be 4326, 1, or 31337 with a loopback APP_URL for Anvil development.",
+        "EVM_CHAIN_ID must be 4326, 6343, 1, or 31337 with a loopback APP_URL for Anvil development.",
       )
   }
 }

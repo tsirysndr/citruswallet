@@ -14,7 +14,7 @@ function openingInvite(): string | null {
   const fragment = new URLSearchParams(window.location.hash.slice(1)).get("invite");
   if (fragment && /^[a-f0-9]{64}$/.test(fragment)) {
     const chain = new URLSearchParams(window.location.search).get("chainId") || "1";
-    if (["1", "4326", "31337"].includes(chain)) localStorage.setItem("citrus:chain", chain);
+    if (["1", "4326", "6343", "31337"].includes(chain)) localStorage.setItem("citrus:chain", chain);
     sessionStorage.setItem(inviteKey, fragment);
     window.history.replaceState(null, "", "/wallet");
   }

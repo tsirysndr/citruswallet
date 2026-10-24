@@ -67,7 +67,7 @@ export function LinkedAddresses({ className }: { className?: string }) {
             <div className="min-w-0 flex-1">
               <Mono>{link.address}</Mono>
               <Hint>
-                {link.chain_id === 4326 ? "MegaETH" : link.chain_id === 31337 ? "Anvil local" : "Ethereum mainnet"} ·{" "}
+                {link.chain_id === 6343 ? "MegaETH testnet" : link.chain_id === 4326 ? "MegaETH" : link.chain_id === 31337 ? "Anvil local" : "Ethereum mainnet"} ·{" "}
                 {link.public ? "Public" : "Private"}
                 {link.is_default ? " · Receiving default" : ""}
               </Hint>

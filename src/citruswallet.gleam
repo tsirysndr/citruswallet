@@ -46,6 +46,7 @@ fn start() -> Result(Nil, String) {
   use chain <- result.try(network.reader(network))
   use _ <- result.try(network.reader(network.mainnet))
   use _ <- result.try(network.reader(network.megaeth))
+  use _ <- result.try(network.reader(network.megaeth_testnet))
   use directory <- result.try(
     directory.appview(option.unwrap(
       node.environment("APPVIEW_URL"),
@@ -111,8 +112,9 @@ fn start() -> Result(Nil, String) {
       network.chain_id,
     )
   let other_networks = case network.chain_id {
-    1 -> [network.megaeth]
-    4326 -> [network.mainnet]
+    1 -> [network.megaeth, network.megaeth_testnet]
+    4326 -> [network.mainnet, network.megaeth_testnet]
+    6343 -> [network.mainnet, network.megaeth]
     _ -> []
   }
   let stop_other_notifications =

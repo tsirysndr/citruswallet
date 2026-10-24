@@ -111,7 +111,7 @@ OAuth login upserts `user_profiles` by DID, storing the handle, display name, av
 bun run dev
 ```
 
-This defaults to MegaETH mainnet (chain 4326), with `data/wallet.sqlite`. Ethereum mainnet remains available. Public RPC defaults are supplied for both; override server verification endpoints with `MEGAETH_RPC_URL` and `ETH_RPC_URL`. Clients receive public network endpoints, never private server overrides. Anvil RPC is configured automatically in `dev:local`.
+This defaults to MegaETH mainnet (chain 4326), with `data/wallet.sqlite`. Ethereum mainnet and MegaETH testnet (chain 6343) remain available. Public RPC defaults are supplied for all three; override server verification endpoints with `MEGAETH_RPC_URL`, `MEGAETH_TESTNET_RPC_URL`, and `ETH_RPC_URL`. Clients receive public network endpoints, never private server overrides. Anvil RPC is configured automatically in `dev:local`.
 
 See `.env.example`. Variables are read from the process; to explicitly load an `.env` file, export it into the environment before starting the app.
 
@@ -119,8 +119,9 @@ See `.env.example`. Variables are read from the process; to explicitly load an `
 | --- | --- |
 | `APP_URL` | `http://127.0.0.1:4747`; exact origin, no trailing slash |
 | `PORT`, `HOST` | `4747`, `127.0.0.1` |
-| `EVM_CHAIN_ID` | `4326` by default; `1` for Ethereum; `31337` only with a loopback app origin |
+| `EVM_CHAIN_ID` | `4326` by default; `1` for Ethereum; `6343` for MegaETH testnet; `31337` only with a loopback app origin |
 | `ETH_RPC_URL` | Ethereum verification RPC; defaults to PublicNode |
+| `MEGAETH_TESTNET_RPC_URL` | MegaETH testnet verification/fee RPC; defaults to `https://carrot.megaeth.com/rpc` |
 | `MEGAETH_RPC_URL` | MegaETH verification RPC; defaults to `https://mainnet.megaeth.com/rpc` |
 | `DATABASE_PATH` | `data/wallet.sqlite`, or `data/local.sqlite` on Anvil |
 | `MIGRATIONS_DIR` | `./drizzle`; applied at startup |
@@ -339,11 +340,11 @@ Expo offers device unlock or a wallet password (at least 12 characters). On Andr
 
 Secrets never enter API requests, React Query, telemetry, or public AT Protocol records. Keep the recovery backup offline: clearing browser data, uninstalling, losing the device, or losing the password/PIN can make the local vault inaccessible. Citrus cannot reset a wallet password or recover funds. Browser self-custody also relies on the integrity of the served application and device; this implementation has not received an independent security audit.
 
-Network settings select MegaETH or Ethereum, with optional HTTPS RPC overrides verified against `eth_chainId`. Custom RPCs run only on the client; API verification uses fixed server-configured RPCs. Existing production environments with explicit `EVM_CHAIN_ID=1` retain that setting until it is changed. Background confirmation checks cover both mainnets. Signing preserves the server-reserved nonce, verifies sender/chain, estimates fees, requires confirmation, and aborts if the wallet locks before broadcast.
+Network settings select MegaETH mainnet, MegaETH testnet, or Ethereum, with optional HTTPS RPC overrides verified against `eth_chainId`. Custom RPCs run only on the client; API verification uses fixed server-configured RPCs. Existing production environments with explicit `EVM_CHAIN_ID=1` retain that setting until it is changed. Background confirmation checks cover both mainnets and MegaETH testnet. Testnet token auto-discovery is unavailable; tokens can be added by contract address. Signing preserves the server-reserved nonce, verifies sender/chain, estimates fees, requires confirmation, and aborts if the wallet locks before broadcast.
 
 
 ### Network fee estimates
 
 Built-in wallets on web and Expo call `app.citruswallet.estimateFees` before payment approval. The authenticated sender must be linked on the selected chain; the body's `chainId` must match `x-citrus-chain-id` (or the server default). The Gleam handler accepts bounded ETH and ERC-20 transfer requests, verifies the server RPC's chain ID, and asks that RPC for EIP-1559 fees and `eth_estimateGas` using the exact sender, destination, value, calldata, and reserved nonce. Ethereum (1) and MegaETH (4326) never share a fixed gas limit. MegaETH estimates therefore include its chain-specific compute and storage costs.
 
-Responses echo the transaction and return `gasLimit`, `maxFeePerGas`, `maxPriorityFeePerGas`, and `maxFeeWei` as decimal integer strings, plus `expiresAt` in Unix milliseconds. Quotes expire after 60 seconds. Both clients validate the transaction binding and fee arithmetic, display the maximum execution fee, and recheck expiry after approval. A stale quote or failed simulation stops signing; there is no fixed-gas fallback. Custom RPCs remain client-only for broadcasting; server estimates use `ETH_RPC_URL` / `MEGAETH_RPC_URL`. MetaMask continues to manage its own gas estimation. This endpoint never receives private keys, signs, or broadcasts. Deploy the API before distributing clients that require this endpoint.
+Responses echo the transaction and return `gasLimit`, `maxFeePerGas`, `maxPriorityFeePerGas`, and `maxFeeWei` as decimal integer strings, plus `expiresAt` in Unix milliseconds. Quotes expire after 60 seconds. Both clients validate the transaction binding and fee arithmetic, display the maximum execution fee, and recheck expiry after approval. A stale quote or failed simulation stops signing; there is no fixed-gas fallback. Custom RPCs remain client-only for broadcasting; server estimates use `ETH_RPC_URL` / `MEGAETH_RPC_URL` / `MEGAETH_TESTNET_RPC_URL`. MetaMask continues to manage its own gas estimation. This endpoint never receives private keys, signs, or broadcasts. Deploy the API before distributing clients that require this endpoint.
