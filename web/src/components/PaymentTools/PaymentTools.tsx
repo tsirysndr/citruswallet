@@ -1,13 +1,15 @@
+import { usdToEth, formatUsd } from '@peachlet/amounts';
+import { useEthPrice } from '../../eth-price';
 import { nativeAsset, type Asset } from "../../assets";
 import { AssetPicker } from "../AssetPicker";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSetAtom } from "jotai";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import type { z } from "zod";
 import { rpc } from "../../api";
-import { invitationUrlAtom, reviewIdAtom } from "../../atoms";
+import { invitationUrlAtom, reviewIdAtom, paymentUsdQuoteAtom } from "../../atoms";
 import { useRefresh, useRun, useStatus } from "../../hooks";
 import { useSession } from "../../queries";
 import type { Actor, Recipient } from "../../types";
@@ -44,6 +46,11 @@ export function PaymentTools({ className }: { className?: string }) {
   const setInvitationUrl = useSetAtom(invitationUrlAtom);
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
   const asset = selectedAsset && selectedAsset.chainId === session?.network.chainId ? selectedAsset : nativeAsset(session?.network.chainId ?? 1);
+  const [entryUnit, setEntryUnit] = useState<'asset' | 'usd'>('asset');
+  const canUseUsd = asset.kind === 'native' && asset.symbol === 'ETH' && asset.decimals === 18;
+  const inUsd = canUseUsd && entryUnit === 'usd';
+  const price = useEthPrice(!!session?.did && inUsd);
+  const setUsdQuote = useSetAtom(paymentUsdQuoteAtom);
   const [media, setMedia] = useState<PaymentMedia | null>(null);
   const [mediaQuery, setMediaQuery] = useState("");
   const [resolved, setResolved] = useState<Resolved | null>(null);
@@ -58,7 +65,12 @@ export function PaymentTools({ className }: { className?: string }) {
     z.input<typeof amountForm>,
     unknown,
     z.output<typeof amountForm>
-  >({ resolver: zodResolver(assetAmountForm(asset.decimals, asset.symbol)), defaultValues: { amount: "", description: "" } });
+  >({ resolver: zodResolver(assetAmountForm(inUsd ? 2 : asset.decimals, inUsd ? 'USD' : asset.symbol)), defaultValues: { amount: "", description: "" } });
+
+  useEffect(() => { setEntryUnit('asset'); amount.setValue('amount', ''); amount.clearErrors('amount'); }, [asset.id]);
+  const entered = amount.watch('amount');
+  let usdQuote: ReturnType<typeof usdToEth> | null = null;
+  if (inUsd && !price.isError) { try { usdQuote = usdToEth(entered.replace(',', '.').replace(/^\./, '0.'), price.data); } catch {} }
 
   if (!session?.did) return null;
 
@@ -94,11 +106,13 @@ export function PaymentTools({ className }: { className?: string }) {
   const create = (value: string, description?: string) =>
     run(async () => {
       if (!resolved) throw new Error("Resolve the recipient first.");
+      if (inUsd && price.isError) throw new Error('Refresh the ETH price before continuing.');
+      const conversion = inUsd ? usdToEth(value, price.data) : null;
       const result = await rpc.createPayment(
         {
           identifier: resolved.identifier,
           expectedDid: resolved.recipient.did,
-          amount: value,
+          amount: conversion?.eth ?? value,
           assetId: asset.id,
           ...(description ? { description } : {}),
           ...(media ? { media } : {}),
@@ -106,6 +120,7 @@ export function PaymentTools({ className }: { className?: string }) {
       );
       if (media) void recordShare(media, mediaQuery);
       queries.setQueryData(["payment", result.payment.id], result.payment);
+      setUsdQuote(conversion ? { ...conversion, id: result.payment.id, assetId: asset.id, senderDid: session.did! } : null);
       setReviewId(result.payment.id);
       await refresh();
       const waiting = result.payment.state === "waiting";
@@ -201,7 +216,11 @@ export function PaymentTools({ className }: { className?: string }) {
             <FieldError>{amount.formState.errors.description?.message}</FieldError>
           </div>
           <AssetPicker session={session} value={asset} onChange={value => { setSelectedAsset(value); amount.setValue("amount", ""); amount.clearErrors("amount"); }} />
-          <Label htmlFor="amount">Amount in {asset.symbol}</Label>
+          {canUseUsd && <div className="my-3 flex gap-2" role="group" aria-label="Amount currency">
+            <Button variant={inUsd ? "subtle" : "solid"} aria-pressed={!inUsd} onClick={() => { setEntryUnit('asset'); amount.setValue('amount', ''); amount.clearErrors('amount'); }}>ETH</Button>
+            <Button variant={inUsd ? "solid" : "subtle"} aria-pressed={inUsd} onClick={() => { setEntryUnit('usd'); amount.setValue('amount', ''); amount.clearErrors('amount'); }}>USD</Button>
+          </div>}
+          <Label htmlFor="amount">Amount in {inUsd ? 'USD' : asset.symbol}</Label>
           <Row className="payment-form-row">
             <Controller
               control={amount.control}
@@ -211,7 +230,7 @@ export function PaymentTools({ className }: { className?: string }) {
                   {...field}
                   id="amount"
                   type="text"
-                  placeholder="0.01"
+                  placeholder={inUsd ? "25.00" : "0.01"}
                   inputMode="decimal"
                   autoComplete="off"
                   aria-invalid={Boolean(fieldState.error)}
@@ -223,9 +242,14 @@ export function PaymentTools({ className }: { className?: string }) {
                 />
               )}
             />
-            <Button type="submit">Create payment intent</Button>
+            <Button type="submit" disabled={inUsd && !usdQuote}>Create payment intent</Button>
           </Row>
           <FieldError>{amount.formState.errors.amount?.message}</FieldError>
+          {inUsd && <div className="mt-3 space-y-1" aria-live="polite">
+            {usdQuote ? <><p className="text-sm font-semibold">You send {usdQuote.eth} ETH ≈ {formatUsd(usdQuote.usd)} USD</p><Hint>1 ETH = ${usdQuote.rate} USD · network fee extra. The ETH amount is fixed when you create the intent.</Hint></> : <Hint>{price.isPending ? 'Loading ETH price…' : price.isError || !price.data || Date.now() - price.data.updatedAt >= 300_000 ? 'ETH price unavailable. Refresh the rate or enter ETH.' : 'Enter a USD amount with up to two decimal places.'}</Hint>}
+            <Button variant="subtle" disabled={price.isFetching} onClick={() => void price.refetch()}>Refresh exchange rate</Button>
+            {session.network.chainId === 6343 && <Hint>Testnet: USD amounts are illustrative; test ETH has no monetary value.</Hint>}
+          </div>}
           <Hint className="mt-2.5">
             The recipient’s DID is pinned when you create the intent. No funds move at
             this step.

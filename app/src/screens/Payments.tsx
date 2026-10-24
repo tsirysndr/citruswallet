@@ -1,3 +1,5 @@
+import { usdToEth, formatUsd, type UsdEthQuote } from '@peachlet/amounts';
+import { useEthPrice } from '../eth-price';
 import { useTheme } from '../theme';
 import { nativeAsset, type Asset } from "../assets";
 import { AssetPicker } from "../components/AssetPicker";
@@ -37,6 +39,14 @@ export function Payments({ onStepChange, keyboardVisible = false }: { onStepChan
     [hasPending, setPending] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
   const asset = selectedAsset && selectedAsset.chainId === session?.network.chainId ? selectedAsset : nativeAsset(session?.network.chainId ?? 1);
+  const [entryUnit, setEntryUnit] = useState<'asset' | 'usd'>('asset');
+  const canUseUsd = asset.kind === 'native' && asset.symbol === 'ETH' && asset.decimals === 18;
+  const inUsd = canUseUsd && entryUnit === 'usd';
+  const price = useEthPrice(!!session?.did && inUsd && !id);
+  const [usdDraft, setUsdDraft] = useState<(UsdEthQuote & { assetId: string; paymentId?: string }) | null>(null);
+  useEffect(() => { setEntryUnit('asset'); setAmount('0'); setUsdDraft(null); }, [asset.id]);
+  let usdPreview: UsdEthQuote | null = null;
+  if (inUsd && !price.isError) { try { usdPreview = usdToEth(amount.replace(/\.$/, ''), price.data); } catch {} }
   const [media, setMedia] = useState<PaymentMedia | null>(null);
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const busy = useAtomValue(busyAtom);
@@ -75,7 +85,7 @@ export function Payments({ onStepChange, keyboardVisible = false }: { onStepChan
   }, [session?.did, payment]);
   const finished = !!payment && ["submitted", "confirming", "confirmed", "failed", "cancelled", "expired"].includes(payment.state);
   const resetDraft = () => {
-    setId(null); setStep(1); setActor(null); setAmount("0");
+    setId(null); setStep(1); setActor(null); setAmount("0"); setEntryUnit("asset"); setUsdDraft(null);
     setRecipient(null); setHandle(""); setDescription(""); setMedia(null);
     setAck(false); setHash(""); setInvitation(null);
   };
@@ -197,16 +207,36 @@ export function Payments({ onStepChange, keyboardVisible = false }: { onStepChan
           onSelect={selected => { if (!busy) void resolve(selected); }} onSubmit={() => { if (!busy && handle.trim()) void resolve(); }} /> :
         step === 2 ? <AmountStep actor={actor} handle={recipient?.handle || handle} amount={amount}
           decimals={asset.decimals} symbol={asset.symbol} assetPicker={<AssetPicker session={session} value={asset} onChange={value => { setSelectedAsset(value); setAmount("0"); }} />}
-          onAmount={setAmount} onContinue={() => setStep(3)} /> :
+          usdMode={inUsd} onUnitChange={canUseUsd ? usd => { setEntryUnit(usd ? 'usd' : 'asset'); setAmount('0'); setUsdDraft(null); } : undefined}
+          conversion={usdPreview ? `≈ ${usdPreview.eth} ETH · network fee extra${session.network.chainId === 6343 ? ' · testnet estimate' : ''}` : undefined}
+          conversionError={price.isError || (price.data && Date.now() - price.data.updatedAt >= 300_000) ? 'ETH price unavailable or expired. Refresh the rate or enter ETH.' : undefined}
+          conversionPending={price.isFetching} onRefreshRate={() => void price.refetch()}
+          onAmount={value => { setAmount(value); setUsdDraft(null); }} onContinue={() => {
+            if (inUsd) {
+              try { if (price.isError) throw new Error('Refresh the ETH price to continue.'); setUsdDraft({ ...usdToEth(amount.replace(/\.$/, ''), price.data), assetId: asset.id }); }
+              catch (error) { notice(error instanceof Error ? error.message : 'Refresh the ETH price to continue.'); return; }
+            } else setUsdDraft(null);
+            setStep(3);
+          }} /> :
         <DescriptionStep description={description} onDescription={setDescription} media={media} onMedia={setMedia}
           onReview={() => run(async () => {
             if (!recipient || recipient.did === session.did) throw new Error("Choose a different recipient.");
+            let sendAmount = amount.replace(/\.$/, '');
+            if (inUsd) {
+              try {
+                if (!usdDraft || usdDraft.assetId !== asset.id) throw new Error('Review the USD conversion again.');
+                const checked = usdToEth(sendAmount, { usd: usdDraft.rate, updatedAt: usdDraft.updatedAt });
+                if (checked.amountWei !== usdDraft.amountWei) throw new Error('The amount changed. Review the conversion again.');
+                sendAmount = usdDraft.eth;
+              } catch (error) { setStep(2); setUsdDraft(null); throw error; }
+            }
             const { payment } = await request<{ payment: Payment }>("createPayment", {
               assetId: asset.id, identifier: recipient.did, expectedDid: recipient.did,
-              amount: amount.replace(/\.$/, ""), description: description.trim() || undefined, media: media || undefined,
+              amount: sendAmount, description: description.trim() || undefined, media: media || undefined,
             });
             Keyboard.dismiss();
             query.setQueryData(["payment", session.did, payment.id], { payment });
+            if (inUsd && usdDraft) setUsdDraft({ ...usdDraft, paymentId: payment.id });
             setId(payment.id);
             if (media) void recordShare(media, "");
             await query.invalidateQueries();
@@ -230,6 +260,7 @@ export function Payments({ onStepChange, keyboardVisible = false }: { onStepChan
                 <Text className="text-3xl font-semibold">
                   {payment.amount} {payment.asset}
                 </Text>
+                {usdDraft?.paymentId === payment.id && usdDraft.amountWei === payment.amountWei && usdDraft.assetId === payment.assetId && <Text className="text-sm text-muted">{formatUsd(usdDraft.usd)} USD at ${usdDraft.rate}/ETH. ETH amount fixed; USD value may change. Network fee extra.</Text>}
                 <Text className="text-sm">
                   {session.network.name} · plus network fee
                 </Text>

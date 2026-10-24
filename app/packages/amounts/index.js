@@ -124,3 +124,18 @@ export function formatUsd(value) {
   const [whole, cents] = value.split('.');
   return '$' + whole.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + cents;
 }
+
+// Convert a user-entered USD amount directly to wei without floating-point math.
+// Round down by at most one wei; never exceed the entered dollar amount.
+export function usdToEth(input, price, now = Date.now()) {
+  const cents = parseAmount(input, 2);
+  if (!price || !Number.isSafeInteger(price.updatedAt) || !Number.isFinite(now) ||
+      price.updatedAt > now + 30_000 || now - price.updatedAt >= 300_000)
+    throw new Error('The ETH price is unavailable or expired. Refresh the rate to continue.');
+  const rate = new Decimal(normalizeInput(price.usd));
+  if (!rate.isFinite() || !rate.gt(0)) throw new Error('The ETH price is unavailable. Refresh the rate to continue.');
+  const wei = new Decimal(cents).shiftedBy(16).dividedBy(rate).integerValue(Decimal.ROUND_DOWN).toFixed(0);
+  const eth = formatAmount(wei, 18);
+  parseAmount(eth, 18); // Reject sub-wei and out-of-range payments.
+  return { usd: new Decimal(cents).shiftedBy(-2).toFixed(2), eth, amountWei: wei, rate: rate.toFixed(), updatedAt: price.updatedAt };
+}

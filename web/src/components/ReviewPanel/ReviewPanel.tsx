@@ -1,4 +1,4 @@
-import { expectedTransfer } from "@peachlet/amounts";
+import { expectedTransfer, formatUsd } from "@peachlet/amounts";
 import { ContentSkeleton } from "../ContentSkeleton";
 import { PaymentMedia } from "../PaymentMedia";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -8,7 +8,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
 import { rpc } from "../../api";
-import { acknowledgedAtom, invitationUrlAtom, reviewIdAtom } from "../../atoms";
+import { acknowledgedAtom, invitationUrlAtom, reviewIdAtom, paymentUsdQuoteAtom } from "../../atoms";
 import { forgetBroadcast, pendingBroadcast, rememberBroadcast } from "../../broadcast";
 import { label } from "../../format";
 import { useRefresh, useRun, useStatus } from "../../hooks";
@@ -33,6 +33,7 @@ import {
 export function ReviewPanel({ className }: { className?: string }) {
   const { data: session } = useSession();
   const reviewId = useAtomValue(reviewIdAtom);
+  const usdQuote = useAtomValue(paymentUsdQuoteAtom);
   const { data: payment, isPending, error } = usePayment(reviewId, session);
   const [acknowledged, setAcknowledged] = useAtom(acknowledgedAtom);
   const [invitationUrl, setInvitationUrl] = useAtom(invitationUrlAtom);
@@ -69,6 +70,8 @@ export function ReviewPanel({ className }: { className?: string }) {
     ["Address", payment.address ?? "Recipient has not selected an address"],
     ["Expires", new Date(payment.expiresAt).toLocaleString()],
   ];
+  if (usdQuote?.id === payment.id && usdQuote.senderDid === session.did && usdQuote.assetId === payment.assetId && usdQuote.amountWei === payment.amountWei)
+    details.splice(4, 0, ['USD entered', `${formatUsd(usdQuote.usd)} USD at $${usdQuote.rate}/ETH. ETH amount fixed; USD value may change. Fee extra.`]);
   if (payment.assetDetails?.contractAddress) details.push(["Token contract", payment.assetDetails.contractAddress]);
   if (!isSender) details.unshift(["Sender", payment.sender?.handle ? `@${payment.sender.handle}` : payment.senderDid]);
   if (payment.fromAddress) details.push(["From", payment.fromAddress]);

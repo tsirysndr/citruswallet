@@ -44,3 +44,21 @@ test('portfolio totals include native ETH and tokens once, rounding only the fin
   assert.equal(portfolioUsd('1000000000000000000', '2000', [], 6343).usd, '2000.00');
   assert.equal(portfolioUsd('0', '2000', [{ ...row, asset: { ...row.asset, chainId: 4326 } }], 1).missing, 1);
 });
+
+
+test('USD entry converts to exact wei and rounds down without floating point', async () => {
+  const { usdToEth } = await import('../app/packages/amounts/index.js');
+  const at = 1700000000000;
+  assert.deepEqual(usdToEth('25,00', { usd: '2500', updatedAt: at }, at), {
+    usd: '25.00', eth: '0.01', amountWei: '10000000000000000', rate: '2500', updatedAt: at,
+  });
+  assert.equal(usdToEth('1', { usd: '3', updatedAt: at }, at).amountWei, '333333333333333333');
+  assert.equal(usdToEth('9007199254740993.01', { usd: '1', updatedAt: at }, at).amountWei, '9007199254740993010000000000000000');
+});
+test('USD entry rejects expired rates, invalid amounts and sub-wei transfers', async () => {
+  const { usdToEth } = await import('../app/packages/amounts/index.js');
+  const at = 1700000000000;
+  for (const value of ['0', '-1', '1.001', '1e5', '1,000.00']) assert.throws(() => usdToEth(value, { usd: '2500', updatedAt: at }, at));
+  for (const price of [null, { usd: '0', updatedAt: at }, { usd: '-1', updatedAt: at }, { usd: 'NaN', updatedAt: at }, { usd: '2500', updatedAt: at - 300000 }, { usd: '2500', updatedAt: at + 31000 }]) assert.throws(() => usdToEth('25', price, at));
+  assert.throws(() => usdToEth('0.01', { usd: '100000000000000000000', updatedAt: at }, at));
+});

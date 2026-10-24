@@ -1,3 +1,4 @@
+import type { UsdEthQuote } from '@peachlet/amounts';
 import { atom } from "jotai";
 
 export type Status = { message: string; error: boolean };
@@ -25,3 +26,5 @@ function openingInvite(): string | null {
 export const inviteTokenAtom = atom<string | null>(openingInvite());
 
 export const forgetInvite = () => sessionStorage.removeItem(inviteKey);
+
+export const paymentUsdQuoteAtom = atom<(UsdEthQuote & { id: string; assetId: string; senderDid: string }) | null>(null);

@@ -198,3 +198,57 @@ test('failed lookup provides an explicit retry without losing the handle', async
   await fireEvent.press(await screen.findByRole('button', { name: 'Retry recipient lookup' }));
   expect(await screen.findByLabelText('Step 2 of 4')).toBeTruthy();
 });
+
+test('USD amount entry creates a fixed ETH intent and shows the original USD amount in review', async () => {
+  let created;
+  request.mockImplementation(async (method, body) => {
+    if (method === 'resolveRecipient') return { did: alice.did, handle: alice.handle };
+    if (method === 'getEthPrice') return { usd: '2500', updatedAt: Date.now(), source: 'test' };
+    if (method === 'createPayment') {
+      created = { ...payment, asset: 'ETH', amount: body.amount, assetId: body.assetId, amountWei: '10000000000000000' };
+      return { payment: created };
+    }
+    return { payment: created || payment };
+  });
+  mount(<Payments />);
+  await enterAmount();
+  await fireEvent.press(screen.getByRole('button', { name: 'Enter amount in USD' }));
+  expect(screen.getByLabelText('Amount 0 USD')).toBeTruthy();
+  await fireEvent.press(screen.getByRole('button', { name: '2' }));
+  await fireEvent.press(screen.getByRole('button', { name: '5' }));
+  await waitFor(() => expect(screen.getByText('≈ 0.01 ETH · network fee extra')).toBeTruthy());
+  await fireEvent.press(screen.getByRole('button', { name: 'Continue' }));
+  await fireEvent.press(screen.getByRole('button', { name: 'Review payment' }));
+  await waitFor(() => expect(request).toHaveBeenCalledWith('createPayment', expect.objectContaining({ amount: '0.01', assetId: 'eip155:1/slip44:60' })));
+  expect(await screen.findByText(/\$25.00 USD at \$2500\/ETH/)).toBeTruthy();
+});
+
+test('USD entry cannot continue with a stale rate and switching to ETH clears the amount', async () => {
+  request.mockImplementation(async method => method === 'resolveRecipient' ? { did: alice.did, handle: alice.handle } : method === 'getEthPrice' ? { usd: '2500', updatedAt: Date.now() - 300001 } : { payment });
+  mount(<Payments />);
+  await enterAmount();
+  await fireEvent.press(screen.getByRole('button', { name: 'Enter amount in USD' }));
+  await fireEvent.press(screen.getByRole('button', { name: '2' }));
+  expect(screen.getByRole('button', { name: 'Continue' })).toBeDisabled();
+  await fireEvent.press(screen.getByRole('button', { name: 'Enter amount in ETH' }));
+  expect(screen.getByLabelText('Amount 0 ETH')).toBeTruthy();
+  expect(request).not.toHaveBeenCalledWith('createPayment', expect.anything());
+});
+
+test('an expired USD quote returns to amount entry without creating an intent', async () => {
+  const at = Date.now();
+  request.mockImplementation(async method => method === 'resolveRecipient' ? { did: alice.did, handle: alice.handle } : method === 'getEthPrice' ? { usd: '2500', updatedAt: at } : { payment });
+  mount(<Payments />);
+  await enterAmount();
+  await fireEvent.press(screen.getByRole('button', { name: 'Enter amount in USD' }));
+  await fireEvent.press(screen.getByRole('button', { name: '2' }));
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Continue' })).toBeEnabled());
+  await fireEvent.press(screen.getByRole('button', { name: 'Continue' }));
+  const clock = jest.spyOn(Date, 'now').mockReturnValue(at + 300001);
+  try {
+    await fireEvent.press(screen.getByRole('button', { name: 'Review payment' }));
+    await waitFor(() => expect(screen.getByLabelText('Step 2 of 4')).toBeTruthy());
+    expect(request).not.toHaveBeenCalledWith('createPayment', expect.anything());
+    expect(mockActionError).toHaveBeenCalledWith(expect.objectContaining({ message: expect.stringContaining('expired') }));
+  } finally { clock.mockRestore(); }
+});
