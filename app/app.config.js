@@ -7,7 +7,8 @@ const hasPeachletFirebase = fs.existsSync(googleServicesFile) &&
   );
 module.exports = {
   name: "Peachlet",
-  slug: "peachlet",
+  // Retain the existing EAS project slug/ID; the display name and native package are Peachlet.
+  slug: "citruswallet",
   owner: "tsirysndr",
   version: "1.0.0",
   scheme: "peachlet",
