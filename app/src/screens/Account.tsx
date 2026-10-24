@@ -80,7 +80,7 @@ export function Account() {
         <View className="gap-5 rounded-3xl bg-white p-6">
           <Heading title="Welcome to Citrus" />
           <AtmosphereApps />
-          <HandleInput value={handle} onChange={setHandle} />
+          <HandleInput value={handle} onChange={setHandle} onSubmit={form.handleSubmit(({ identifier }) => run(async () => { if (await signIn(identifier)) await query.invalidateQueries(); }))} />
           {form.formState.errors.identifier && <Text accessibilityRole="alert" className="text-red-700">{form.formState.errors.identifier.message}</Text>}
           <Button
             title="Sign In"

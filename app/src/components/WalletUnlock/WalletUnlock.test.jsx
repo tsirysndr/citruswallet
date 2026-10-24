@@ -9,7 +9,7 @@ import { WalletUnlock } from './index';
 let mockMode = 'citrus', mockProtection = 'password';
 jest.mock('../../wallet-preferences', () => ({ walletMode: () => mockMode }));
 jest.mock('../../local-wallet', () => ({ nativeVaultState: () => 'locked', subscribeNativeVault: () => () => {}, nativeProtection: () => mockProtection, lockNativeWallet: jest.fn(), unlockNativeVault: jest.fn(async () => {}) }));
-jest.mock('../LocalWallet', () => ({ LocalWallet: () => { const { Text } = require('react-native'); return <Text>Wallet unlock form</Text>; } }));
+jest.mock('../LocalWallet', () => ({ LocalWallet: ({ onDismiss }) => { const { Text, Pressable, View } = require('react-native'); return <View><Text>Wallet unlock form</Text><Pressable accessibilityRole="button" accessibilityLabel="Cancel" onPress={onDismiss}><Text>Cancel</Text></Pressable></View>; } }));
 beforeEach(() => { jest.clearAllMocks(); mockMode = 'citrus'; mockProtection = 'password'; Object.defineProperty(AppState, 'currentState', { configurable: true, writable: true, value: 'active' }); });
 afterEach(() => { cleanup(); finishUnlock(false); });
 function mount() { const store = createStore(); store.set(readyAtom, true); renderComponent(<WalletUnlock />, { store }); }

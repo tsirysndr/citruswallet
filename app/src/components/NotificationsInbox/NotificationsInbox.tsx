@@ -46,11 +46,11 @@ export function NotificationsInbox() {
         <View className="flex-1 bg-canvas px-5 pb-8 pt-14">
           <View className="flex-row justify-between">
             <Heading title="Notifications" />
-            <Button title="Close" tone="plain" onPress={() => setOpen(false)} />
+            <Button title="Close" tone="ghost" onPress={() => setOpen(false)} />
           </View>
           <ScrollView contentContainerStyle={{ gap: 12, paddingTop: 20 }}>
             {isPending && <ContentSkeleton label="Loading notifications" />}
-            {error && <Button title="Could not load notifications. Retry" onPress={() => void refetch()} />}
+            {error && <Button title="Could not load notifications. Retry" tone="ghost" onPress={() => void refetch()} />}
             {data?.notifications.map((item) => (
               <Pressable
                 key={item.id}
@@ -91,7 +91,7 @@ export function NotificationsInbox() {
             />
             <Button
               title="Disable push notifications"
-              tone="plain"
+              tone="ghost"
               onPress={() =>
                 run(async () => {
                   await disablePush();

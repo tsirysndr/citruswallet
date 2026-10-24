@@ -43,7 +43,7 @@ export function AssetPicker({ session, value, onChange }: { session: Session; va
       <div className="command-search-field">
         <Search size={20} aria-hidden="true" />
         <input ref={searchInput} type="search" aria-label="Search assets or paste token contract" placeholder="Search name, symbol or contract…" autoComplete="off" value={search} onChange={event => setSearch(event.target.value)} onKeyDown={event => {
-          if (event.key === "Enter") { event.preventDefault(); if (matches.length === 1 && !loading) void pick(matches[0]!.asset.id); }
+          if (event.key === "Enter") { event.preventDefault(); if (!loading && address) { if (/^0x[0-9a-fA-F]{40}$/.test(search.trim())) void pick(`eip155:${session.network.chainId}/erc20:${search.trim().toLowerCase()}`); else if (matches.length === 1) void pick(matches[0]!.asset.id); } }
         }} />
         <button type="button" aria-label="Close asset picker" onClick={close}><X size={20} aria-hidden="true" /></button>
       </div>

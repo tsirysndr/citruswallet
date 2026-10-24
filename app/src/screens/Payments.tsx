@@ -107,6 +107,7 @@ export function Payments({ onStepChange, keyboardVisible = false }: { onStepChan
       Keyboard.dismiss();
       setStep(2);
     });
+  const recoverPayment = () => run(async () => { await recover(session.did!, hash || undefined); await reload(); });
   const compact = keyboardVisible && currentStep === 1;
   return (
     <View className="gap-5">
@@ -143,16 +144,12 @@ export function Payments({ onStepChange, keyboardVisible = false }: { onStepChan
             label="Original transaction hash (if needed)"
             value={hash}
             onChangeText={setHash}
+            onSubmitEditing={recoverPayment}
             autoCapitalize="none"
           />
           <Button
             title="Recover transaction"
-            onPress={() =>
-              run(async () => {
-                await recover(session.did!, hash || undefined);
-                await reload();
-              })
-            }
+            onPress={recoverPayment}
           />
         </View>
       )}

@@ -12,6 +12,7 @@ it('does not disable unlock or cancellation while a payment awaits the wallet', 
   const { user } = await renderComponent(<WalletUnlock />, { store });
   expect(screen.getByRole('dialog', { name: 'Unlock Citrus wallet' })).toBeVisible();
   expect(screen.getByRole('button', { name: 'Unlock wallet' })).toBeEnabled();
+  expect(screen.getByRole('button', { name: 'Cancel' }).parentElement).toBe(screen.getByRole('button', { name: 'Unlock wallet' }).parentElement);
   await user.click(screen.getByRole('button', { name: 'Cancel' }));
   expect(unlockSnapshot()).toBe(false);
   expect(screen.queryByRole('dialog', { name: 'Unlock Citrus wallet' })).not.toBeInTheDocument();

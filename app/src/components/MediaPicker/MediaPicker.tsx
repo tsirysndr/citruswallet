@@ -47,7 +47,7 @@ export function MediaPicker({ value, onChange }: { value: PaymentMedia | null; o
           </Pressable>)}</View>
           <Text className="text-sm text-muted">Powered by KLIPY</Text>
           {!klipyEnabled && <Text>Media search is not configured for this build.</Text>}
-          {results.isError && <Button title="Could not load media. Try again" tone="plain" onPress={() => void results.refetch()} />}
+          {results.isError && <Button title="Could not load media. Try again" tone="ghost" onPress={() => void results.refetch()} />}
         </View>
         <FlatList data={items} numColumns={2} keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 20 }}
           keyExtractor={(item, index) => `${item.slug}-${index}`} onEndReached={() => { if (results.hasNextPage && !results.isFetching) void results.fetchNextPage(); }}

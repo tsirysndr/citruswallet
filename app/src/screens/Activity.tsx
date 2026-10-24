@@ -185,7 +185,7 @@ export function Activity({ header }: { header?: ReactNode }) {
                 <Button
                   key={value}
                   title={value}
-                  tone={direction === value ? "lime" : "plain"}
+                  tone={direction === value ? "lime" : "ghost"}
                   onPress={() => {
                     setDirection(value);
                                 }}
@@ -209,7 +209,7 @@ export function Activity({ header }: { header?: ReactNode }) {
                 <Button
                   key={value}
                   title={value}
-                  tone={status === value ? "lime" : "plain"}
+                  tone={status === value ? "lime" : "ghost"}
                   onPress={() => {
                     setStatus(value);
                                 }}
@@ -222,7 +222,7 @@ export function Activity({ header }: { header?: ReactNode }) {
                 <Button
                   key={value}
                   title={value ? `Last ${value} days` : "All time"}
-                  tone={days === value ? "lime" : "plain"}
+                  tone={days === value ? "lime" : "ghost"}
                   onPress={() => {
                     setDays(value);
                                 }}

@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { LockKeyhole, Eye, EyeOff } from 'lucide-react';
 import { useAtomValue } from "jotai";
 import type {
   ButtonHTMLAttributes,
@@ -96,6 +98,7 @@ export function Button({
   return (
     <button
       type={type}
+      data-variant={variant}
       disabled={disabled || (!keepEnabled && busy)}
       className={cx(
         "cursor-pointer rounded-[6px] border-0 whitespace-nowrap disabled:cursor-not-allowed disabled:opacity-45",
@@ -138,15 +141,24 @@ export const Row = ({ children, className }: { children: ReactNode; className?: 
   <div className={cx("form-row flex gap-2", className)}>{children}</div>
 );
 
-export const Input = ({ className, ...rest }: InputHTMLAttributes<HTMLInputElement> & RefAttributes<HTMLInputElement>) => (
-  <input
-    className={cx(
-      "w-full min-w-0 rounded-[6px] border border-edge bg-sunken p-3 text-[13px] text-ink",
-      className,
-    )}
-    {...rest}
-  />
-);
+export function Input({ className, type, secretLabel = 'password', ...rest }: InputHTMLAttributes<HTMLInputElement> & RefAttributes<HTMLInputElement> & { secretLabel?: string }) {
+  const [visible, setVisible] = useState(false);
+  const secret = type === 'password';
+  const input = <input className={cx(
+    'w-full min-w-0 rounded-[6px] border border-edge bg-sunken p-3 text-[13px] text-ink',
+    secret && 'pl-10 pr-12', className,
+  )} {...rest} type={secret && visible ? 'text' : type} />;
+  if (!secret) return input;
+  return <div className="relative w-full min-w-0">
+    <LockKeyhole aria-hidden="true" size={17} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted" />
+    {input}
+    <button type="button" aria-label={`${visible ? 'Hide' : 'Show'} ${secretLabel}`} aria-pressed={visible} disabled={rest.disabled}
+      onMouseDown={event => event.preventDefault()} onClick={() => setVisible(value => !value)}
+      className="absolute right-1 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center text-ink-muted">
+      {visible ? <EyeOff aria-hidden="true" size={19} /> : <Eye aria-hidden="true" size={19} />}
+    </button>
+  </div>;
+}
 
 export const Select = ({ className, ...rest }: SelectHTMLAttributes<HTMLSelectElement>) => (
   <select

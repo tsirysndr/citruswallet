@@ -7,7 +7,6 @@ import { lockNativeWallet, nativeVaultState as localWalletState, nativeProtectio
 import { finishUnlock, requestUnlock, subscribeUnlock, unlockSnapshot } from '../../wallet-unlock';
 import { LocalWallet } from '../LocalWallet';
 import { Text } from '../Typography';
-import { Button } from '../ui';
 export function WalletUnlock() {
   const open = useSyncExternalStore(subscribeUnlock, unlockSnapshot);
   const state = useSyncExternalStore(subscribeWallet, localWalletState);
@@ -34,7 +33,7 @@ export function WalletUnlock() {
   const cancel = () => { lockNativeWallet(); finishUnlock(false); };
   return <Modal visible={open} transparent animationType="slide" onRequestClose={cancel}>
     <View className="flex-1 justify-center bg-black/25 px-4 py-12"><ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }} keyboardShouldPersistTaps="handled">
-      <View className="rounded-3xl bg-white p-4">{open && <LocalWallet allowWhileBusy />}{!!error && <Text accessibilityRole="alert" className="text-sm text-red-700">{error}</Text>}<Button keepEnabled title="Cancel" tone="plain" onPress={cancel} /></View>
+      <View className="rounded-3xl bg-white p-4">{open && <LocalWallet allowWhileBusy onDismiss={cancel} />}{!!error && <Text accessibilityRole="alert" className="text-sm text-red-700">{error}</Text>}</View>
     </ScrollView></View>
   </Modal>;
 }

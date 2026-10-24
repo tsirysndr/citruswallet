@@ -419,3 +419,11 @@ textarea:focus-visible { outline: none; }
 .asset-picker-dialog::backdrop { background: #19191665; backdrop-filter: none; -webkit-backdrop-filter: none; }
 
 .asset-picker-dialog .command-search-field { margin: -20px -20px 0; }
+
+/* Secondary dialog actions stay visually quiet. */
+dialog button[data-variant="subtle"] { background: transparent; }
+dialog .drawer-close,
+dialog .date-icon-button:hover,
+dialog .command-search-field button:hover,
+dialog .klipy-pagination button:hover:not(:disabled),
+dialog .klipy-empty button { background: transparent; }
