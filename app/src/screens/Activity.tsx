@@ -1,9 +1,16 @@
-import { useTheme } from '../theme';
+import { useTheme } from "../theme";
 import { ContentSkeleton } from "../components/ContentSkeleton";
 import Svg, { Circle, Path } from "react-native-svg";
 import { PaymentStatus } from "../components/PaymentStatus";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { RefreshControl, Alert, FlatList, Modal, Pressable, View } from "react-native";
+import {
+  RefreshControl,
+  Alert,
+  FlatList,
+  Modal,
+  Pressable,
+  View,
+} from "react-native";
 import { Text } from "../components/Typography";
 import { Ionicons } from "@expo/vector-icons";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
@@ -41,137 +48,220 @@ export function Activity({ header }: { header?: ReactNode }) {
     status,
     after: days ? String(now - days * 86400000) : undefined,
   };
-  const { data, isFetching, isPending, isFetchingNextPage, isFetchNextPageError, hasNextPage, fetchNextPage, error, refetch } = useInfiniteQuery({
+  const {
+    data,
+    isFetching,
+    isPending,
+    isFetchingNextPage,
+    isFetchNextPageError,
+    hasNextPage,
+    fetchNextPage,
+    error,
+    refetch,
+  } = useInfiniteQuery({
     queryKey: ["activity", session?.did, session?.network.chainId, params],
     enabled: !!session?.did,
     initialPageParam: 1,
-    queryFn: ({ pageParam }) => request<{ payments: Payment[]; total: number }>("listPayments", undefined, { ...params, page: pageParam }),
-    getNextPageParam: (last, _pages, page) => last.payments.length > 0 && page * 20 < last.total ? page + 1 : undefined,
+    queryFn: ({ pageParam }) =>
+      request<{ payments: Payment[]; total: number }>(
+        "listPayments",
+        undefined,
+        { ...params, page: pageParam },
+      ),
+    getNextPageParam: (last, _pages, page) =>
+      last.payments.length > 0 && page * 20 < last.total ? page + 1 : undefined,
   });
-  const payments = data?.pages.flatMap(page => page.payments).filter((payment, index, items) => items.findIndex(item => item.id === payment.id) === index) || [];
-  useEffect(() => { list.current?.scrollToOffset({ offset: 0, animated: false }); }, [q, direction, status, days]);
+  const payments =
+    data?.pages
+      .flatMap((page) => page.payments)
+      .filter(
+        (payment, index, items) =>
+          items.findIndex((item) => item.id === payment.id) === index,
+      ) || [];
+  useEffect(() => {
+    list.current?.scrollToOffset({ offset: 0, animated: false });
+  }, [q, direction, status, days]);
   if (!session?.did)
     return <Empty text="Sign in from Account to see your activity." />;
   return (
     <View className="flex-1">
-      <FlatList ref={list} accessibilityLabel="Activity payments" data={payments} keyExtractor={payment => payment.id}
-        contentContainerStyle={{ padding: 20, paddingBottom: 32 }} keyboardShouldPersistTaps="handled"
-        refreshControl={<RefreshControl refreshing={isFetching && !isFetchingNextPage && !isPending} onRefresh={() => void refetch()} colors={["transparent"]} tintColor="transparent" progressBackgroundColor="transparent" />}
-        onEndReachedThreshold={0.5} onEndReached={() => {
-          if (hasNextPage && !isFetching && !error && q === text.trim()) void fetchNextPage();
-        }}
-        ListHeaderComponent={<View className="gap-5 pb-4">{header}
-          {isFetching && !isPending && !isFetchingNextPage && <ContentSkeleton label="Refreshing activity" rows={1} />}
-      <View className="flex-row items-center justify-between">
-        <Heading title="Activity" />
-        <Pressable
-          accessibilityLabel="Refresh activity"
-          onPress={() => void refetch()}
-          className="p-3"
-        >
-          <Ionicons name="refresh-outline" size={24} color={colors.ink} />
-        </Pressable>
-      </View>
-      <View className="flex-row items-end gap-3">
-        <View className="flex-1">
-          <Field
-            label="Search payments"
-            style={{ height: 48 }}
-            value={text}
-            onChangeText={setText}
-            placeholder="Name, handle, description…"
+      <FlatList
+        ref={list}
+        accessibilityLabel="Activity payments"
+        data={payments}
+        keyExtractor={(payment) => payment.id}
+        contentContainerStyle={{ padding: 20, paddingBottom: 32 }}
+        keyboardShouldPersistTaps="handled"
+        refreshControl={
+          <RefreshControl
+            refreshing={isFetching && !isFetchingNextPage && !isPending}
+            onRefresh={() => void refetch()}
+            colors={["transparent"]}
+            tintColor="transparent"
+            progressBackgroundColor="transparent"
           />
-        </View>
-        <Pressable
-          accessibilityLabel="Activity filters"
-          onPress={() => setFilters(true)}
-          className="items-center justify-center rounded-lg bg-surface"
-          style={{ width: 48, height: 48 }}
-        >
-          <Svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke={colors.ink} strokeWidth={1.6} strokeLinecap="round" accessible={false}>
-            <Path d="M3 7h3m6 0h9M3 17h9m6 0h3" />
-            <Circle cx={9} cy={7} r={3} />
-            <Circle cx={15} cy={17} r={3} />
-          </Svg>
-        </Pressable>
-      </View>
-      <Text className="text-sm text-muted">
-        {isPending ? "Searching…" : `${data?.pages[0]?.total ?? 0} payments`}
-      </Text>
-        </View>}
-        ListEmptyComponent={error ? <Button title="Search failed. Retry" onPress={() => void refetch()} /> :
-          !isPending ? <Empty text="No payments found." /> : <ContentSkeleton label="Loading payments" />}
-        ListFooterComponent={<View className="py-4">
-          {isFetchingNextPage && <ContentSkeleton label="Loading more payments" rows={1} />}
-          {isFetchNextPageError && <Button title="Could not load more. Retry" onPress={() => void fetchNextPage()} />}
-          {!hasNextPage && payments.length > 0 && !isFetching && <Text className="text-center text-sm text-muted">You're all caught up.</Text>}
-        </View>}
-        renderItem={({ item: payment }) => {
-        const outgoing = payment.senderDid === session.did,
-          actor = outgoing ? payment.recipient : payment.sender;
-        return (
-          <View className="mb-3 gap-3 rounded-2xl bg-surface p-4">
-            <View className="flex-row items-center gap-3">
-              <Avatar actor={actor} />
-              <View className="flex-1">
-                <Text className="text-base font-semibold">
-                  {outgoing ? "To" : "From"}{" "}
-                  {actor?.displayName ||
-                    actor?.handle ||
-                    payment.recipientLabel}
-                </Text>
-                {actor?.handle && (
-                  <Text className="text-sm text-muted">@{actor.handle}</Text>
-                )}
-              </View>
-            </View>
-            <View className="flex-row items-center justify-between">
-              <Text className="text-xl font-bold">{payment.amount} {payment.asset}</Text>
-              <PaymentStatus state={payment.state} />
-            </View>
-            {payment.description && (
-              <Text numberOfLines={2} className="text-sm">
-                {payment.description}
-              </Text>
+        }
+        onEndReachedThreshold={0.5}
+        onEndReached={() => {
+          if (hasNextPage && !isFetching && !error && q === text.trim())
+            void fetchNextPage();
+        }}
+        ListHeaderComponent={
+          <View className="gap-5 pb-4">
+            {header}
+            {isFetching && !isPending && !isFetchingNextPage && (
+              <ContentSkeleton label="Refreshing activity" rows={1} />
             )}
-            <Text className="text-xs text-muted">
-              {new Date(payment.createdAt).toLocaleString()}
+            <View className="flex-row items-center justify-between">
+              <Heading title="Activity" />
+              <Pressable
+                accessibilityLabel="Refresh activity"
+                onPress={() => void refetch()}
+                className="p-3"
+              >
+                <Ionicons name="refresh-outline" size={24} color={colors.ink} />
+              </Pressable>
+            </View>
+            <View className="flex-row items-end gap-3">
+              <View className="flex-1">
+                <Field
+                  label="Search payments"
+                  style={{ height: 48 }}
+                  value={text}
+                  onChangeText={setText}
+                  placeholder="Name, handle, description…"
+                />
+              </View>
+              <Pressable
+                accessibilityLabel="Activity filters"
+                onPress={() => setFilters(true)}
+                className="items-center justify-center rounded-lg bg-surface"
+                style={{ width: 48, height: 48 }}
+              >
+                <Svg
+                  width={20}
+                  height={20}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke={colors.ink}
+                  strokeWidth={1.6}
+                  strokeLinecap="round"
+                  accessible={false}
+                >
+                  <Path d="M3 7h3m6 0h9M3 17h9m6 0h3" />
+                  <Circle cx={9} cy={7} r={3} />
+                  <Circle cx={15} cy={17} r={3} />
+                </Svg>
+              </Pressable>
+            </View>
+            <Text className="text-sm text-muted">
+              {isPending
+                ? "Searching…"
+                : `${data?.pages[0]?.total ?? 0} payments`}
             </Text>
+          </View>
+        }
+        ListEmptyComponent={
+          error ? (
             <Button
-              title="View payment"
-              tone="plain"
-              onPress={() => {
-                review(payment.id);
-                go("Payments");
-              }}
+              title="Search failed. Retry"
+              onPress={() => void refetch()}
             />
-            {outgoing && payment.state === "cancelled" && (
+          ) : !isPending ? (
+            <Empty text="No payments found." />
+          ) : (
+            <ContentSkeleton label="Loading payments" />
+          )
+        }
+        ListFooterComponent={
+          <View className="py-4">
+            {isFetchingNextPage && (
+              <ContentSkeleton label="Loading more payments" rows={1} />
+            )}
+            {isFetchNextPageError && (
               <Button
-                title="Delete cancelled intent"
-                tone="plain"
-                onPress={() =>
-                  Alert.alert(
-                    "Delete cancelled intent?",
-                    "This removes it from your activity.",
-                    [
-                      { text: "Keep", style: "cancel" },
-                      {
-                        text: "Delete",
-                        style: "destructive",
-                        onPress: () =>
-                          run(async () => {
-                            await request("deletePayment", { id: payment.id });
-                            await client.invalidateQueries();
-                          }),
-                      },
-                    ],
-                  )
-                }
+                title="Could not load more. Retry"
+                onPress={() => void fetchNextPage()}
               />
             )}
+            {!hasNextPage && payments.length > 0 && !isFetching && (
+              <Text className="text-center text-sm text-muted">
+                You're all caught up.
+              </Text>
+            )}
           </View>
-        );
-      }} />
+        }
+        renderItem={({ item: payment }) => {
+          const outgoing = payment.senderDid === session.did,
+            actor = outgoing ? payment.recipient : payment.sender;
+          return (
+            <View className="mb-3 gap-3 rounded-2xl bg-surface p-4">
+              <View className="flex-row items-center gap-3">
+                <Avatar actor={actor} />
+                <View className="flex-1">
+                  <Text className="text-base font-semibold">
+                    {outgoing ? "To" : "From"}{" "}
+                    {actor?.displayName ||
+                      actor?.handle ||
+                      payment.recipientLabel}
+                  </Text>
+                  {actor?.handle && (
+                    <Text className="text-sm text-muted">@{actor.handle}</Text>
+                  )}
+                </View>
+              </View>
+              <View className="flex-row items-center justify-between">
+                <Text className="text-xl font-bold">
+                  {payment.amount} {payment.asset}
+                </Text>
+                <PaymentStatus state={payment.state} />
+              </View>
+              {payment.description && (
+                <Text numberOfLines={2} className="text-sm">
+                  {payment.description}
+                </Text>
+              )}
+              <Text className="text-xs text-muted">
+                {new Date(payment.createdAt).toLocaleString()}
+              </Text>
+              <Button
+                title="View payment"
+                tone="plain"
+                onPress={() => {
+                  review(payment.id);
+                  go("Payments");
+                }}
+              />
+              {outgoing && payment.state === "cancelled" && (
+                <Button
+                  title="Delete cancelled intent"
+                  tone="plain"
+                  onPress={() =>
+                    Alert.alert(
+                      "Delete cancelled intent?",
+                      "This removes it from your activity.",
+                      [
+                        { text: "Keep", style: "cancel" },
+                        {
+                          text: "Delete",
+                          style: "destructive",
+                          onPress: () =>
+                            run(async () => {
+                              await request("deletePayment", {
+                                id: payment.id,
+                              });
+                              await client.invalidateQueries();
+                            }),
+                        },
+                      ],
+                    )
+                  }
+                />
+              )}
+            </View>
+          );
+        }}
+      />
       <Modal
         visible={filters}
         transparent
@@ -190,7 +280,7 @@ export function Activity({ header }: { header?: ReactNode }) {
                   tone={direction === value ? "lime" : "ghost"}
                   onPress={() => {
                     setDirection(value);
-                                }}
+                  }}
                 />
               ))}
             </View>
@@ -214,7 +304,7 @@ export function Activity({ header }: { header?: ReactNode }) {
                   tone={status === value ? "lime" : "ghost"}
                   onPress={() => {
                     setStatus(value);
-                                }}
+                  }}
                 />
               ))}
             </View>
@@ -227,7 +317,7 @@ export function Activity({ header }: { header?: ReactNode }) {
                   tone={days === value ? "lime" : "ghost"}
                   onPress={() => {
                     setDays(value);
-                                }}
+                  }}
                 />
               ))}
             </View>

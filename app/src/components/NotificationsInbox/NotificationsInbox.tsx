@@ -49,7 +49,13 @@ export function NotificationsInbox() {
           </View>
           <ScrollView contentContainerStyle={{ gap: 12, paddingTop: 20 }}>
             {isPending && <ContentSkeleton label="Loading notifications" />}
-            {error && <Button title="Could not load notifications. Retry" tone="ghost" onPress={() => void refetch()} />}
+            {error && (
+              <Button
+                title="Could not load notifications. Retry"
+                tone="ghost"
+                onPress={() => void refetch()}
+              />
+            )}
             {data?.notifications.map((item) => (
               <Pressable
                 key={item.id}
@@ -78,11 +84,27 @@ export function NotificationsInbox() {
             {!isPending && !error && !data?.notifications.length && (
               <Empty text="Your confirmed incoming payments will appear here." />
             )}
-            <Button title="Mark all as read" tone="ghost" disabled={!data?.unread} onPress={() => run(async () => {
-              await request('markAllNotificationsRead', {});
-              await query.invalidateQueries({ queryKey: ['notifications'] });
-            })} />
-            <Button title="Notification settings" tone="ghost" onPress={() => { setOpen(false); screen('Settings'); }} />
+            <Button
+              title="Mark all as read"
+              tone="ghost"
+              disabled={!data?.unread}
+              onPress={() =>
+                run(async () => {
+                  await request("markAllNotificationsRead", {});
+                  await query.invalidateQueries({
+                    queryKey: ["notifications"],
+                  });
+                })
+              }
+            />
+            <Button
+              title="Notification settings"
+              tone="ghost"
+              onPress={() => {
+                setOpen(false);
+                screen("Settings");
+              }}
+            />
           </ScrollView>
         </View>
       </Modal>

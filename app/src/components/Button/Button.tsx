@@ -31,7 +31,13 @@ export function Button({
         numberOfLines={multiline ? 2 : 1}
         adjustsFontSizeToFit
         minimumFontScale={0.8}
-        style={{ width: "100%", textAlign: "center", lineHeight: 26, includeFontPadding: true, flexShrink: 0 }}
+        style={{
+          width: "100%",
+          textAlign: "center",
+          lineHeight: 26,
+          includeFontPadding: true,
+          flexShrink: 0,
+        }}
         className={`text-base font-semibold ${tone === "dark" || tone === "black" ? "text-white" : "text-ink"}`}
       >
         {title}

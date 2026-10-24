@@ -12,8 +12,23 @@ const colors = {
   expired: { backgroundColor: "#ffdfc1", color: "#864713" },
 };
 export function PaymentStatus({ state }: { state: string }) {
-  const palette = colors[state as keyof typeof colors] ?? { backgroundColor: "#f7f3f0", color: "#696b63" };
-  return <View style={{ alignSelf: "flex-start", borderRadius: 16, paddingHorizontal: 10, paddingVertical: 5, backgroundColor: palette.backgroundColor }}>
-    <Text className="text-sm font-medium" style={{ color: palette.color }}>{state.charAt(0).toUpperCase() + state.slice(1)}</Text>
-  </View>;
+  const palette = colors[state as keyof typeof colors] ?? {
+    backgroundColor: "#f7f3f0",
+    color: "#696b63",
+  };
+  return (
+    <View
+      style={{
+        alignSelf: "flex-start",
+        borderRadius: 16,
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+        backgroundColor: palette.backgroundColor,
+      }}
+    >
+      <Text className="text-sm font-medium" style={{ color: palette.color }}>
+        {state.charAt(0).toUpperCase() + state.slice(1)}
+      </Text>
+    </View>
+  );
 }

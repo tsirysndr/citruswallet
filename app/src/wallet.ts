@@ -21,7 +21,9 @@ export function getClient() {
     api: {
       supportedNetworks: {
         "0x10e6": "https://mainnet.megaeth.com/rpc",
-        "0x1": process.env.EXPO_PUBLIC_ETH_RPC_URL || "https://ethereum-rpc.publicnode.com",
+        "0x1":
+          process.env.EXPO_PUBLIC_ETH_RPC_URL ||
+          "https://ethereum-rpc.publicnode.com",
       },
     },
     analytics: { enabled: false },
@@ -32,7 +34,11 @@ export function getClient() {
         // The SDK does not await this callback. Forward launch failures to the
         // active connection instead of leaving an unhandled rejection.
         void Linking.openURL(link).catch(() => {
-          launchFailed?.(new Error("Could not open MetaMask. Install the MetaMask app, then try again."));
+          launchFailed?.(
+            new Error(
+              "Could not open MetaMask. Install the MetaMask app, then try again.",
+            ),
+          );
         });
       },
     },
@@ -40,34 +46,68 @@ export function getClient() {
   }));
 }
 export async function connect(network: Network) {
-  if (walletMode() === 'citrus') {
-    if (nativeVaultState() === 'loading') throw new Error('Your Peachlet wallet is still loading. Try again in a moment.');
-    if (nativeVaultState() === 'absent') throw new Error('Set up your Peachlet wallet from the Wallet screen first.');
+  if (walletMode() === "citrus") {
+    if (nativeVaultState() === "loading")
+      throw new Error(
+        "Your Peachlet wallet is still loading. Try again in a moment.",
+      );
+    if (nativeVaultState() === "absent")
+      throw new Error(
+        "Set up your Peachlet wallet from the Wallet screen first.",
+      );
     if (nativeVaultState() === "locked") await requestUnlock();
     const wallet = nativeProvider(network);
     const addresses = await wallet.request({ method: "eth_requestAccounts" });
     return { wallet, address: addresses[0] as string };
   }
-  const sdk = await withWalletDeadline(getClient(), 20_000,
-    "MetaMask could not initialize. Close and reopen Peachlet, then try again.");
+  const sdk = await withWalletDeadline(
+    getClient(),
+    20_000,
+    "MetaMask could not initialize. Close and reopen Peachlet, then try again.",
+  );
   if (sdk.status !== "connected") {
-    const launchError = new Promise<never>((_, reject) => { launchFailed = reject; });
+    const launchError = new Promise<never>((_, reject) => {
+      launchFailed = reject;
+    });
     try {
-      await withWalletDeadline(Promise.race([
-        sdk.connect({ chainIds: [network.chainIdHex as `0x${string}`] }),
-        launchError,
-      ]), 60_000, "MetaMask connection timed out. Check your internet connection and try again. If MetaMask opened, finish connecting there first.");
+      await withWalletDeadline(
+        Promise.race([
+          sdk.connect({ chainIds: [network.chainIdHex as `0x${string}`] }),
+          launchError,
+        ]),
+        60_000,
+        "MetaMask connection timed out. Check your internet connection and try again. If MetaMask opened, finish connecting there first.",
+      );
     } finally {
       launchFailed = undefined;
     }
   }
   const wallet = sdk.getProvider();
-  if ((await wallet.request({ method: "eth_chainId" })) !== network.chainIdHex) {
-    try { await wallet.request({ method: "wallet_switchEthereumChain", params: [{ chainId: network.chainIdHex }] }); }
-    catch (error: any) {
+  if (
+    (await wallet.request({ method: "eth_chainId" })) !== network.chainIdHex
+  ) {
+    try {
+      await wallet.request({
+        method: "wallet_switchEthereumChain",
+        params: [{ chainId: network.chainIdHex }],
+      });
+    } catch (error: any) {
       if (error?.code !== 4902 || !network.rpcUrls?.length) throw error;
-      await wallet.request({ method: "wallet_addEthereumChain", params: [{ chainId: network.chainIdHex, chainName: network.name, nativeCurrency: network.nativeCurrency, rpcUrls: network.rpcUrls }] });
-      await wallet.request({ method: "wallet_switchEthereumChain", params: [{ chainId: network.chainIdHex }] });
+      await wallet.request({
+        method: "wallet_addEthereumChain",
+        params: [
+          {
+            chainId: network.chainIdHex,
+            chainName: network.name,
+            nativeCurrency: network.nativeCurrency,
+            rpcUrls: network.rpcUrls,
+          },
+        ],
+      });
+      await wallet.request({
+        method: "wallet_switchEthereumChain",
+        params: [{ chainId: network.chainIdHex }],
+      });
     }
   }
   const addresses = (await wallet.request({
@@ -96,7 +136,8 @@ export async function linkWallet(network: Network, publicAddress: boolean) {
     address,
     public: publicAddress,
   });
-  if (challenge.chainId !== network.chainId) throw new Error("Network changed. Review and try again.");
+  if (challenge.chainId !== network.chainId)
+    throw new Error("Network changed. Review and try again.");
   await check(wallet, address, network);
   const signature = await wallet.request({
     method: "personal_sign",

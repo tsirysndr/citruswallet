@@ -25,11 +25,18 @@ export type Notice = {
 };
 export async function pushStatus() {
   const [permissions, token] = await Promise.all([
-    Notifications.getPermissionsAsync(), AsyncStorage.getItem("citrus-push-token"),
+    Notifications.getPermissionsAsync(),
+    AsyncStorage.getItem("citrus-push-token"),
   ]);
-  return { enabled: permissions.granted && Boolean(token), registered: Boolean(token), blocked: !permissions.granted && !permissions.canAskAgain };
+  return {
+    enabled: permissions.granted && Boolean(token),
+    registered: Boolean(token),
+    blocked: !permissions.granted && !permissions.canAskAgain,
+  };
 }
-export async function enablePush(devicePushToken?: Notifications.DevicePushToken) {
+export async function enablePush(
+  devicePushToken?: Notifications.DevicePushToken,
+) {
   if (Platform.OS === "android")
     await Notifications.setNotificationChannelAsync("payments", {
       name: "Payments received",
@@ -69,7 +76,8 @@ export function useNotifications(did?: string | null) {
         | undefined,
       disposed = false,
       opening = false;
-    const key = "notification-cursor:" + did + ":" + (selectedChain() || "default");
+    const key =
+      "notification-cursor:" + did + ":" + (selectedChain() || "default");
     const connect = async () => {
       if (
         disposed ||
@@ -141,9 +149,13 @@ export function useNotifications(did?: string | null) {
       const data = response.notification.request.content.data;
       if (typeof data.paymentId === "string") {
         const chain = String(data.chainId || 1);
-        if (["1", "4326", "6343"].includes(chain) && selectedChain() !== chain) {
+        if (
+          ["1", "4326", "6343"].includes(chain) &&
+          selectedChain() !== chain
+        ) {
           await saveNetwork(chain, "");
-          await query.cancelQueries(); query.clear();
+          await query.cancelQueries();
+          query.clear();
         }
         review(data.paymentId);
         screen("Payments");

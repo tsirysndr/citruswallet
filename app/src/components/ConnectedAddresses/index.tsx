@@ -1,14 +1,18 @@
-import { Alert, View } from 'react-native';
-import * as Clipboard from 'expo-clipboard';
-import { useQueryClient } from '@tanstack/react-query';
-import { request } from '../../api';
-import { useAction, useSession } from '../../hooks';
-import { Text } from '../Typography';
-import { Button, Empty } from '../ui';
+import { Alert, View } from "react-native";
+import * as Clipboard from "expo-clipboard";
+import { useQueryClient } from "@tanstack/react-query";
+import { request } from "../../api";
+import { useAction, useSession } from "../../hooks";
+import { Text } from "../Typography";
+import { Button, Empty } from "../ui";
 export function ConnectedAddresses() {
-  const { data: session } = useSession(), query = useQueryClient(), run = useAction();
-  if (!session?.did) return <Empty text="Sign in to manage your receiving addresses." />;
-  return <View className="gap-4">
+  const { data: session } = useSession(),
+    query = useQueryClient(),
+    run = useAction();
+  if (!session?.did)
+    return <Empty text="Sign in to manage your receiving addresses." />;
+  return (
+    <View className="gap-4">
       {session.links.length === 0 && <Empty text="No linked wallets yet." />}
       {session.links.map((link) => (
         <View
@@ -72,5 +76,6 @@ export function ConnectedAddresses() {
           </View>
         </View>
       ))}
-</View>;
+    </View>
+  );
 }

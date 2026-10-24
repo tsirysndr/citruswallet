@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react';
-import { useTheme } from '../../theme';
+import type { ReactNode } from "react";
+import { useTheme } from "../../theme";
 import { Pressable, View } from "react-native";
 import { Text } from "../Typography";
 import { Ionicons } from "@expo/vector-icons";
@@ -22,7 +22,9 @@ export function AmountPad({
   const { colors } = useTheme();
   return (
     <View className={compact ? "flex-1 gap-2" : "gap-4"}>
-      <View className={`${compact ? "min-h-20" : "min-h-32"} items-center justify-center gap-2 px-2`}>
+      <View
+        className={`${compact ? "min-h-20" : "min-h-32"} items-center justify-center gap-2 px-2`}
+      >
         <Text
           accessibilityLabel={`Amount ${value} ${symbol}`}
           adjustsFontSizeToFit
@@ -36,29 +38,43 @@ export function AmountPad({
       </View>
       {action}
       <View className={compact ? "flex-1" : ""}>
-        {[["1", "2", "3"], ["4", "5", "6"], ["7", "8", "9"], [".", "0", "backspace"]].map((row, index) => (
-          <View key={index} className={compact ? "min-h-12 flex-1 flex-row" : "h-16 flex-row"}>
-            {row.map(key => (
-          <Pressable
-            key={key}
-            accessibilityRole="button"
-            accessibilityLabel={
-              key === "backspace"
-                ? "Delete last digit"
-                : key === "."
-                  ? "Decimal separator"
-                  : key
-            }
-            onPress={() => onChange(editAmount(value, key, decimals))}
-            onLongPress={key === "backspace" ? () => onChange("0") : undefined}
-            className="flex-1 items-center justify-center rounded-xl active:bg-surface"
+        {[
+          ["1", "2", "3"],
+          ["4", "5", "6"],
+          ["7", "8", "9"],
+          [".", "0", "backspace"],
+        ].map((row, index) => (
+          <View
+            key={index}
+            className={compact ? "min-h-12 flex-1 flex-row" : "h-16 flex-row"}
           >
-            {key === "backspace" ? (
-              <Ionicons name="backspace-outline" size={26} color={colors.ink} />
-            ) : (
-              <Text className="text-3xl font-medium text-ink">{key}</Text>
-            )}
-          </Pressable>
+            {row.map((key) => (
+              <Pressable
+                key={key}
+                accessibilityRole="button"
+                accessibilityLabel={
+                  key === "backspace"
+                    ? "Delete last digit"
+                    : key === "."
+                      ? "Decimal separator"
+                      : key
+                }
+                onPress={() => onChange(editAmount(value, key, decimals))}
+                onLongPress={
+                  key === "backspace" ? () => onChange("0") : undefined
+                }
+                className="flex-1 items-center justify-center rounded-xl active:bg-surface"
+              >
+                {key === "backspace" ? (
+                  <Ionicons
+                    name="backspace-outline"
+                    size={26}
+                    color={colors.ink}
+                  />
+                ) : (
+                  <Text className="text-3xl font-medium text-ink">{key}</Text>
+                )}
+              </Pressable>
             ))}
           </View>
         ))}
