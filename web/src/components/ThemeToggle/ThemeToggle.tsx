@@ -3,7 +3,11 @@ import { useSyncExternalStore } from "react";
 import { theme } from "../../theme";
 
 export function ThemeToggle() {
-  const current = useSyncExternalStore(theme.subscribe, theme.current, () => "light" as Theme);
+  const current = useSyncExternalStore(
+    theme.subscribe,
+    theme.current,
+    () => "light" as Theme,
+  );
   const dark = current === "dark";
   const Icon = dark ? Sun : Moon;
   return (

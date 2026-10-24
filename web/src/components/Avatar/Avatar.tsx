@@ -5,7 +5,13 @@ import { cx } from "../ui";
 
 type Known = Pick<Actor, "did" | "handle" | "displayName" | "avatar">;
 
-export function Avatar({ actor, size = "size-9" }: { actor: Known; size?: string }) {
+export function Avatar({
+  actor,
+  size = "size-9",
+}: {
+  actor: Known;
+  size?: string;
+}) {
   const [failed, setFailed] = useState<string | null>(null);
   const shape = cx(size, "shrink-0 rounded-full");
 
@@ -13,7 +19,10 @@ export function Avatar({ actor, size = "size-9" }: { actor: Known; size?: string
     return (
       <div
         aria-hidden="true"
-        className={cx(shape, "grid place-items-center text-[15px] font-[650] text-accent-ink")}
+        className={cx(
+          shape,
+          "grid place-items-center text-[15px] font-[650] text-accent-ink",
+        )}
         style={{ backgroundColor: `hsl(${avatarHue(actor.did)} 85% 72%)` }}
       >
         {initials(actor)}

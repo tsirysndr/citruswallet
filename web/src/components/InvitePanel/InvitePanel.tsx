@@ -70,23 +70,34 @@ export function InvitePanel({ className }: { className?: string }) {
           {label(invitation.state)}
         </Mono>
       )}
-      {session?.did && !invitation && !error && <ContentSkeleton variant="card" label="Loading invitation" />}
-      <a className="my-3 inline-block text-sm font-semibold underline md:hidden" href={`peachlet://invite?chainId=${session?.network.chainId || 1}#invite=${token}`}>Open in Peachlet app</a>
+      {session?.did && !invitation && !error && (
+        <ContentSkeleton variant="card" label="Loading invitation" />
+      )}
+      <a
+        className="my-3 inline-block text-sm font-semibold underline md:hidden"
+        href={`peachlet://invite?chainId=${session?.network.chainId || 1}#invite=${token}`}
+      >
+        Open in Peachlet app
+      </a>
       <form
         noValidate
         onSubmit={form.handleSubmit(({ address }) =>
           run(async () => {
-            const result = await rpc.acceptInvitation(
-              { token, address },
+            const result = await rpc.acceptInvitation({ token, address });
+            queries.setQueryData(
+              ["invitation", token, session?.did],
+              result.payment,
             );
-            queries.setQueryData(["invitation", token, session?.did], result.payment);
             status(
               "Receiving address shared. The sender must return and approve the transfer.",
             );
           }),
         )}
       >
-        <label htmlFor="invite-wallet" className="mt-4 mb-2.5 block text-xs text-ink-muted">
+        <label
+          htmlFor="invite-wallet"
+          className="mt-4 mb-2.5 block text-xs text-ink-muted"
+        >
           Share a receiving wallet with this sender
         </label>
         <Select
@@ -108,9 +119,9 @@ export function InvitePanel({ className }: { className?: string }) {
         </Button>
       </form>
       <Hint className="mt-2.5">
-        You must sign in as the intended recipient and link a wallet on this network. A
-        private address stays private from other users. The sender will still need to
-        approve the transfer.
+        You must sign in as the intended recipient and link a wallet on this
+        network. A private address stays private from other users. The sender
+        will still need to approve the transfer.
       </Hint>
       <Hint>
         {invitation?.source === "recipient" && invitation.address

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { LockKeyhole, Eye, EyeOff } from 'lucide-react';
+import { useState } from "react";
+import { LockKeyhole, Eye, EyeOff } from "lucide-react";
 import { useAtomValue } from "jotai";
 import type {
   ButtonHTMLAttributes,
@@ -22,10 +22,7 @@ export function Panel({
 }) {
   return (
     <section
-      className={cx(
-        "surface ui-panel rounded-[28px] p-6 md:p-8",
-        className,
-      )}
+      className={cx("surface ui-panel rounded-[28px] p-6 md:p-8", className)}
     >
       {children}
     </section>
@@ -79,10 +76,11 @@ const variants = {
     "bg-highlight-bg px-3 py-2 text-[12px] text-highlight enabled:hover:brightness-[1.07]",
 };
 
-type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & RefAttributes<HTMLButtonElement> & {
-  variant?: keyof typeof variants;
-  keepEnabled?: boolean;
-};
+type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> &
+  RefAttributes<HTMLButtonElement> & {
+    variant?: keyof typeof variants;
+    keepEnabled?: boolean;
+  };
 
 /* Every button stops responding while an operation is in flight, unless it is
    one that stays usable throughout. */
@@ -137,30 +135,66 @@ export const Label = ({
   </label>
 );
 
-export const Row = ({ children, className }: { children: ReactNode; className?: string }) => (
-  <div className={cx("form-row flex gap-2", className)}>{children}</div>
-);
+export const Row = ({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) => <div className={cx("form-row flex gap-2", className)}>{children}</div>;
 
-export function Input({ className, type, secretLabel = 'password', ...rest }: InputHTMLAttributes<HTMLInputElement> & RefAttributes<HTMLInputElement> & { secretLabel?: string }) {
+export function Input({
+  className,
+  type,
+  secretLabel = "password",
+  ...rest
+}: InputHTMLAttributes<HTMLInputElement> &
+  RefAttributes<HTMLInputElement> & { secretLabel?: string }) {
   const [visible, setVisible] = useState(false);
-  const secret = type === 'password';
-  const input = <input className={cx(
-    'w-full min-w-0 rounded-[6px] border border-edge bg-sunken p-3 text-[13px] text-ink',
-    secret && 'pl-10 pr-12', className,
-  )} {...rest} type={secret && visible ? 'text' : type} />;
+  const secret = type === "password";
+  const input = (
+    <input
+      className={cx(
+        "w-full min-w-0 rounded-[6px] border border-edge bg-sunken p-3 text-[13px] text-ink",
+        secret && "pl-10 pr-12",
+        className,
+      )}
+      {...rest}
+      type={secret && visible ? "text" : type}
+    />
+  );
   if (!secret) return input;
-  return <div className="relative w-full min-w-0">
-    <LockKeyhole aria-hidden="true" size={17} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted" />
-    {input}
-    <button type="button" aria-label={`${visible ? 'Hide' : 'Show'} ${secretLabel}`} aria-pressed={visible} disabled={rest.disabled}
-      onMouseDown={event => event.preventDefault()} onClick={() => setVisible(value => !value)}
-      className="absolute right-1 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center text-ink-muted">
-      {visible ? <EyeOff aria-hidden="true" size={19} /> : <Eye aria-hidden="true" size={19} />}
-    </button>
-  </div>;
+  return (
+    <div className="relative w-full min-w-0">
+      <LockKeyhole
+        aria-hidden="true"
+        size={17}
+        className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted"
+      />
+      {input}
+      <button
+        type="button"
+        aria-label={`${visible ? "Hide" : "Show"} ${secretLabel}`}
+        aria-pressed={visible}
+        disabled={rest.disabled}
+        onMouseDown={(event) => event.preventDefault()}
+        onClick={() => setVisible((value) => !value)}
+        className="absolute right-1 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center text-ink-muted"
+      >
+        {visible ? (
+          <EyeOff aria-hidden="true" size={19} />
+        ) : (
+          <Eye aria-hidden="true" size={19} />
+        )}
+      </button>
+    </div>
+  );
 }
 
-export const Select = ({ className, ...rest }: SelectHTMLAttributes<HTMLSelectElement>) => (
+export const Select = ({
+  className,
+  ...rest
+}: SelectHTMLAttributes<HTMLSelectElement>) => (
   <select
     className={cx(
       "ui-select mr-2.5 mb-3 max-w-full rounded-[6px] border border-edge bg-sunken p-3 text-xs text-ink",
@@ -176,7 +210,11 @@ export const Hint = ({
 }: {
   className?: string;
   children: ReactNode;
-}) => <p className={cx("text-xs leading-[1.7] text-ink-faint", className)}>{children}</p>;
+}) => (
+  <p className={cx("text-xs leading-[1.7] text-ink-faint", className)}>
+    {children}
+  </p>
+);
 
 export const Mono = ({
   className,
@@ -196,7 +234,9 @@ export const Mono = ({
 );
 
 export const Balance = ({ children }: { children: ReactNode }) => (
-  <p className="mt-2.5 font-mono text-[13px] font-bold text-info tabular-nums">{children}</p>
+  <p className="mt-2.5 font-mono text-[13px] font-bold text-info tabular-nums">
+    {children}
+  </p>
 );
 
 export const FieldError = ({ children }: { children?: string }) =>

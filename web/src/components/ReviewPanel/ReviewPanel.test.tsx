@@ -50,9 +50,7 @@ it("never sends a transaction when preparation changes the reviewed recipient ad
   const { user } = await renderComponent(<ReviewPanel />, { store });
   await screen.findByRole("checkbox");
   await user.click(screen.getByRole("checkbox"));
-  await user.click(
-    screen.getByRole("button", { name: "Review & send" }),
-  );
+  await user.click(screen.getByRole("button", { name: "Review & send" }));
   await waitFor(() =>
     expect(store.get(statusAtom).message).toMatch(/differs from your review/),
   );

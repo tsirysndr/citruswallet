@@ -1,5 +1,5 @@
 import { Settings as SettingsIcon } from "lucide-react";
-import { Landing } from './components/Landing';
+import { Landing } from "./components/Landing";
 import { WalletSetup, configuredAddress } from "./components/WalletSetup";
 import { localWalletState, subscribeWallet } from "./local-wallet";
 import { WalletUnlock } from "./components/WalletUnlock";
@@ -50,9 +50,11 @@ function useRecovery() {
         );
         return;
       }
-      const result = await rpc.submitPayment(
-        { id: pending.id, attemptId: pending.attemptId, txHash: pending.txHash },
-      );
+      const result = await rpc.submitPayment({
+        id: pending.id,
+        attemptId: pending.attemptId,
+        txHash: pending.txHash,
+      });
       forgetBroadcast(did);
       queries.setQueryData(["payment", pending.id], result.payment);
       status(
@@ -65,7 +67,9 @@ function useRecovery() {
 export function App() {
   const walletQueries = useQueryClient();
   useEffect(() => {
-    const changed = () => { void walletQueries.invalidateQueries({ queryKey: ["balances"] }); };
+    const changed = () => {
+      void walletQueries.invalidateQueries({ queryKey: ["balances"] });
+    };
     window.addEventListener("citrus:wallet-connected", changed);
     return () => window.removeEventListener("citrus:wallet-connected", changed);
   }, [walletQueries]);
@@ -79,14 +83,22 @@ export function App() {
   useSessionGuard();
 
   const [collapsed, setCollapsed] = useState(() => {
-    try { return localStorage.getItem("citrus:sidebar-collapsed") === "true"; }
-    catch { return false; }
+    try {
+      return localStorage.getItem("citrus:sidebar-collapsed") === "true";
+    } catch {
+      return false;
+    }
   });
-  const toggleSidebar = () => setCollapsed(current => {
-    const next = !current;
-    try { localStorage.setItem("citrus:sidebar-collapsed", String(next)); } catch { /* Storage may be unavailable. */ }
-    return next;
-  });
+  const toggleSidebar = () =>
+    setCollapsed((current) => {
+      const next = !current;
+      try {
+        localStorage.setItem("citrus:sidebar-collapsed", String(next));
+      } catch {
+        /* Storage may be unavailable. */
+      }
+      return next;
+    });
 
   const vaultState = useSyncExternalStore(subscribeWallet, localWalletState);
   const [needsSetup, setNeedsSetup] = useState<boolean | null>(null);
@@ -95,79 +107,152 @@ export function App() {
   const navigate = useNavigate();
   const location = useLocation();
   useEffect(() => {
-    if (!session || (needsSetup === false && checkedAccount.current === session.did)) return;
+    if (
+      !session ||
+      (needsSetup === false && checkedAccount.current === session.did)
+    )
+      return;
     checkedAccount.current = session.did;
     const address = configuredAddress();
-    const configured = vaultState !== 'absent' || Boolean(address) || session.links.length > 0;
+    const configured =
+      vaultState !== "absent" || Boolean(address) || session.links.length > 0;
     setNeedsSetup(!configured || !session.did);
   }, [session, needsSetup, vaultState]);
-  if (!isPending && !session?.did && !entryStarted && !invite && location.pathname === '/') return <Landing onGetStarted={() => setEntryStarted(true)} />;
-  if (needsSetup === null && !error && !['/privacy', '/terms'].includes(location.pathname)) return <div className="min-h-dvh bg-canvas p-8"><ContentSkeleton variant="card" label="Opening Peachlet" /></div>;
-  if (needsSetup && session && !['/privacy', '/terms'].includes(location.pathname)) return <div className="min-h-dvh bg-canvas px-5 py-8 font-sans md:py-12">
-    <div className="mx-auto mb-10 flex max-w-[560px] items-center gap-2 text-lg font-semibold"><PeachletMark className="size-9" />Peachlet</div>
-    <MetaMaskConnection /><WalletApproval /><WalletUnlock />
-    <WalletSetup key={session.did || 'signed-out'} onFinished={() => { setNeedsSetup(false); void navigate({ to: invite ? '/wallet' : '/' }); }} />
-    <p role="status" className={`mx-auto mt-5 max-w-[560px] text-sm ${failed ? 'text-bad' : 'text-ink-muted'}`}>{message}</p>
-    {busy && <div className="mx-auto max-w-[560px]"><ContentSkeleton variant="line" label="Connecting wallet" /></div>}
-    <div className="mt-10 flex justify-center gap-5 text-xs text-ink-muted"><Link to="/privacy">Privacy</Link><Link to="/terms">Terms</Link></div>
-  </div>;
+  if (
+    !isPending &&
+    !session?.did &&
+    !entryStarted &&
+    !invite &&
+    location.pathname === "/"
+  )
+    return <Landing onGetStarted={() => setEntryStarted(true)} />;
+  if (
+    needsSetup === null &&
+    !error &&
+    !["/privacy", "/terms"].includes(location.pathname)
+  )
+    return (
+      <div className="min-h-dvh bg-canvas p-8">
+        <ContentSkeleton variant="card" label="Opening Peachlet" />
+      </div>
+    );
+  if (
+    needsSetup &&
+    session &&
+    !["/privacy", "/terms"].includes(location.pathname)
+  )
+    return (
+      <div className="min-h-dvh bg-canvas px-5 py-8 font-sans md:py-12">
+        <div className="mx-auto mb-10 flex max-w-[560px] items-center gap-2 text-lg font-semibold">
+          <PeachletMark className="size-9" />
+          Peachlet
+        </div>
+        <MetaMaskConnection />
+        <WalletApproval />
+        <WalletUnlock />
+        <WalletSetup
+          key={session.did || "signed-out"}
+          onFinished={() => {
+            setNeedsSetup(false);
+            void navigate({ to: invite ? "/wallet" : "/" });
+          }}
+        />
+        <p
+          role="status"
+          className={`mx-auto mt-5 max-w-[560px] text-sm ${failed ? "text-bad" : "text-ink-muted"}`}
+        >
+          {message}
+        </p>
+        {busy && (
+          <div className="mx-auto max-w-[560px]">
+            <ContentSkeleton variant="line" label="Connecting wallet" />
+          </div>
+        )}
+        <div className="mt-10 flex justify-center gap-5 text-xs text-ink-muted">
+          <Link to="/privacy">Privacy</Link>
+          <Link to="/terms">Terms</Link>
+        </div>
+      </div>
+    );
 
   const marks = { "/payments": Boolean(review), "/wallet": Boolean(invite) };
 
   return (
     <div className={`app-shell${collapsed ? " sidebar-collapsed" : ""}`}>
-      <SidebarNav marks={marks} collapsed={collapsed} onToggle={toggleSidebar} network={session?.network.name ?? "AT Protocol × Ethereum"} />
+      <SidebarNav
+        marks={marks}
+        collapsed={collapsed}
+        onToggle={toggleSidebar}
+        network={session?.network.name ?? "AT Protocol × Ethereum"}
+      />
       <div className="app-workspace">
-      <header className="app-header">
-        <Link
-          to="/"
-          className="brand-logo mobile-brand"
-        >
-          <span className="logo-mark"><PeachletMark /></span><span>Peachlet</span>
-        </Link>
-        <div className="flex items-center gap-2.5">
-          {session?.did && <><Notifications /><Link to="/settings" aria-label="Settings" title="Settings" className="inline-flex size-10 items-center justify-center rounded-full hover:bg-sunken"><SettingsIcon size={21} strokeWidth={1.75} /></Link><ActivitySearch /></>}
+        <header className="app-header">
+          <Link to="/" className="brand-logo mobile-brand">
+            <span className="logo-mark">
+              <PeachletMark />
+            </span>
+            <span>Peachlet</span>
+          </Link>
+          <div className="flex items-center gap-2.5">
+            {session?.did && (
+              <>
+                <Notifications />
+                <Link
+                  to="/settings"
+                  aria-label="Settings"
+                  title="Settings"
+                  className="inline-flex size-10 items-center justify-center rounded-full hover:bg-sunken"
+                >
+                  <SettingsIcon size={21} strokeWidth={1.75} />
+                </Link>
+                <ActivitySearch />
+              </>
+            )}
+          </div>
+        </header>
 
-        </div>
-      </header>
-
-      <main className="app-main">
-        <MetaMaskConnection />
-        <WalletApproval />
-        <WalletUnlock />
-        {isPending ? <div className="page-content"><ContentSkeleton variant="card" label="Opening Peachlet" /></div> : <Outlet />}
-        {error && (
-          <p className="mt-5 text-[13px] text-bad">
-            Could not reach the server.{" "}
-            <button
-              type="button"
-              onClick={() => refresh()}
-              className="cursor-pointer border-0 bg-transparent p-0 text-[13px] font-semibold text-info underline underline-offset-2"
-            >
-              Try again
-            </button>
+        <main className="app-main">
+          <MetaMaskConnection />
+          <WalletApproval />
+          <WalletUnlock />
+          {isPending ? (
+            <div className="page-content">
+              <ContentSkeleton variant="card" label="Opening Peachlet" />
+            </div>
+          ) : (
+            <Outlet />
+          )}
+          {error && (
+            <p className="mt-5 text-[13px] text-bad">
+              Could not reach the server.{" "}
+              <button
+                type="button"
+                onClick={() => refresh()}
+                className="cursor-pointer border-0 bg-transparent p-0 text-[13px] font-semibold text-info underline underline-offset-2"
+              >
+                Try again
+              </button>
+            </p>
+          )}
+          {busy && <ContentSkeleton variant="line" label="Working" />}
+          <p
+            role="status"
+            aria-live="polite"
+            className={`mt-5 min-h-[22px] text-[13px] leading-[1.6] ${failed ? "text-bad" : "text-info"}`}
+          >
+            {message}
           </p>
-        )}
-        {busy && <ContentSkeleton variant="line" label="Working" />}
-        <p
-          role="status"
-          aria-live="polite"
-          className={`mt-5 min-h-[22px] text-[13px] leading-[1.6] ${failed ? "text-bad" : "text-info"}`}
-        >
-          {message}
-        </p>
-      </main>
+        </main>
 
-      <footer className="app-footer">
-        <span>Identity on AT Protocol. Assets on Ethereum.</span>
-        <nav className="legal-footer-links" aria-label="Legal and contact">
-          <InstallApp />
-          <Link to="/privacy">Privacy Policy</Link>
-          <Link to="/terms">Terms and Conditions</Link>
-          <a href="mailto:contact@peachlet.app">Contact</a>
-        </nav>
-      </footer>
-
+        <footer className="app-footer">
+          <span>Identity on AT Protocol. Assets on Ethereum.</span>
+          <nav className="legal-footer-links" aria-label="Legal and contact">
+            <InstallApp />
+            <Link to="/privacy">Privacy Policy</Link>
+            <Link to="/terms">Terms and Conditions</Link>
+            <a href="mailto:contact@peachlet.app">Contact</a>
+          </nav>
+        </footer>
       </div>
       <BottomNav marks={marks} />
       <KeyboardShortcuts />

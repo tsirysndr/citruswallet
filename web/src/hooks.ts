@@ -36,7 +36,15 @@ export function useRun() {
   );
 }
 
-const refreshed = ["session", "payments", "payment", "profile", "balances", "assets", "invitation"];
+const refreshed = [
+  "session",
+  "payments",
+  "payment",
+  "profile",
+  "balances",
+  "assets",
+  "invitation",
+];
 
 export function useRefresh() {
   const queries = useQueryClient();

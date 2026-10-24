@@ -29,9 +29,15 @@ export function useProfile(did: string | null | undefined) {
   });
 }
 
-export type PaymentFilters = NonNullable<Parameters<typeof rpc.listPayments>[0]>;
+export type PaymentFilters = NonNullable<
+  Parameters<typeof rpc.listPayments>[0]
+>;
 
-export function usePayments(session: Session | undefined, filters: PaymentFilters = {}, enabled = true) {
+export function usePayments(
+  session: Session | undefined,
+  filters: PaymentFilters = {},
+  enabled = true,
+) {
   return useQuery({
     queryKey: ["payments", session?.did, filters],
     enabled: Boolean(session?.did) && enabled,
@@ -39,15 +45,23 @@ export function usePayments(session: Session | undefined, filters: PaymentFilter
   });
 }
 
-export function useInfinitePayments(session: Session | undefined, filters: PaymentFilters, enabled: boolean) {
+export function useInfinitePayments(
+  session: Session | undefined,
+  filters: PaymentFilters,
+  enabled: boolean,
+) {
   const { page: _page, ...queryFilters } = filters;
   const size = queryFilters.pageSize ?? 20;
   return useInfiniteQuery({
     queryKey: ["payments", session?.did, "infinite", queryFilters],
     enabled: Boolean(session?.did) && enabled,
     initialPageParam: 1,
-    queryFn: ({ pageParam, signal }) => rpc.listPayments({ ...queryFilters, page: pageParam }, { signal }),
-    getNextPageParam: (last, _pages, page) => last.payments.length > 0 && page * size < last.total ? page + 1 : undefined,
+    queryFn: ({ pageParam, signal }) =>
+      rpc.listPayments({ ...queryFilters, page: pageParam }, { signal }),
+    getNextPageParam: (last, _pages, page) =>
+      last.payments.length > 0 && page * size < last.total
+        ? page + 1
+        : undefined,
   });
 }
 
@@ -55,22 +69,25 @@ export function usePayment(id: string | null, session: Session | undefined) {
   return useQuery({
     queryKey: ["payment", id],
     enabled: Boolean(id && session?.did),
-    queryFn: async () =>
-      (await rpc.getPayment({ id: id! })).payment,
+    queryFn: async () => (await rpc.getPayment({ id: id! })).payment,
   });
 }
 
-export function useInvitation(token: string | null, session: Session | undefined) {
+export function useInvitation(
+  token: string | null,
+  session: Session | undefined,
+) {
   return useQuery({
     queryKey: ["invitation", token, session?.did],
     enabled: Boolean(token && session?.did),
-    queryFn: async () =>
-      (await rpc.getInvitation({ token: token! })).payment,
+    queryFn: async () => (await rpc.getInvitation({ token: token! })).payment,
   });
 }
 
 export function useBalances(session: Session | undefined) {
-  const addresses = (session?.links ?? []).map((link) => link.address).join(",");
+  const addresses = (session?.links ?? [])
+    .map((link) => link.address)
+    .join(",");
   return useQuery({
     queryKey: ["balances", session?.did, session?.network.chainId, addresses],
     enabled: Boolean(session?.did),

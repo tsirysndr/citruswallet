@@ -10,13 +10,17 @@ export function Payments() {
   if (!session?.did)
     return (
       <SignedOut>
-        Sending assets by handle needs your AT Protocol identity, so the recipient’s DID
-        can be pinned to the payment.
+        Sending assets by handle needs your AT Protocol identity, so the
+        recipient’s DID can be pinned to the payment.
       </SignedOut>
     );
 
   return (
-    <div className="page-content flex flex-col gap-6"><PageHeading title="Send a little something." description="A handle, an amount, and you’re on your way." />
+    <div className="page-content flex flex-col gap-6">
+      <PageHeading
+        title="Send a little something."
+        description="A handle, an amount, and you’re on your way."
+      />
       <PaymentTools />
       <ReviewPanel />
     </div>

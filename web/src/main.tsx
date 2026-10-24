@@ -7,9 +7,17 @@ import "./styles.css";
 
 // Preserve an opaque notification target across browser OAuth redirects.
 const notificationParams = new URLSearchParams(window.location.search);
-const notificationPayment = notificationParams.get('notificationPayment');
+const notificationPayment = notificationParams.get("notificationPayment");
 if (notificationPayment && /^[A-Za-z0-9_-]{1,128}$/.test(notificationPayment)) {
-  try { sessionStorage.setItem('citrus:notification-target', JSON.stringify({ paymentId: notificationPayment, notificationId: notificationParams.get('notificationId') })); } catch {}
+  try {
+    sessionStorage.setItem(
+      "citrus:notification-target",
+      JSON.stringify({
+        paymentId: notificationPayment,
+        notificationId: notificationParams.get("notificationId"),
+      }),
+    );
+  } catch {}
 }
 
 const queries = new QueryClient({
@@ -27,7 +35,10 @@ createRoot(document.getElementById("root")!).render(
 // Register only production builds. A worker update never forces a page reload.
 if (import.meta.env.PROD && "serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    void navigator.serviceWorker.register("/sw.js", { scope: "/", updateViaCache: "none" })
-      .catch(() => { /* The online app remains usable when installation fails. */ });
+    void navigator.serviceWorker
+      .register("/sw.js", { scope: "/", updateViaCache: "none" })
+      .catch(() => {
+        /* The online app remains usable when installation fails. */
+      });
   });
 }

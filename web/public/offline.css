@@ -1,9 +1,59 @@
-@font-face { font-family: "Roboto Mono Variable"; font-style: normal; font-weight: 100 700; font-display: swap; src: url("/fonts/roboto-mono-latin.woff2") format("woff2"); }
-:root { color-scheme: light; font-family: "Roboto Mono Variable", monospace; color: #191916; background: #f7f3f0; }
-body { margin: 0; min-height: 100dvh; display: grid; place-items: center; padding: 24px; box-sizing: border-box; }
-main { max-width: 460px; padding: clamp(24px, 6vw, 48px); background: #fff; border-radius: 24px; }
-.eyebrow { margin-top: 30px; font-size: 12px; letter-spacing: .12em; color: #696b63; }
-h1 { font-size: clamp(32px, 7vw, 42px); letter-spacing: -1.5px; font-weight: 500; margin: 12px 0; }
-p { color: #50514b; line-height: 1.7; font-size: 14px; }
-a { display: inline-block; margin-top: 16px; background: #ffb995; color: #482719; padding: 13px 20px; border-radius: 6px; font-size: 14px; font-weight: 600; text-decoration: none; }
-a:focus-visible { outline: 2px solid #96502f; outline-offset: 4px; }
+@font-face {
+  font-family: "Roboto Mono Variable";
+  font-style: normal;
+  font-weight: 100 700;
+  font-display: swap;
+  src: url("/fonts/roboto-mono-latin.woff2") format("woff2");
+}
+:root {
+  color-scheme: light;
+  font-family: "Roboto Mono Variable", monospace;
+  color: #191916;
+  background: #f7f3f0;
+}
+body {
+  margin: 0;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  box-sizing: border-box;
+}
+main {
+  max-width: 460px;
+  padding: clamp(24px, 6vw, 48px);
+  background: #fff;
+  border-radius: 24px;
+}
+.eyebrow {
+  margin-top: 30px;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  color: #696b63;
+}
+h1 {
+  font-size: clamp(32px, 7vw, 42px);
+  letter-spacing: -1.5px;
+  font-weight: 500;
+  margin: 12px 0;
+}
+p {
+  color: #50514b;
+  line-height: 1.7;
+  font-size: 14px;
+}
+a {
+  display: inline-block;
+  margin-top: 16px;
+  background: #ffb995;
+  color: #482719;
+  padding: 13px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+a:focus-visible {
+  outline: 2px solid #96502f;
+  outline-offset: 4px;
+}

@@ -3,15 +3,7 @@ import { rpc } from "../../api";
 import { balanceOf } from "../../balances";
 import { useRefresh, useRun, useStatus } from "../../hooks";
 import { useBalances, useSession } from "../../queries";
-import {
-  Badge,
-  Button,
-  Heading,
-  Hint,
-  Mono,
-  Panel,
-  PanelHeading,
-} from "../ui";
+import { Badge, Button, Heading, Hint, Mono, Panel, PanelHeading } from "../ui";
 
 export function LinkedAddresses({ className }: { className?: string }) {
   const { data: session } = useSession();
@@ -20,7 +12,8 @@ export function LinkedAddresses({ className }: { className?: string }) {
   const status = useStatus();
   const refresh = useRefresh();
 
-  if (!session || (!session.links.length && !session.addressSyncPending)) return null;
+  if (!session || (!session.links.length && !session.addressSyncPending))
+    return null;
 
   return (
     <Panel className={className}>
@@ -46,19 +39,34 @@ export function LinkedAddresses({ className }: { className?: string }) {
       </PanelHeading>
       {session.addressSyncPending && (
         <div className="mb-4">
-          <Hint>A public address update or removal is pending. Retry, or sign in again to renew permission.</Hint>
-          <Button variant="subtle" onClick={() => run(async () => {
-            const result = await rpc.syncAddresses({});
-            await refresh();
-            status(result.addressSyncPending
-              ? "Still pending. Sign in again if repository permission has expired."
-              : "Public address records updated.", result.addressSyncPending);
-          })}>Retry public record update</Button>
+          <Hint>
+            A public address update or removal is pending. Retry, or sign in
+            again to renew permission.
+          </Hint>
+          <Button
+            variant="subtle"
+            onClick={() =>
+              run(async () => {
+                const result = await rpc.syncAddresses({});
+                await refresh();
+                status(
+                  result.addressSyncPending
+                    ? "Still pending. Sign in again if repository permission has expired."
+                    : "Public address records updated.",
+                  result.addressSyncPending,
+                );
+              })
+            }
+          >
+            Retry public record update
+          </Button>
         </div>
       )}
       {session.links.map((link) => {
         const here = link.chain_id === session.network.chainId;
-        const balance = here ? balanceOf(link.address, session, balances) : null;
+        const balance = here
+          ? balanceOf(link.address, session, balances)
+          : null;
         return (
           <div
             key={`${link.chain_id}:${link.address}`}
@@ -67,12 +75,24 @@ export function LinkedAddresses({ className }: { className?: string }) {
             <div className="min-w-0 flex-1">
               <Mono>{link.address}</Mono>
               <Hint>
-                {link.chain_id === 6343 ? "MegaETH testnet" : link.chain_id === 4326 ? "MegaETH" : link.chain_id === 31337 ? "Anvil local" : "Ethereum mainnet"} ·{" "}
-                {link.public ? "Public" : "Private"}
+                {link.chain_id === 6343
+                  ? "MegaETH testnet"
+                  : link.chain_id === 4326
+                    ? "MegaETH"
+                    : link.chain_id === 31337
+                      ? "Anvil local"
+                      : "Ethereum mainnet"}{" "}
+                · {link.public ? "Public" : "Private"}
                 {link.is_default ? " · Receiving default" : ""}
               </Hint>
-              {here && balanceLoading && !balances && <ContentSkeleton variant="line" label="Loading balance" />}
-              {balance && <p className="mt-1 font-mono text-[13px] font-bold text-info tabular-nums">{balance}</p>}
+              {here && balanceLoading && !balances && (
+                <ContentSkeleton variant="line" label="Loading balance" />
+              )}
+              {balance && (
+                <p className="mt-1 font-mono text-[13px] font-bold text-info tabular-nums">
+                  {balance}
+                </p>
+              )}
               {here && !balanceLoading && !balance && !balances?.onNetwork && (
                 <Hint>Balance hidden · wallet connection unavailable.</Hint>
               )}
@@ -97,9 +117,15 @@ export function LinkedAddresses({ className }: { className?: string }) {
                   variant="subtle"
                   onClick={() =>
                     run(async () => {
-                      const result = await rpc.unlinkAddress({ address: link.address });
+                      const result = await rpc.unlinkAddress({
+                        address: link.address,
+                      });
                       await refresh();
-                      status(result.addressSyncPending ? "Wallet unlinked locally. Public record removal is pending." : "Wallet unlinked.");
+                      status(
+                        result.addressSyncPending
+                          ? "Wallet unlinked locally. Public record removal is pending."
+                          : "Wallet unlinked.",
+                      );
                     })
                   }
                 >

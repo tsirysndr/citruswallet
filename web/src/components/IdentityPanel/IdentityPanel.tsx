@@ -34,7 +34,9 @@ type SignIn = z.input<typeof signInForm>;
 
 export function IdentityPanel({ className }: { className?: string }) {
   const { data: session } = useSession();
-  const { data: profile, isFetching: profileLoading } = useProfile(session?.did);
+  const { data: profile, isFetching: profileLoading } = useProfile(
+    session?.did,
+  );
   const { data: balances, isFetching: balanceLoading } = useBalances(session);
   const run = useRun();
   const status = useStatus();
@@ -47,14 +49,19 @@ export function IdentityPanel({ className }: { className?: string }) {
 
   const signedIn = Boolean(session?.did);
   const actor: Actor | null = session?.did
-    ? (profile ?? { did: session.did, handle: "", displayName: null, avatar: null })
+    ? (profile ?? {
+        did: session.did,
+        handle: "",
+        displayName: null,
+        avatar: null,
+      })
     : null;
   const total = session && signedIn ? accountBalance(session, balances) : null;
 
   const start = (body: Record<string, unknown>, message: string) =>
     run(async () => {
       status(message);
-      const { url } = await rpc.startLogin( body);
+      const { url } = await rpc.startLogin(body);
       window.location.assign(url);
     });
 
@@ -75,7 +82,9 @@ export function IdentityPanel({ className }: { className?: string }) {
             start({ identifier }, "Finding your account provider…"),
           )}
         >
-          <p className="my-6 text-center text-base leading-6 text-ink-muted">Sign in with your Atmosphere Account</p>
+          <p className="my-6 text-center text-base leading-6 text-ink-muted">
+            Sign in with your Atmosphere Account
+          </p>
           <AtmosphereApps />
           <Label htmlFor="identifier">Handle</Label>
           <Row>
@@ -99,17 +108,25 @@ export function IdentityPanel({ className }: { className?: string }) {
           </Row>
           <FieldError>{form.formState.errors.identifier?.message}</FieldError>
           <Hint className="mt-2.5">
-            By continuing, you agree to our <Link to="/terms" className="underline underline-offset-2">Terms and Conditions</Link>.
-            {" "}Read our <Link to="/privacy" className="underline underline-offset-2">Privacy Policy</Link>.
+            By continuing, you agree to our{" "}
+            <Link to="/terms" className="underline underline-offset-2">
+              Terms and Conditions
+            </Link>
+            . Read our{" "}
+            <Link to="/privacy" className="underline underline-offset-2">
+              Privacy Policy
+            </Link>
+            .
           </Hint>
           <Hint className="mt-2.5">
             You’ll sign in with your account provider.{" "}
-
           </Hint>
           <Hint>
             Don’t have an account?{" "}
             <LinkButton
-              onClick={() => start({ create: true }, "Opening account creation…")}
+              onClick={() =>
+                start({ create: true }, "Opening account creation…")
+              }
             >
               Create one
             </LinkButton>
@@ -119,19 +136,29 @@ export function IdentityPanel({ className }: { className?: string }) {
 
       {signedIn && actor && session && (
         <>
-          {profileLoading && !profile ? <ContentSkeleton rows={1} label="Loading profile" /> : <div className="mb-4 flex items-center gap-3">
-            <Avatar actor={actor} size="size-[46px]" />
-            <div className="flex min-w-0 flex-col gap-0.5">
-              <p className="m-0 truncate text-[17px] font-[650]">
-                {actor.displayName ?? actor.handle ?? "Signed in"}
-              </p>
-              <p className="m-0 truncate font-mono text-[14px] text-ink-muted">
-                {actor.handle ? `@${actor.handle}` : "Handle unavailable"}
-              </p>
+          {profileLoading && !profile ? (
+            <ContentSkeleton rows={1} label="Loading profile" />
+          ) : (
+            <div className="mb-4 flex items-center gap-3">
+              <Avatar actor={actor} size="size-[46px]" />
+              <div className="flex min-w-0 flex-col gap-0.5">
+                <p className="m-0 truncate text-[17px] font-[650]">
+                  {actor.displayName ?? actor.handle ?? "Signed in"}
+                </p>
+                <p className="m-0 truncate font-mono text-[14px] text-ink-muted">
+                  {actor.handle ? `@${actor.handle}` : "Handle unavailable"}
+                </p>
+              </div>
             </div>
-          </div>}
-          {balanceLoading && !balances ? <ContentSkeleton variant="line" label="Loading balance" /> : total && <Balance>{total}</Balance>}
-          <p className="mt-4 mb-2.5 text-xs text-ink-muted">Authenticated DID</p>
+          )}
+          {balanceLoading && !balances ? (
+            <ContentSkeleton variant="line" label="Loading balance" />
+          ) : (
+            total && <Balance>{total}</Balance>
+          )}
+          <p className="mt-4 mb-2.5 text-xs text-ink-muted">
+            Authenticated DID
+          </p>
           <Mono>{session.did}</Mono>
           <Button
             variant="subtle"

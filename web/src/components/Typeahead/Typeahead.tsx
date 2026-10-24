@@ -5,7 +5,10 @@ import type { Actor } from "../../types";
 import { Avatar } from "../Avatar";
 import { cx, Input } from "../ui";
 
-type Props = Omit<InputHTMLAttributes<HTMLInputElement>, "onChange" | "value"> & {
+type Props = Omit<
+  InputHTMLAttributes<HTMLInputElement>,
+  "onChange" | "value"
+> & {
   id: string;
   value: string;
   invalid?: boolean;
@@ -47,10 +50,13 @@ export function Typeahead({
   }, [typed, searchable, searchActive]);
 
   // Detach from outdated searches immediately so their fetches are aborted.
-  const { data, isFetching } = useActorSearch(open && query === typed ? query : "");
-  const actors = open && query === typed
-    ? (data ?? []).filter((actor) => actor.did !== excludeDid)
-    : [];
+  const { data, isFetching } = useActorSearch(
+    open && query === typed ? query : "",
+  );
+  const actors =
+    open && query === typed
+      ? (data ?? []).filter((actor) => actor.did !== excludeDid)
+      : [];
 
   useEffect(() => setActive(-1), [query, excludeDid]);
   useEffect(() => {
@@ -71,7 +77,8 @@ export function Typeahead({
     onPick(actor);
   };
   const move = (step: number) => {
-    if (actors.length) setActive((at) => (at + step + actors.length) % actors.length);
+    if (actors.length)
+      setActive((at) => (at + step + actors.length) % actors.length);
   };
 
   return (
@@ -93,7 +100,11 @@ export function Typeahead({
         aria-activedescendant={active >= 0 ? `${listId}-${active}` : undefined}
         aria-invalid={invalid}
         autoComplete="off"
-        className={cx("font-mono", named && "pl-[36px]", invalid && "border-bad")}
+        className={cx(
+          "font-mono",
+          named && "pl-[36px]",
+          invalid && "border-bad",
+        )}
         value={value}
         onChange={(event) => {
           setActive(-1);
@@ -111,7 +122,11 @@ export function Typeahead({
           } else if (event.key === "ArrowUp") {
             event.preventDefault();
             move(-1);
-          } else if (event.key === "Enter" && active >= 0 && active < actors.length) {
+          } else if (
+            event.key === "Enter" &&
+            active >= 0 &&
+            active < actors.length
+          ) {
             event.preventDefault();
             pick(actors[active]!);
           } else if (event.key === "Escape" && searchActive) {
@@ -123,7 +138,11 @@ export function Typeahead({
         }}
         {...rest}
       />
-      {open && isFetching && <div className="absolute top-full z-30 w-full rounded-lg bg-raised p-3"><ContentSkeleton label="Finding handles" rows={2} /></div>}
+      {open && isFetching && (
+        <div className="absolute top-full z-30 w-full rounded-lg bg-raised p-3">
+          <ContentSkeleton label="Finding handles" rows={2} />
+        </div>
+      )}
       <ul
         ref={list}
         id={listId}

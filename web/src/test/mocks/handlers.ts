@@ -3,7 +3,9 @@ import { alice, bob, payment, session, media } from "./fixtures";
 export const xrpc = (method: string) =>
   `http://localhost:3000/xrpc/app.peachlet.${method}`;
 export const handlers = [
-  http.get(xrpc("listNotifications"), () => HttpResponse.json({ notifications: [], unread: 0 })),
+  http.get(xrpc("listNotifications"), () =>
+    HttpResponse.json({ notifications: [], unread: 0 }),
+  ),
   http.get(xrpc("getSession"), () => HttpResponse.json(session)),
   http.get(xrpc("getProfile"), () => HttpResponse.json({ actor: alice })),
   http.get(xrpc("searchActors"), () =>

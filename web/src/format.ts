@@ -16,7 +16,10 @@ export const stateLabels: Record<PaymentState, string> = {
 export const label = (state: PaymentState) => stateLabels[state] ?? state;
 
 export function formatUnits(wei: string, decimals: number, places = 6) {
-  return formatBalance(BigInt(wei).toString(), decimals, places).replaceAll(",", "");
+  return formatBalance(BigInt(wei).toString(), decimals, places).replaceAll(
+    ",",
+    "",
+  );
 }
 
 export function formatAmount(wei: string, currency: Currency) {
@@ -38,6 +41,7 @@ export function initials(actor: Pick<Actor, "did" | "handle" | "displayName">) {
 /* Kept inside the palette's own arc, from orange through yellow to teal. */
 export function avatarHue(did: string) {
   let hash = 0;
-  for (const character of did) hash = (hash * 31 + character.codePointAt(0)!) % 151;
+  for (const character of did)
+    hash = (hash * 31 + character.codePointAt(0)!) % 151;
   return 20 + hash;
 }

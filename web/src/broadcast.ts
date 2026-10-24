@@ -12,4 +12,5 @@ export function pendingBroadcast(did: string): Pending | null {
 export const rememberBroadcast = (did: string, pending: Pending) =>
   sessionStorage.setItem(key(did), JSON.stringify(pending));
 
-export const forgetBroadcast = (did: string) => sessionStorage.removeItem(key(did));
+export const forgetBroadcast = (did: string) =>
+  sessionStorage.removeItem(key(did));

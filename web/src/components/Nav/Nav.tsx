@@ -27,29 +27,64 @@ function SidebarAccount({ collapsed }: { collapsed: boolean }) {
   const refresh = useRefresh();
   const status = useStatus();
   if (!session?.did) return null;
-  const actor = profile ?? { did: session.did, handle: "", displayName: null, avatar: null };
+  const actor = profile ?? {
+    did: session.did,
+    handle: "",
+    displayName: null,
+    avatar: null,
+  };
   const name = actor.displayName || actor.handle || "Signed in";
-  return <section className="sidebar-account" aria-label="Connected account">
-    <IdentityPopover above className="sidebar-profile" label={`Your account: ${name}`} title={collapsed ? `${name}${actor.handle ? ` (@${actor.handle})` : ""}` : undefined}>
-      <Avatar actor={actor} size="size-10" />
-      {!collapsed && <span className="sidebar-profile-text">
-        <span className="sidebar-display-name" title={name}>{name}</span>
-        <span className="sidebar-handle" title={actor.handle || actor.did}>{actor.handle ? `@${actor.handle}` : actor.did}</span>
-      </span>}
-    </IdentityPopover>
-    <button type="button" className="sidebar-signout" aria-label="Sign out" title="Sign out" disabled={busy}
-      onClick={() => run(async () => {
-        await rpc.logout({});
-        await refresh();
-        status("Signed out.");
-      })}>
-      <LogOut size={18} aria-hidden="true" />
-      {!collapsed && <span>Sign out</span>}
-    </button>
-  </section>;
+  return (
+    <section className="sidebar-account" aria-label="Connected account">
+      <IdentityPopover
+        above
+        className="sidebar-profile"
+        label={`Your account: ${name}`}
+        title={
+          collapsed
+            ? `${name}${actor.handle ? ` (@${actor.handle})` : ""}`
+            : undefined
+        }
+      >
+        <Avatar actor={actor} size="size-10" />
+        {!collapsed && (
+          <span className="sidebar-profile-text">
+            <span className="sidebar-display-name" title={name}>
+              {name}
+            </span>
+            <span className="sidebar-handle" title={actor.handle || actor.did}>
+              {actor.handle ? `@${actor.handle}` : actor.did}
+            </span>
+          </span>
+        )}
+      </IdentityPopover>
+      <button
+        type="button"
+        className="sidebar-signout"
+        aria-label="Sign out"
+        title="Sign out"
+        disabled={busy}
+        onClick={() =>
+          run(async () => {
+            await rpc.logout({});
+            await refresh();
+            status("Signed out.");
+          })
+        }
+      >
+        <LogOut size={18} aria-hidden="true" />
+        {!collapsed && <span>Sign out</span>}
+      </button>
+    </section>
+  );
 }
 
-export function SidebarNav({ marks, collapsed, onToggle, network }: {
+export function SidebarNav({
+  marks,
+  collapsed,
+  onToggle,
+  network,
+}: {
   marks: Marks;
   collapsed: boolean;
   onToggle: () => void;
@@ -58,24 +93,40 @@ export function SidebarNav({ marks, collapsed, onToggle, network }: {
   return (
     <aside className="app-sidebar" aria-label="Sidebar">
       <div className="sidebar-heading">
-      <Link to="/" className="brand-logo sidebar-brand" aria-label="Peachlet">
-        <span className="logo-mark"><PeachletMark /></span>
-        {!collapsed && <span>Peachlet</span>}
-      </Link>
-      <button type="button" className="sidebar-toggle" onClick={onToggle}
-        aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-        title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-        aria-expanded={!collapsed} aria-controls="sidebar-sections">
-        {collapsed ? <PanelLeftOpen size={20} /> : <PanelLeftClose size={20} />}
-      </button>
+        <Link to="/" className="brand-logo sidebar-brand" aria-label="Peachlet">
+          <span className="logo-mark">
+            <PeachletMark />
+          </span>
+          {!collapsed && <span>Peachlet</span>}
+        </Link>
+        <button
+          type="button"
+          className="sidebar-toggle"
+          onClick={onToggle}
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          aria-expanded={!collapsed}
+          aria-controls="sidebar-sections"
+        >
+          {collapsed ? (
+            <PanelLeftOpen size={20} />
+          ) : (
+            <PanelLeftClose size={20} />
+          )}
+        </button>
       </div>
       <nav id="sidebar-sections" aria-label="Sections" className="sidebar-nav">
         {screens.map(({ to, icon: Icon, label }) => (
-          <Link key={to} to={to} activeOptions={{ exact: to === "/" }}
-            aria-label={label} title={collapsed ? label : undefined}
+          <Link
+            key={to}
+            to={to}
+            activeOptions={{ exact: to === "/" }}
+            aria-label={label}
+            title={collapsed ? label : undefined}
             className="sidebar-link"
             activeProps={{ className: "nav-active", "aria-current": "page" }}
-            inactiveProps={{ className: "text-ink-muted" }}>
+            inactiveProps={{ className: "text-ink-muted" }}
+          >
             <span className="relative flex">
               <Icon size={21} strokeWidth={1.75} aria-hidden="true" />
               {marks[to] && <Mark />}
@@ -85,11 +136,11 @@ export function SidebarNav({ marks, collapsed, onToggle, network }: {
         ))}
       </nav>
       <div className="sidebar-bottom">
-      <div className="sidebar-network" title={network}>
-        <span aria-hidden="true" className="sidebar-network-dot" />
-        <span className={collapsed ? "sr-only" : ""}>{network}</span>
-      </div>
-      <SidebarAccount collapsed={collapsed} />
+        <div className="sidebar-network" title={network}>
+          <span aria-hidden="true" className="sidebar-network-dot" />
+          <span className={collapsed ? "sr-only" : ""}>{network}</span>
+        </div>
+        <SidebarAccount collapsed={collapsed} />
       </div>
     </aside>
   );

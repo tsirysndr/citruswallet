@@ -37,7 +37,9 @@ export function WalletPanel({ className }: { className?: string }) {
   const [discoverable, setDiscoverable] = useState(false);
 
   const walletState = useSyncExternalStore(subscribeWallet, localWalletState);
-  const [mode, setMode] = useState(() => localStorage.getItem("citrus:wallet-mode") || "citrus");
+  const [mode, setMode] = useState(
+    () => localStorage.getItem("citrus:wallet-mode") || "citrus",
+  );
   const builtIn = walletState !== "absent" && mode !== "metamask";
   const hasMetaMask = useMetaMask();
   const signedIn = Boolean(session?.did);
@@ -55,7 +57,11 @@ export function WalletPanel({ className }: { className?: string }) {
       });
       if (challenge.chainId !== network.chainId)
         throw new Error("Server network changed. Reload and try again.");
-      status(builtIn ? "Linking your Peachlet wallet…" : "Review the linking message in MetaMask…");
+      status(
+        builtIn
+          ? "Linking your Peachlet wallet…"
+          : "Review the linking message in MetaMask…",
+      );
       const signature = await wallet.request({
         method: "personal_sign",
         params: [hexOf(challenge.message), account],
@@ -63,9 +69,11 @@ export function WalletPanel({ className }: { className?: string }) {
       await checkWallet(wallet, account, network);
       const result = await rpc.verifyChallenge({ id: challenge.id, signature });
       await refresh();
-      status(result.addressSyncPending
-        ? "Wallet linked. Public record update is pending; retry below or sign in again."
-        : "Wallet linked. Your keys stay on your device.");
+      status(
+        result.addressSyncPending
+          ? "Wallet linked. Public record update is pending; retry below or sign in again."
+          : "Wallet linked. Your keys stay on your device.",
+      );
     });
 
   return (
@@ -78,17 +86,44 @@ export function WalletPanel({ className }: { className?: string }) {
         </Badge>
       </PanelHeading>
       <Hint>
-        Link your wallet to your Atmosphere account to send and receive payments.
-        Linking has no gas fee.
+        Link your wallet to your Atmosphere account to send and receive
+        payments. Linking has no gas fee.
       </Hint>
-      {walletState !== "absent" && <select aria-label="Wallet to use" value={mode} onChange={e => { setMode(e.target.value); localStorage.setItem("citrus:wallet-mode", e.target.value); void refresh(); }}><option value="citrus">Peachlet wallet</option><option value="metamask">MetaMask (optional)</option></select>}
-      <Checkbox id="discoverable" checked={discoverable} onChange={setDiscoverable}>
+      {walletState !== "absent" && (
+        <select
+          aria-label="Wallet to use"
+          value={mode}
+          onChange={(e) => {
+            setMode(e.target.value);
+            localStorage.setItem("citrus:wallet-mode", e.target.value);
+            void refresh();
+          }}
+        >
+          <option value="citrus">Peachlet wallet</option>
+          <option value="metamask">MetaMask (optional)</option>
+        </select>
+      )}
+      <Checkbox
+        id="discoverable"
+        checked={discoverable}
+        onChange={setDiscoverable}
+      >
         Publish this address to my AT Protocol repository and allow public
         payments (first public wallet becomes my receiving default)
       </Checkbox>
       {builtIn || hasMetaMask || isMobileWalletBrowser() ? (
-        <Button className="mt-4 w-full" disabled={!signedIn || (builtIn && walletState === "locked")} onClick={link}>
-          {builtIn ? (walletState === "locked" ? "Unlock your wallet above" : "Link Peachlet wallet") : isMobileWalletBrowser() ? "Open MetaMask & link" : "Connect MetaMask & link"}
+        <Button
+          className="mt-4 w-full"
+          disabled={!signedIn || (builtIn && walletState === "locked")}
+          onClick={link}
+        >
+          {builtIn
+            ? walletState === "locked"
+              ? "Unlock your wallet above"
+              : "Link Peachlet wallet"
+            : isMobileWalletBrowser()
+              ? "Open MetaMask & link"
+              : "Connect MetaMask & link"}
         </Button>
       ) : (
         <div className="mt-4">
@@ -101,21 +136,38 @@ export function WalletPanel({ className }: { className?: string }) {
             <img src="/metamask.png" alt="" width={28} height={28} />
             Install MetaMask for your browser
           </a>
-          <Hint className="mt-2">MetaMask was not detected. On mobile, open this site in the MetaMask app’s browser.</Hint>
+          <Hint className="mt-2">
+            MetaMask was not detected. On mobile, open this site in the MetaMask
+            app’s browser.
+          </Hint>
         </div>
       )}
       {!builtIn && isMobileWalletBrowser() && !hasMetaMask && (
-        <Hint className="mt-2">Approve the connection and linking message in MetaMask, then return here.
-          {" "}<a href="https://metamask.io/download/" target="_blank" rel="noopener noreferrer" className="font-semibold underline">Get the MetaMask app</a>
+        <Hint className="mt-2">
+          Approve the connection and linking message in MetaMask, then return
+          here.{" "}
+          <a
+            href="https://metamask.io/download/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-semibold underline"
+          >
+            Get the MetaMask app
+          </a>
         </Hint>
       )}
-      {signedIn && address && session && (balanceLoading && !balances ? <ContentSkeleton variant="line" label="Loading balance" /> :
-        <Balance>
-          {onNetwork
-            ? `Balance of ${shortAddress(address)}: ${balanceOf(address, session, balances) ?? "unavailable"}`
-            : `Switch MetaMask to ${session.network.name} to see this account’s balance.`}
-        </Balance>
-      )}
+      {signedIn &&
+        address &&
+        session &&
+        (balanceLoading && !balances ? (
+          <ContentSkeleton variant="line" label="Loading balance" />
+        ) : (
+          <Balance>
+            {onNetwork
+              ? `Balance of ${shortAddress(address)}: ${balanceOf(address, session, balances) ?? "unavailable"}`
+              : `Switch MetaMask to ${session.network.name} to see this account’s balance.`}
+          </Balance>
+        ))}
       <Hint className="mt-2.5">
         {session?.did
           ? `${session.network.name} · chain ${session.network.chainId} · self-custody`

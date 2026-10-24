@@ -8,8 +8,17 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
 import { rpc } from "../../api";
-import { acknowledgedAtom, invitationUrlAtom, reviewIdAtom, paymentUsdQuoteAtom } from "../../atoms";
-import { forgetBroadcast, pendingBroadcast, rememberBroadcast } from "../../broadcast";
+import {
+  acknowledgedAtom,
+  invitationUrlAtom,
+  reviewIdAtom,
+  paymentUsdQuoteAtom,
+} from "../../atoms";
+import {
+  forgetBroadcast,
+  pendingBroadcast,
+  rememberBroadcast,
+} from "../../broadcast";
 import { label } from "../../format";
 import { useRefresh, useRun, useStatus } from "../../hooks";
 import { usePayment, useSession } from "../../queries";
@@ -48,13 +57,24 @@ export function ReviewPanel({ className }: { className?: string }) {
   const refresh = useRefresh();
 
   /* A changed destination always clears the sender's review acknowledgement. */
-  const pinned = payment && `${payment.id}|${payment.revision}|${payment.address}`;
+  const pinned =
+    payment && `${payment.id}|${payment.revision}|${payment.address}`;
   useEffect(() => {
     setAcknowledged(false);
   }, [pinned, setAcknowledged]);
 
-  if (reviewId && session?.did && isPending) return <Panel className={className}><ContentSkeleton variant="card" label="Loading payment" /></Panel>;
-  if (reviewId && session?.did && error) return <Panel className={className}><Hint>Could not load payment. Try refreshing.</Hint></Panel>;
+  if (reviewId && session?.did && isPending)
+    return (
+      <Panel className={className}>
+        <ContentSkeleton variant="card" label="Loading payment" />
+      </Panel>
+    );
+  if (reviewId && session?.did && error)
+    return (
+      <Panel className={className}>
+        <Hint>Could not load payment. Try refreshing.</Hint>
+      </Panel>
+    );
   if (!payment || !session?.did) return null;
 
   const did = session.did;
@@ -70,10 +90,23 @@ export function ReviewPanel({ className }: { className?: string }) {
     ["Address", payment.address ?? "Recipient has not selected an address"],
     ["Expires", new Date(payment.expiresAt).toLocaleString()],
   ];
-  if (usdQuote?.id === payment.id && usdQuote.senderDid === session.did && usdQuote.assetId === payment.assetId && usdQuote.amountWei === payment.amountWei)
-    details.splice(4, 0, ['USD entered', `${formatUsd(usdQuote.usd)} USD at $${usdQuote.rate}/ETH. ETH amount fixed; USD value may change. Fee extra.`]);
-  if (payment.assetDetails?.contractAddress) details.push(["Token contract", payment.assetDetails.contractAddress]);
-  if (!isSender) details.unshift(["Sender", payment.sender?.handle ? `@${payment.sender.handle}` : payment.senderDid]);
+  if (
+    usdQuote?.id === payment.id &&
+    usdQuote.senderDid === session.did &&
+    usdQuote.assetId === payment.assetId &&
+    usdQuote.amountWei === payment.amountWei
+  )
+    details.splice(4, 0, [
+      "USD entered",
+      `${formatUsd(usdQuote.usd)} USD at $${usdQuote.rate}/ETH. ETH amount fixed; USD value may change. Fee extra.`,
+    ]);
+  if (payment.assetDetails?.contractAddress)
+    details.push(["Token contract", payment.assetDetails.contractAddress]);
+  if (!isSender)
+    details.unshift([
+      "Sender",
+      payment.sender?.handle ? `@${payment.sender.handle}` : payment.senderDid,
+    ]);
   if (payment.fromAddress) details.push(["From", payment.fromAddress]);
   if (payment.txHash)
     details.push(
@@ -83,7 +116,8 @@ export function ReviewPanel({ className }: { className?: string }) {
 
   const sendable = isSender && ["ready", "prepared"].includes(payment.state);
   const recoverable =
-    isSender && Boolean(payment.attemptId) &&
+    isSender &&
+    Boolean(payment.attemptId) &&
     ["prepared", "expired", "submitted"].includes(payment.state);
 
   const pay = () =>
@@ -91,20 +125,22 @@ export function ReviewPanel({ className }: { className?: string }) {
       if (!acknowledged)
         throw new Error("Review and acknowledge the payment details first.");
       const shown = payment;
-      if (!shown.address) throw new Error("The recipient has no receiving address.");
+      if (!shown.address)
+        throw new Error("The recipient has no receiving address.");
       const wallet = await connectWallet(session.network);
       const fromAddress = await walletAccount(wallet, session.network);
       if (pendingBroadcast(did))
         throw new Error(
           "Check the previous wallet request and recover its transaction hash before sending another payment.",
         );
-      const prepared = await rpc.preparePayment({ id: shown.id,
+      const prepared = await rpc.preparePayment({
+        id: shown.id,
         revision: shown.revision,
         address: shown.address,
         fromAddress,
       });
       const tx = prepared.transaction;
-  const expected = expectedTransfer(shown);
+      const expected = expectedTransfer(shown);
       /* Check the response against the sender's reviewed values before
          invoking the wallet. */
       if (
@@ -115,7 +151,9 @@ export function ReviewPanel({ className }: { className?: string }) {
         tx.from.toLowerCase() !== fromAddress.toLowerCase() ||
         tx.data.toLowerCase() !== expected.data.toLowerCase()
       )
-        throw new Error("Prepared transaction differs from your review. Refresh before sending.");
+        throw new Error(
+          "Prepared transaction differs from your review. Refresh before sending.",
+        );
       await checkWallet(wallet, fromAddress, session.network);
       const pending = { id: shown.id, attemptId: prepared.attemptId };
       rememberBroadcast(did, pending);
@@ -123,15 +161,20 @@ export function ReviewPanel({ className }: { className?: string }) {
       status("Review the address, amount, and network fee in your wallet.");
       let txHash: string;
       try {
-        txHash = await wallet.request({ method: "eth_sendTransaction", params: [tx] });
+        txHash = await wallet.request({
+          method: "eth_sendTransaction",
+          params: [tx],
+        });
       } catch (error: any) {
         if (error.code === 4001) forgetBroadcast(did);
         throw error;
       }
       rememberBroadcast(did, { ...pending, txHash });
-      const result = await rpc.submitPayment(
-        { id: pending.id, attemptId: pending.attemptId, txHash },
-      );
+      const result = await rpc.submitPayment({
+        id: pending.id,
+        attemptId: pending.attemptId,
+        txHash,
+      });
       forgetBroadcast(did);
       cache(result.payment);
       await refresh();
@@ -144,7 +187,9 @@ export function ReviewPanel({ className }: { className?: string }) {
     <Panel className={className}>
       <PanelHeading>
         <Heading>Review payment</Heading>
-        <Badge status={payment.state} className="ml-auto">{label(payment.state)}</Badge>
+        <Badge status={payment.state} className="ml-auto">
+          {label(payment.state)}
+        </Badge>
       </PanelHeading>
       <dl className="grid grid-cols-[85px_minmax(0,1fr)] gap-3 text-xs leading-[1.6] md:grid-cols-[110px_minmax(0,1fr)] md:text-[13px]">
         {details.map(([term, value]) => (
@@ -157,17 +202,23 @@ export function ReviewPanel({ className }: { className?: string }) {
       <PaymentMedia key={payment.media?.url} media={payment.media} />
       {payment.description && (
         <div className="mt-5 rounded-[6px] bg-sunken p-4">
-          <p className="mb-2 text-xs text-ink-muted">Description · only in Peachlet</p>
-          <p className="whitespace-pre-wrap text-sm leading-relaxed [overflow-wrap:anywhere]">{payment.description}</p>
+          <p className="mb-2 text-xs text-ink-muted">
+            Description · only in Peachlet
+          </p>
+          <p className="whitespace-pre-wrap text-sm leading-relaxed [overflow-wrap:anywhere]">
+            {payment.description}
+          </p>
         </div>
       )}
-      {payment.error && <p className="mt-3 text-xs text-bad">{payment.error}</p>}
+      {payment.error && (
+        <p className="mt-3 text-xs text-bad">{payment.error}</p>
+      )}
 
       {sendable && (
         <>
           <Checkbox checked={acknowledged} onChange={setAcknowledged}>
-            I checked the recipient DID, full Ethereum address, network, and amount
-            shown above.
+            I checked the recipient DID, full Ethereum address, network, and
+            amount shown above.
           </Checkbox>
           <Button
             className="mt-4 w-full"
@@ -177,8 +228,8 @@ export function ReviewPanel({ className }: { className?: string }) {
             Review &amp; send
           </Button>
           <Hint className="mt-2.5">
-            Use a wallet linked to your own DID. Your wallet shows the final transaction
-            and network fee before you approve.
+            Use a wallet linked to your own DID. Your wallet shows the final
+            transaction and network fee before you approve.
           </Hint>
         </>
       )}
@@ -199,12 +250,18 @@ export function ReviewPanel({ className }: { className?: string }) {
             Generate invitation link
           </Button>
           <Hint className="mt-2.5">
-            Share this link with the intended recipient. Funds stay in your wallet.
+            Share this link with the intended recipient. Funds stay in your
+            wallet.
           </Hint>
           {invitationUrl && (
             <div className="mt-4">
               <Label htmlFor="invitation-url">Invitation URL</Label>
-              <Input id="invitation-url" readOnly value={invitationUrl} className="mb-2.5" />
+              <Input
+                id="invitation-url"
+                readOnly
+                value={invitationUrl}
+                className="mb-2.5"
+              />
               <Button
                 variant="subtle"
                 onClick={() =>
@@ -230,10 +287,13 @@ export function ReviewPanel({ className }: { className?: string }) {
             noValidate
             onSubmit={recover.handleSubmit(({ txHash }) =>
               run(async () => {
-                if (!payment.attemptId) throw new Error("No payment attempt to recover.");
-                const result = await rpc.submitPayment(
-                  { id: payment.id, attemptId: payment.attemptId, txHash },
-                );
+                if (!payment.attemptId)
+                  throw new Error("No payment attempt to recover.");
+                const result = await rpc.submitPayment({
+                  id: payment.id,
+                  attemptId: payment.attemptId,
+                  txHash,
+                });
                 cache(result.payment);
                 await refresh();
                 status(label(result.payment.state));
@@ -267,8 +327,9 @@ export function ReviewPanel({ className }: { className?: string }) {
             No transaction was sent — review again
           </Button>
           <Hint className="mt-2.5">
-            If your wallet broadcast a transaction but the page lost the response, find
-            its hash in your wallet. Do not create a second payment to retry it.
+            If your wallet broadcast a transaction but the page lost the
+            response, find its hash in your wallet. Do not create a second
+            payment to retry it.
           </Hint>
         </div>
       )}

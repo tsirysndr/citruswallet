@@ -1,1 +1,1 @@
-export { LocalWallet } from './LocalWallet';
+export { LocalWallet } from "./LocalWallet";
