@@ -22,7 +22,7 @@ export function AmountStep({ actor, handle, amount, onAmount, onContinue, decima
       </View>
     </View>
     {assetPicker}
-    <AmountPad value={amount} onChange={onAmount} decimals={decimals} symbol={symbol} />
+    <AmountPad compact value={amount} onChange={onAmount} decimals={decimals} symbol={symbol} />
     <Button title="Continue" disabled={!valid} onPress={onContinue} />
   </View>;
 }

@@ -7,15 +7,17 @@ export function AmountPad({
   onChange,
   decimals = 18,
   symbol = "ETH",
+  compact = false,
 }: {
   value: string;
   decimals?: number;
   symbol?: string;
+  compact?: boolean;
   onChange: (value: string) => void;
 }) {
   return (
-    <View className="gap-4">
-      <View className="min-h-32 items-center justify-center gap-2 px-2">
+    <View className={compact ? "gap-2" : "gap-4"}>
+      <View className={`${compact ? "min-h-20" : "min-h-32"} items-center justify-center gap-2 px-2`}>
         <Text
           accessibilityLabel={`Amount ${value} ${symbol}`}
           adjustsFontSizeToFit
@@ -54,7 +56,7 @@ export function AmountPad({
             }
             onPress={() => onChange(editAmount(value, key, decimals))}
             onLongPress={key === "backspace" ? () => onChange("0") : undefined}
-            className="h-16 w-1/3 items-center justify-center rounded-xl active:bg-white"
+            className={`${compact ? "h-12" : "h-16"} w-1/3 items-center justify-center rounded-xl active:bg-white`}
           >
             {key === "backspace" ? (
               <Ionicons name="backspace-outline" size={26} color="#191916" />

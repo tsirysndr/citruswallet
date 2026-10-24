@@ -121,6 +121,7 @@ function Shell() {
   const vault = useSyncExternalStore(subscribeNativeVault, nativeVaultState);
   const [needsSetup, setNeedsSetup] = useWalletOnboarding(ready, session.isPending, session.data, vault, configuredAddress());
   const compactRecipient = screen === "Payments" && paymentStep === 1 && keyboardVisible;
+  const hideHeader = compactRecipient || (screen === "Payments" && paymentStep > 1);
   const feedback = <>
           {refreshing && <ContentSkeleton label="Refreshing content" rows={1} />}
           {(screen === "Account" || screen === "Wallet") && <InvitationPanel />}
@@ -162,7 +163,7 @@ function Shell() {
   return (
     <SafeAreaView className="flex-1 bg-canvas" edges={["top", "bottom"]}>
       <WalletUnlock /><StatusBar style="dark" />
-      {!compactRecipient && <View className="flex-row items-center justify-between px-5 py-4">
+      {!hideHeader && <View className="flex-row items-center justify-between px-5 py-4">
         <Pressable accessibilityRole="button" accessibilityLabel="Peachlet home" disabled={busy} onPress={() => { Keyboard.dismiss(); setScreen("Account"); }} className="min-w-0 flex-1 flex-row items-center gap-3">
           <Image source={require('./assets/icon.png')} accessibilityLabel="Peachlet logo" style={{ width: 42, height: 42 }} />
           <Text numberOfLines={1} adjustsFontSizeToFit className="flex-shrink text-xl font-bold text-ink">Peachlet</Text>
@@ -183,7 +184,7 @@ function Shell() {
         {ready && screen === "Activity" ? <Activity header={feedback} /> : <ScrollView
           ref={scroll}
           key={screen}
-          contentContainerStyle={{ padding: 20, paddingBottom: 32 }}
+          contentContainerStyle={{ padding: 20, paddingTop: hideHeader ? 8 : 20, paddingBottom: hideHeader ? 12 : 32 }}
           keyboardShouldPersistTaps="handled"
           refreshControl={
             <RefreshControl
