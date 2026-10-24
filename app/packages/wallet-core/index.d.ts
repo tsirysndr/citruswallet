@@ -107,3 +107,44 @@ export function uploadCloudBackup(
   token: string,
   text: string,
 ): Promise<CloudFile>;
+export type AddressProofReason =
+  "unsupported" | "unreachable" | "unpublished" | "mismatch";
+export class AddressProofError extends Error {
+  reason: AddressProofReason;
+  constructor(reason: AddressProofReason, message: string);
+}
+export type AddressProofRequest = {
+  did: string;
+  address: string;
+  chainId: number;
+  origin: string;
+  handle?: string | null;
+};
+export type AddressProofOptions = {
+  fetch?: typeof fetch;
+  directory?: string;
+};
+export type VerifiedAddressProof = {
+  did: string;
+  address: string;
+  chainId: number;
+  createdAt: string | null;
+  server: string;
+  originMatches: boolean;
+  domain: string | null;
+  claimsHandle: boolean | null;
+};
+export const addressCollection: string;
+export function addressRecordKey(chainId: number, address: string): string;
+export function resolveDidDocument(
+  did: string,
+  options?: AddressProofOptions,
+): Promise<Record<string, unknown>>;
+export function personalDataServer(
+  document: Record<string, unknown> | null,
+  did: string,
+): string;
+export function verifyAddressProof(
+  request: AddressProofRequest,
+  options?: AddressProofOptions,
+): Promise<VerifiedAddressProof>;

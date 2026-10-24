@@ -243,7 +243,7 @@ The layout is mobile-first: one column with a bottom tab bar on a phone, and a w
 - `vite.config.ts`: the frontend build, and the dev proxy to `VITE_API_URL`.
 - `scripts/`: Anvil + app launcher.
 
-The wallet signature proves that the Ethereum account signed a message naming the DID. DID-owner consent relies on this app's OAuth verification; a copied wallet signature alone is not an independently verifiable DID-owner attestation. Payment resolution uses the verified database projection, which now also indexes public PDS records through Jetstream; a record must pass proof verification before it becomes a receiving address. Consumers trust this server's mapping and configured RPC. Handle suggestions additionally trust the configured AppView for discovery only, and loading a suggested avatar reveals the viewer's IP address to that image CDN; neither affects what the app will accept as a payment recipient.
+The wallet signature proves that the Ethereum account signed a message naming the DID. DID-owner consent relies on this app's OAuth verification; a copied wallet signature alone is not an independently verifiable DID-owner attestation. Payment resolution uses the verified database projection, which now also indexes public PDS records through Jetstream; a record must pass proof verification before it becomes a receiving address. Senders no longer have to take that mapping on trust: before a transaction is built, both clients re-verify the receiving address against the recipient's own repository (see below). Consumers still trust this server for everything else, and the configured RPC. Handle suggestions additionally trust the configured AppView for discovery only, and loading a suggested avatar reveals the viewer's IP address to that image CDN; neither affects what the app will accept as a payment recipient.
 
 OAuth requests base AT Protocol access and write access to the `app.peachlet.address` collection. OAuth credentials are retained server-side for record synchronization. Browser sessions and temporary OAuth state are sensitive; keep the SQLite files private. Wallet keys, seed phrases, and transaction-signing credentials never reach the server.
 
@@ -251,6 +251,19 @@ Supported assets/wallets: native ETH and standard ERC-20 transfers on MegaETH an
 
 The optional MetaMask installation prompt appears in the wallet panel when MetaMask is not detected, linking to the official Chrome Web Store listing. `web/public/metamask.png` is the logo from that listing, served locally. Light mode is the default even for old saved dark-mode preferences, and the theme switcher is hidden.
 
+
+### Independent address verification
+
+A sender's largest remaining risk was the receiving address itself: the API reported it, and the clients believed it. Both clients now check it against the recipient's own account before building a transaction, in `app/packages/wallet-core/address-proof.js`, which never calls Peachlet's API — that is the point of it.
+
+1. Resolve the pinned DID: `did:plc:` through `https://plc.directory`, `did:web:` through the domain's `did.json`. The document's `id` must be the pinned DID, and its `#atproto_pds` service must be a plain HTTPS endpoint.
+2. Read `com.atproto.repo.getRecord` from that repository for `app.peachlet.address` at `eip155-<chainId>-<address>`, and require the returned `uri` to name the same repository.
+3. Require the record to describe this address on this chain, and its SIWE message to carry the same address, the same `chainId`, and the pinned DID as a SIWE resource.
+4. Verify the signature locally with viem. The proof's own `domain` is reported, not enforced: the resource and address bindings already tie it to this account, and a proof signed before a domain change stays valid.
+
+A proof that contradicts the review stops the payment outright, in the UI and again inside the send path. A missing proof or an unreachable directory cannot stop it — private links are never published and the directory can be down — so those degrade to a labelled warning next to the address, and the sender is asked to confirm the address out of band. Tighten that in one place if you would rather fail closed: the policy sits beside `contradicted` in `web/src/components/ReviewPanel/ReviewPanel.tsx` and in `confirmAddressProof` in `app/src/wallet.ts`.
+
+Two limits remain. The pairing between a handle and a DID is not proven here: the DID document's `alsoKnownAs` claim is reported, but only resolving the handle back to the DID proves it, and the browser cannot read most `.well-known/atproto-did` endpoints. And an address the recipient keeps private has no published record at all, which is why a missing proof is a warning rather than a refusal.
 
 ## Payment descriptions and activity
 

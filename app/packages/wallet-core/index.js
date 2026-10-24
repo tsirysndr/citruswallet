@@ -208,6 +208,14 @@ export function feeQuoteParameters(
 }
 
 export {
+  addressCollection,
+  addressRecordKey,
+  AddressProofError,
+  resolveDidDocument,
+  personalDataServer,
+  verifyAddressProof,
+} from "./address-proof.js";
+export {
   driveScope,
   createCloudBackup,
   parseCloudBackup,

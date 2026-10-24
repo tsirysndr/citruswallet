@@ -2,11 +2,12 @@ import { requestUnlock } from "./wallet-unlock";
 import { walletMode } from "./wallet-preferences";
 import { nativeProvider, nativeVaultState } from "./local-wallet";
 import { expectedTransfer } from "@peachlet/amounts";
+import { AddressProofError, verifyAddressProof } from "@peachlet/wallet-core";
 import { Linking } from "react-native";
 import { createEVMClient } from "@metamask/connect-evm";
 import { Buffer } from "buffer";
 import * as SecureStore from "expo-secure-store";
-import { request } from "./api";
+import { origin, request } from "./api";
 import type { Network, Payment, Attempt, Challenge } from "./types";
 import { nativeWalletUI, withWalletDeadline } from "./wallet-connection";
 let client: ReturnType<typeof createEVMClient> | undefined;
@@ -172,6 +173,36 @@ export async function recover(did: string, hash?: string) {
   });
   await SecureStore.deleteItemAsync(pendingKey(did));
 }
+/* Read the recipient's signed proof from their own repository before preparing
+   anything. A proof that contradicts the reviewed address stops the payment: a
+   hostile or compromised API cannot redirect funds to an address the recipient
+   never signed for. A missing proof or an unreachable directory cannot stop it
+   — private links are never published — so those only surface in the review UI. */
+export async function confirmAddressProof(
+  payment: Payment,
+  network: Network,
+): Promise<AddressProofError | null> {
+  if (!payment.address) return null;
+  try {
+    await verifyAddressProof({
+      did: payment.recipientDid,
+      address: payment.address,
+      chainId: network.chainId,
+      origin,
+      handle: payment.recipient?.handle ?? null,
+    });
+    return null;
+  } catch (error) {
+    if (error instanceof AddressProofError && error.reason !== "mismatch")
+      return error;
+    throw error instanceof AddressProofError
+      ? new Error(
+          `${error.message} Do not send to this address; ask the recipient to confirm it out of band.`,
+        )
+      : error;
+  }
+}
+
 export async function sendPayment(
   did: string,
   network: Network,
@@ -182,6 +213,7 @@ export async function sendPayment(
       "Recover the previous wallet request before sending again.",
     );
   if (!payment.address) throw new Error("Recipient has no receiving address.");
+  await confirmAddressProof(payment, network);
   const { wallet, address } = await connect(network);
   const attempt = await request<Attempt>("preparePayment", {
     id: payment.id,

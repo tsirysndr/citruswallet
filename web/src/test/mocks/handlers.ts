@@ -1,8 +1,34 @@
 import { http, HttpResponse } from "msw/http";
-import { alice, bob, payment, session, media } from "./fixtures";
+import { addressProof, alice, bob, payment, session, media } from "./fixtures";
 export const xrpc = (method: string) =>
   `http://localhost:3000/xrpc/app.peachlet.${method}`;
+export const addressRecord = (repo: string, rkey: string) => ({
+  uri: `at://${repo}/app.peachlet.address/${rkey}`,
+  value: addressProof,
+});
 export const handlers = [
+  http.get("https://plc.directory/:did", ({ params }) =>
+    HttpResponse.json({
+      id: params.did,
+      alsoKnownAs: [`at://${bob.handle}`],
+      service: [
+        {
+          id: "#atproto_pds",
+          type: "AtprotoPersonalDataServer",
+          serviceEndpoint: "https://pds.test",
+        },
+      ],
+    }),
+  ),
+  http.get(
+    "https://pds.test/xrpc/com.atproto.repo.getRecord",
+    ({ request }) => {
+      const query = new URL(request.url).searchParams;
+      return HttpResponse.json(
+        addressRecord(query.get("repo") ?? "", query.get("rkey") ?? ""),
+      );
+    },
+  ),
   http.get(xrpc("listNotifications"), () =>
     HttpResponse.json({ notifications: [], unread: 0 }),
   ),

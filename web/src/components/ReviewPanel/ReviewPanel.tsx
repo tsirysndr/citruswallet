@@ -1,4 +1,5 @@
 import { expectedTransfer, formatUsd } from "@peachlet/amounts";
+import { AddressProofError } from "@peachlet/wallet-core";
 import { ContentSkeleton } from "../ContentSkeleton";
 import { PaymentMedia } from "../PaymentMedia";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -21,7 +22,7 @@ import {
 } from "../../broadcast";
 import { label } from "../../format";
 import { useRefresh, useRun, useStatus } from "../../hooks";
-import { usePayment, useSession } from "../../queries";
+import { useAddressProof, usePayment, useSession } from "../../queries";
 import type { Payment } from "../../types";
 import { recoverForm } from "../../validation";
 import { checkWallet, connectWallet, walletAccount } from "../../wallet";
@@ -44,6 +45,9 @@ export function ReviewPanel({ className }: { className?: string }) {
   const reviewId = useAtomValue(reviewIdAtom);
   const usdQuote = useAtomValue(paymentUsdQuoteAtom);
   const { data: payment, isPending, error } = usePayment(reviewId, session);
+  const proof = useAddressProof(
+    payment?.senderDid === session?.did ? payment : undefined,
+  );
   const [acknowledged, setAcknowledged] = useAtom(acknowledgedAtom);
   const [invitationUrl, setInvitationUrl] = useAtom(invitationUrlAtom);
   const recover = useForm<
@@ -82,12 +86,30 @@ export function ReviewPanel({ className }: { className?: string }) {
   const cache = (updated: Payment) =>
     queries.setQueryData(["payment", payment.id], updated);
 
+  /* A proof that contradicts the reviewed address blocks the payment outright.
+     A missing or unreachable proof cannot: private links are never published
+     and the directory can be down, so those degrade to a labelled warning. */
+  const proofReason =
+    proof.error instanceof AddressProofError ? proof.error.reason : undefined;
+  const contradicted = proofReason === "mismatch";
+  const proofStatus = proof.isFetching
+    ? "Checking the recipient's own account…"
+    : proof.data
+      ? `Signed by this address for this account${proof.data.createdAt ? ` on ${new Date(proof.data.createdAt).toLocaleDateString()}` : ""}${proof.data.originMatches ? "" : ` (signed for ${proof.data.domain ?? "another site"})`}`
+      : contradicted
+        ? `Does not match — do not send. ${proof.error?.message ?? ""}`
+        : (proof.error?.message ??
+          "Not verified against the recipient's own account.");
+
   const details: [string, string][] = [
     ["Recipient", `${payment.recipientLabel} (name at creation)`],
     ["Pinned DID", payment.recipientDid],
     ["Network", `${session.network.name} · ${payment.chainId}`],
     ["Amount", `${payment.amount} ${payment.asset} + network fee`],
     ["Address", payment.address ?? "Recipient has not selected an address"],
+    ...(isSender && payment.address
+      ? ([["Address proof", proofStatus]] as [string, string][])
+      : []),
     ["Expires", new Date(payment.expiresAt).toLocaleString()],
   ];
   if (
@@ -127,6 +149,10 @@ export function ReviewPanel({ className }: { className?: string }) {
       const shown = payment;
       if (!shown.address)
         throw new Error("The recipient has no receiving address.");
+      if (contradicted)
+        throw new Error(
+          `${proof.error?.message} Do not send to this address; ask the recipient to confirm it out of band.`,
+        );
       const wallet = await connectWallet(session.network);
       const fromAddress = await walletAccount(wallet, session.network);
       if (pendingBroadcast(did))
@@ -216,13 +242,28 @@ export function ReviewPanel({ className }: { className?: string }) {
 
       {sendable && (
         <>
+          {contradicted ? (
+            <p role="alert" className="mt-4 text-sm text-bad">
+              {proof.error?.message} Do not send to this address; ask the
+              recipient to confirm it out of band.
+            </p>
+          ) : (
+            !proof.data &&
+            !proof.isFetching && (
+              <p role="alert" className="mt-4 text-sm text-bad">
+                Peachlet could not confirm this address from{" "}
+                {payment.recipientLabel}&apos;s own account. Confirm it with
+                them directly before sending.
+              </p>
+            )
+          )}
           <Checkbox checked={acknowledged} onChange={setAcknowledged}>
             I checked the recipient DID, full Ethereum address, network, and
             amount shown above.
           </Checkbox>
           <Button
             className="mt-4 w-full"
-            disabled={!acknowledged || !session.paymentsEnabled}
+            disabled={!acknowledged || !session.paymentsEnabled || contradicted}
             onClick={pay}
           >
             Review &amp; send

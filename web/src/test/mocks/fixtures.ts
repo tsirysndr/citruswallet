@@ -1,3 +1,5 @@
+import { privateKeyToAccount } from "viem/accounts";
+import { createSiweMessage } from "viem/siwe";
 import type { Actor, Session, Payment, Link } from "../../types";
 export const alice: Actor = {
   did: "did:plc:alice",
@@ -6,12 +8,35 @@ export const alice: Actor = {
   avatar: null,
 };
 export const bob: Actor = {
-  did: "did:plc:bob",
+  did: "did:plc:bobbbbbbbbbbbbbbbbbbbbbb",
   handle: "bob.test",
   displayName: "Bob",
   avatar: "https://cdn.bsky.app/bob.jpg",
 };
-export const address = "0x1111111111111111111111111111111111111111";
+/* The recipient's receiving wallet, so tests can exercise a genuine signed
+   address proof rather than a stubbed verification result. */
+const recipientWallet = privateKeyToAccount(`0x${"11".repeat(32)}`);
+export const address = recipientWallet.address.toLowerCase();
+const proofMessage = createSiweMessage({
+  domain: "localhost:3000",
+  address: recipientWallet.address,
+  chainId: 1,
+  uri: "http://localhost:3000/wallet-link",
+  version: "1",
+  nonce: "0123456789abcdef01234567",
+  issuedAt: new Date("2026-01-01T00:00:00.000Z"),
+  expirationTime: new Date("2026-01-01T00:10:00.000Z"),
+  statement: `Link this wallet to AT Protocol account did:plc:bobbbbbbbbbbbbbbbbbbbbbb. This does not authorize transactions.`,
+  resources: ["did:plc:bobbbbbbbbbbbbbbbbbbbbbb"],
+});
+export const addressProof = {
+  $type: "app.peachlet.address",
+  chain: "eip155:1",
+  address,
+  message: proofMessage,
+  signature: await recipientWallet.signMessage({ message: proofMessage }),
+  createdAt: "2026-01-01T00:00:00.000Z",
+};
 export const linkedAddress: Link = {
   did: alice.did,
   address,

@@ -1,6 +1,7 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { verifyAddressProof } from "@peachlet/wallet-core";
 import { rpc, rememberCsrf } from "./api";
-import type { Session } from "./types";
+import type { Payment, Session } from "./types";
 import { readBalances } from "./wallet";
 
 export function useSession() {
@@ -26,6 +27,30 @@ export function useProfile(did: string | null | undefined) {
         return null;
       }
     },
+  });
+}
+
+/* Verify the recipient's receiving address against the signed proof in their
+   own repository. This deliberately never calls Peachlet's API: its purpose is
+   to catch an API that reports an address the recipient never signed for. */
+export function useAddressProof(payment: Payment | undefined) {
+  const did = payment?.recipientDid;
+  const address = payment?.address;
+  const chainId = payment?.chainId;
+  return useQuery({
+    queryKey: ["address-proof", did, address, chainId],
+    enabled: Boolean(did && address && chainId),
+    retry: false,
+    staleTime: 5 * 60_000,
+    gcTime: 5 * 60_000,
+    queryFn: () =>
+      verifyAddressProof({
+        did: did!,
+        address: address!,
+        chainId: chainId!,
+        origin: window.location.origin,
+        handle: payment?.recipient?.handle ?? null,
+      }),
   });
 }
 

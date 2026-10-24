@@ -56,3 +56,42 @@ it("never sends a transaction when preparation changes the reviewed recipient ad
   );
   expect(wallet.request).not.toHaveBeenCalled();
 });
+
+import { addressProof } from "../../test/mocks/fixtures";
+it("shows the reviewed address as signed by the recipient's own account", async () => {
+  const store = createStore();
+  store.set(reviewIdAtom, payment.id);
+  await renderComponent(<ReviewPanel />, { store });
+  expect(
+    await screen.findByText(/Signed by this address for this account/),
+  ).toBeInTheDocument();
+});
+
+/* The whole point of reading the proof from the recipient's repository: an API
+   that reports an address its owner never signed for cannot be paid. */
+it("never sends to an address the recipient's published proof does not cover", async () => {
+  server.use(
+    http.get(
+      "https://pds.test/xrpc/com.atproto.repo.getRecord",
+      ({ request }) => {
+        const query = new URL(request.url).searchParams;
+        return HttpResponse.json({
+          uri: `at://${query.get("repo")}/app.peachlet.address/${query.get("rkey")}`,
+          value: {
+            ...addressProof,
+            address: "0x3333333333333333333333333333333333333333",
+          },
+        });
+      },
+    ),
+  );
+  const store = createStore();
+  store.set(reviewIdAtom, payment.id);
+  const { user } = await renderComponent(<ReviewPanel />, { store });
+  expect(
+    await screen.findByText(/Does not match — do not send/),
+  ).toBeInTheDocument();
+  await user.click(screen.getByRole("checkbox"));
+  expect(screen.getByRole("button", { name: "Review & send" })).toBeDisabled();
+  expect(wallet.request).not.toHaveBeenCalled();
+});
