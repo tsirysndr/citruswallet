@@ -1,7 +1,7 @@
 # Peachlet Wallet
 
-[![API tests](https://github.com/tsirysndr/citruswallet/actions/workflows/api-tests.yml/badge.svg)](https://github.com/tsirysndr/citruswallet/actions/workflows/api-tests.yml)
-[![Web tests](https://github.com/tsirysndr/citruswallet/actions/workflows/web-tests.yml/badge.svg)](https://github.com/tsirysndr/citruswallet/actions/workflows/web-tests.yml)
+[![API tests](https://github.com/tsirysndr/peachlet/actions/workflows/api-tests.yml/badge.svg)](https://github.com/tsirysndr/peachlet/actions/workflows/api-tests.yml)
+[![Web tests](https://github.com/tsirysndr/peachlet/actions/workflows/web-tests.yml/badge.svg)](https://github.com/tsirysndr/peachlet/actions/workflows/web-tests.yml)
 
 Pay someone by their AT Protocol handle instead of their Ethereum address.
 
@@ -354,7 +354,7 @@ Token picker logos use chain-and-contract mappings generated from the Uniswap an
 
 ## Peachlet Wallet transition
 
-The public origin is `https://peachlet.app`, the application namespace is `app.peachlet.*`, and native links use `peachlet://`. Set production `APP_URL=https://peachlet.app` and `EXPO_PUBLIC_API_URL=https://peachlet.app`; configure DNS and Caddy for that host before switching clients. The systemd definition is `systemd/peachlet.service`. Its working directory intentionally retains the existing server checkout location. Stop the old service before enabling the renamed service on the same port. GitHub repository links still point to the existing repository.
+The public origin is `https://peachlet.app`, the application namespace is `app.peachlet.*`, and native links use `peachlet://`. Set production `APP_URL=https://peachlet.app` and `EXPO_PUBLIC_API_URL=https://peachlet.app`; configure DNS and Caddy for that host before switching clients. The systemd definition is `systemd/peachlet.service`. Its working directory intentionally retains the existing server checkout location. Stop the old service before enabling the renamed service on the same port. GitHub repository links point to `tsirysndr/peachlet`.
 
 Keep the existing database and secrets. Accounts, payments and local links stay in that database. OAuth consent must be renewed to grant access to `app.peachlet.address`. Old public records are not rewritten or deleted automatically; re-link public addresses under the new origin to sign a fresh proof and publish in the new collection. Existing records do not count as published in the new namespace. Old clients using `app.citruswallet.*` must upgrade.
 
