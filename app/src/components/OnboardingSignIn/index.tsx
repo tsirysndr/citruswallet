@@ -17,7 +17,7 @@ export function OnboardingSignIn({ returning = false }: { returning?: boolean })
     if (await signIn(identifier, create)) await query.invalidateQueries();
   });
   const submit = form.handleSubmit(({ identifier }) => start(identifier));
-  return <View className="gap-5 rounded-3xl bg-white p-6">
+  return <View className="gap-5 rounded-3xl bg-surface p-6">
     <Text className="text-center text-3xl font-semibold">{returning ? 'Welcome back.' : 'Your handle. Your wallet.'}</Text>
     <Text className="my-1 text-left text-base leading-6 text-muted">Sign in with your Atmosphere Account</Text>
     <AtmosphereApps />

@@ -1,7 +1,10 @@
+import { useTheme } from '../../theme';
 import { Fragment, useEffect, useId, useState } from "react";
 import { AccessibilityInfo, View } from "react-native";
 import ContentLoader, { Circle, Rect } from "react-content-loader/native";
 export function ContentSkeleton({ variant = "rows", rows = 3, label = "Loading content", inverse = false }: { variant?: "rows" | "card" | "media" | "line"; rows?: number; label?: string; inverse?: boolean }) {
+  const { appearance } = useTheme();
+  const dark = inverse || appearance === 'dark';
   const id = useId();
   const [reduced, setReduced] = useState(true);
   useEffect(() => {
@@ -20,7 +23,7 @@ export function ContentSkeleton({ variant = "rows", rows = 3, label = "Loading c
     style={{ width: "100%", aspectRatio: 360 / height }}>
     <ContentLoader key={reduced ? "static" : "animated"} uniqueKey={id} accessible={false} animate={!reduced} speed={1.6}
       width="100%" height="100%" viewBox={`0 0 360 ${height}`}
-      backgroundColor={inverse ? "#3c4332" : "#e4e5dc"} foregroundColor={inverse ? "#61704a" : "#f5f7ee"}>
+      backgroundColor={dark ? "#292929" : "#e4e5dc"} foregroundColor={dark ? "#404040" : "#f5f7ee"}>
       {shapes}
     </ContentLoader>
   </View>;

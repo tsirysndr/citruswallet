@@ -23,7 +23,7 @@ export function InvitationPanel() {
   const payment = data?.payment;
   const links = session?.links.filter(link => link.chain_id === session.network.chainId) ?? [];
   const address = links.some(link => link.address === selected) ? selected : "";
-  return <View className="mb-5 gap-3 rounded-2xl bg-white p-5">
+  return <View className="mb-5 gap-3 rounded-2xl bg-surface p-5">
     <Heading title="Payment invitation" />
     {!session?.did ? <>
       <Text className="text-sm text-muted">Sign in with the Atmosphere account this invitation was sent to.</Text>

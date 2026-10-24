@@ -25,7 +25,7 @@ export function Button({
       style={{ alignSelf: "stretch", minHeight: 48 }}
       disabled={disabled || (!keepEnabled && busy)}
       onPress={onPress}
-      className={`min-h-12 items-center justify-center rounded-lg px-4 py-3 ${tone === "black" ? "bg-black" : tone === "dark" ? "bg-ink" : tone === "ghost" ? "bg-transparent" : tone === "plain" ? "bg-white" : "bg-accent"} ${(disabled || (!keepEnabled && busy)) && tone !== "black" ? "opacity-40" : ""}`}
+      className={`min-h-12 items-center justify-center rounded-lg px-4 py-3 ${tone === "black" ? "bg-black" : tone === "dark" ? "bg-balance" : tone === "ghost" ? "bg-transparent" : tone === "plain" ? "bg-surface" : "bg-accent"} ${(disabled || (!keepEnabled && busy)) && tone !== "black" ? "opacity-40" : ""}`}
     >
       <Text
         numberOfLines={multiline ? 2 : 1}

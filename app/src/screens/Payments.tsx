@@ -1,3 +1,4 @@
+import { useTheme } from '../theme';
 import { nativeAsset, type Asset } from "../assets";
 import { AssetPicker } from "../components/AssetPicker";
 import { ContentSkeleton } from "../components/ContentSkeleton";
@@ -22,6 +23,7 @@ import { RecipientStep } from "./payment/RecipientStep";
 import { DescriptionStep } from "./payment/DescriptionStep";
 import { AmountStep } from "./payment/AmountStep";
 export function Payments({ onStepChange, keyboardVisible = false }: { onStepChange?: (step: number) => void; keyboardVisible?: boolean }) {
+  const { colors } = useTheme();
   const { data: session } = useSession(),
     query = useQueryClient(),
     run = useAction();
@@ -142,7 +144,7 @@ export function Payments({ onStepChange, keyboardVisible = false }: { onStepChan
       <View className="flex-row items-center justify-between">
         {currentStep > 1 ? <Pressable accessibilityRole="button" accessibilityLabel={`Back to ${id && !canEdit ? 'activity' : currentStep === 2 ? 'recipient' : currentStep === 3 ? 'amount' : 'description'}`}
           disabled={busy} onPress={() => id && !canEdit ? go('Activity') : navigateBack((currentStep - 1) as 1 | 2 | 3)} className="min-h-12 flex-row items-center gap-2 pr-4">
-          <ArrowLeft size={24} color="#191916" accessible={false} /><Text className="text-base">Back</Text>
+          <ArrowLeft size={24} color={colors.ink} accessible={false} /><Text className="text-base">Back</Text>
         </Pressable> : <Text className="text-base font-medium">Send</Text>}
         <Text accessibilityLabel={`Step ${currentStep} of 4`} className="text-sm text-muted">Step {currentStep} of 4</Text>
       </View>
@@ -215,7 +217,7 @@ export function Payments({ onStepChange, keyboardVisible = false }: { onStepChan
             isFetching ? <ContentSkeleton variant="card" label="Loading payment" /> : <Empty text="Could not load payment." />
           ) : (
             <>
-              <View className="gap-4 rounded-3xl bg-white p-5">
+              <View className="gap-4 rounded-3xl bg-surface p-5">
                 <View className="flex-row items-center gap-3">
                   <Avatar actor={payment.recipient} />
                   <View className="flex-1">

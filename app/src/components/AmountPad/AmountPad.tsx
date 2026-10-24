@@ -1,3 +1,4 @@
+import { useTheme } from '../../theme';
 import { Pressable, View } from "react-native";
 import { Text } from "../Typography";
 import { Ionicons } from "@expo/vector-icons";
@@ -15,6 +16,7 @@ export function AmountPad({
   compact?: boolean;
   onChange: (value: string) => void;
 }) {
+  const { colors } = useTheme();
   return (
     <View className={compact ? "gap-2" : "gap-4"}>
       <View className={`${compact ? "min-h-20" : "min-h-32"} items-center justify-center gap-2 px-2`}>
@@ -56,10 +58,10 @@ export function AmountPad({
             }
             onPress={() => onChange(editAmount(value, key, decimals))}
             onLongPress={key === "backspace" ? () => onChange("0") : undefined}
-            className={`${compact ? "h-12" : "h-16"} w-1/3 items-center justify-center rounded-xl active:bg-white`}
+            className={`${compact ? "h-12" : "h-16"} w-1/3 items-center justify-center rounded-xl active:bg-surface`}
           >
             {key === "backspace" ? (
-              <Ionicons name="backspace-outline" size={26} color="#191916" />
+              <Ionicons name="backspace-outline" size={26} color={colors.ink} />
             ) : (
               <Text className="text-3xl font-medium text-ink">{key}</Text>
             )}

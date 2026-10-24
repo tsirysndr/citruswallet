@@ -1,3 +1,4 @@
+import { useTheme } from '../theme';
 import { ContentSkeleton } from "../components/ContentSkeleton";
 import Svg, { Circle, Path } from "react-native-svg";
 import { PaymentStatus } from "../components/PaymentStatus";
@@ -13,6 +14,7 @@ import { reviewAtom, screenAtom } from "../state";
 import type { Payment } from "../types";
 import { Avatar, Button, Empty, Field, Heading } from "../components/ui";
 export function Activity({ header }: { header?: ReactNode }) {
+  const { colors } = useTheme();
   const list = useRef<FlatList<Payment>>(null);
   const { data: session } = useSession(),
     run = useAction(),
@@ -67,7 +69,7 @@ export function Activity({ header }: { header?: ReactNode }) {
           onPress={() => void refetch()}
           className="p-3"
         >
-          <Ionicons name="refresh-outline" size={24} />
+          <Ionicons name="refresh-outline" size={24} color={colors.ink} />
         </Pressable>
       </View>
       <View className="flex-row items-end gap-3">
@@ -83,10 +85,10 @@ export function Activity({ header }: { header?: ReactNode }) {
         <Pressable
           accessibilityLabel="Activity filters"
           onPress={() => setFilters(true)}
-          className="items-center justify-center rounded-lg bg-white"
+          className="items-center justify-center rounded-lg bg-surface"
           style={{ width: 48, height: 48 }}
         >
-          <Svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="#191916" strokeWidth={1.6} strokeLinecap="round" accessible={false}>
+          <Svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke={colors.ink} strokeWidth={1.6} strokeLinecap="round" accessible={false}>
             <Path d="M3 7h3m6 0h9M3 17h9m6 0h3" />
             <Circle cx={9} cy={7} r={3} />
             <Circle cx={15} cy={17} r={3} />
@@ -108,7 +110,7 @@ export function Activity({ header }: { header?: ReactNode }) {
         const outgoing = payment.senderDid === session.did,
           actor = outgoing ? payment.recipient : payment.sender;
         return (
-          <View className="mb-3 gap-3 rounded-2xl bg-white p-4">
+          <View className="mb-3 gap-3 rounded-2xl bg-surface p-4">
             <View className="flex-row items-center gap-3">
               <Avatar actor={actor} />
               <View className="flex-1">

@@ -29,7 +29,7 @@ export function NotificationSettings() {
     } catch (err) { setError(err instanceof Error ? err.message : 'Could not update notifications. Try again.'); }
     finally { setBusy(false); }
   };
-  return <View className="gap-4 rounded-3xl bg-white p-5">
+  return <View className="gap-4 rounded-3xl bg-surface p-5">
     <Text className="text-xl font-bold">Payment notifications</Text>
     <Text className="text-sm text-muted">Know when a payment arrives, even when Peachlet is closed.</Text>
     {isPending ? <ContentSkeleton variant="line" label="Checking notification settings" /> : loadError ? <Button title="Retry notification settings" tone="plain" onPress={() => void refetch()} /> : <>

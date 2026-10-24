@@ -11,7 +11,7 @@ export function DescriptionStep({ description, media, onDescription, onMedia, on
 }) {
   return <View className="gap-5">
     <Text className="text-sm text-muted">Description (optional)</Text>
-    <View testID="description-composer" className="relative gap-3 rounded-xl border border-edge bg-white p-3">
+    <View testID="description-composer" className="relative gap-3 rounded-xl border border-edge bg-surface p-3">
       <TextInput accessibilityLabel="Description (optional)" value={description} onChangeText={onDescription}
         maxLength={500} multiline textAlignVertical="top" style={{ minHeight: 160 }}
         className="text-base text-ink" placeholderTextColor="#696b63" placeholder="What's this payment for?" />

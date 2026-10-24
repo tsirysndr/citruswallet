@@ -53,7 +53,7 @@ export function NotificationsInbox() {
             {data?.notifications.map((item) => (
               <Pressable
                 key={item.id}
-                className="gap-2 rounded-2xl bg-white p-5"
+                className="gap-2 rounded-2xl bg-surface p-5"
                 onPress={() =>
                   run(async () => {
                     await request("markNotificationRead", { id: item.id });

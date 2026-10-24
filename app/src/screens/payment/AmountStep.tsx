@@ -14,7 +14,7 @@ export function AmountStep({ actor, handle, amount, onAmount, onContinue, decima
   let valid = false;
   try { parseAmount(amount.replace(/\.$/, ""), decimals); valid = true; } catch {}
   return <View className="gap-4">
-    <View className="flex-row items-center gap-3 rounded-2xl bg-white p-3">
+    <View className="flex-row items-center gap-3 rounded-2xl bg-surface p-3">
       <Avatar actor={actor} size={64} /><View className="min-w-0 flex-1">
         <Text className="text-sm text-muted">Sending to</Text>
         <Text numberOfLines={1} className="text-base font-semibold">{actor?.displayName || `@${handle}`}</Text>

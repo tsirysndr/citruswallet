@@ -34,7 +34,7 @@ export function WalletUnlock() {
   if (nativeProtection() === 'device') return null;
   return <Modal visible={open} transparent animationType="slide" onRequestClose={cancel}>
     <View className="flex-1 justify-center bg-black/25 px-4 py-12"><ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }} keyboardShouldPersistTaps="handled">
-      <View className="rounded-3xl bg-white p-5">{open && <LocalWallet allowWhileBusy onDismiss={cancel} />}</View>
+      <View className="rounded-3xl bg-surface p-5">{open && <LocalWallet allowWhileBusy onDismiss={cancel} />}</View>
     </ScrollView></View>
   </Modal>;
 }

@@ -6,17 +6,17 @@ import type { Session } from "../../types";
 import { ContentSkeleton } from "../ContentSkeleton";
 import { Text } from "../Typography";
 import { Button } from "../ui";
-function WalletAssets({ session, address, hidden }: { session: Session; address: string; hidden: boolean }) {
+function WalletAssets({ session, address, hidden, index }: { session: Session; address: string; hidden: boolean; index: number }) {
   const query = useAssets(session.did, session.network.chainId, address);
   const entries = [...new Map(query.data?.pages.flatMap(page => page.assets).map(row => [row.asset.id, row]) ?? []).values()];
   return <View className="gap-3">
-    <Text selectable className="font-mono text-xs text-muted">{address}</Text>
+    <View className="gap-1"><Text className="text-base font-bold">Account {index + 1}</Text><Text accessibilityLabel={address} selectable numberOfLines={1} ellipsizeMode="middle" className="font-mono text-xs font-bold text-muted">{address.slice(0, 8)}…{address.slice(-6)}</Text></View>
     {query.isPending && <ContentSkeleton label="Loading assets" />}
     {(query.isError || query.data?.pages.some(page => !page.discoveryAvailable)) && <Text className="text-xs text-muted">Some token balances are unavailable. Try refreshing.</Text>}
-    <ScrollView nestedScrollEnabled style={{ maxHeight: 280 }}>{entries.map(({ asset, balanceAtomic }) => <View key={asset.id} className="flex-row items-center gap-3 border-b border-edge py-3"><AssetLogo asset={asset} /><View className="min-w-0 flex-1 gap-1">
-      <View className="flex-row justify-between gap-3"><Text className="text-base font-semibold">{asset.symbol}</Text><Text className="flex-1 text-right font-mono text-sm font-bold">{hidden ? "••••••" : formatBalance(balanceAtomic, asset.decimals)}</Text></View>
+    <ScrollView nestedScrollEnabled style={{ maxHeight: 280 }}>{entries.map(({ asset, balanceAtomic }) => <View key={asset.id} className="flex-row items-center gap-3 py-3"><AssetLogo asset={asset} /><View className="min-w-0 flex-1 gap-1">
+      <View className="flex-row justify-between gap-3"><Text className="text-base font-semibold">{asset.symbol}</Text><Text className="flex-1 text-right font-mono text-base font-extrabold">{hidden ? "••••••" : formatBalance(balanceAtomic, asset.decimals)}</Text></View>
       <Text className="text-xs text-muted">{asset.name}</Text>
-      {asset.contractAddress && <Text selectable className="font-mono text-xs text-muted">{asset.contractAddress}</Text>}
+      {asset.contractAddress && <Text accessibilityLabel={asset.contractAddress} selectable numberOfLines={1} ellipsizeMode="middle" className="font-mono text-xs font-bold text-muted">{asset.contractAddress.slice(0, 8)}…{asset.contractAddress.slice(-6)}</Text>}
     </View></View>)}</ScrollView>
     {query.hasNextPage && <Button title="Load more assets" tone="plain" disabled={query.isFetchingNextPage} onPress={() => void query.fetchNextPage()} />}
   </View>;
@@ -24,5 +24,5 @@ function WalletAssets({ session, address, hidden }: { session: Session; address:
 export function AssetBalances({ session, hidden }: { session: Session; hidden: boolean }) {
   const links = (session.links ?? []).filter(link => link.chain_id === session.network.chainId);
   if (!links.length) return null;
-  return <View className="gap-5 rounded-3xl bg-white p-5"><Text className="text-xl font-semibold">Your assets</Text>{links.map(link => <WalletAssets key={link.address} session={session} address={link.address} hidden={hidden} />)}</View>;
+  return <View className="gap-5 rounded-3xl bg-surface p-5"><Text className="text-xl font-semibold">Your assets</Text>{links.map((link, index) => <WalletAssets index={index} key={link.address} session={session} address={link.address} hidden={hidden} />)}</View>;
 }

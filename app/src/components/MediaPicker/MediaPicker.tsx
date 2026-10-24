@@ -1,3 +1,4 @@
+import { useTheme } from '../../theme';
 import { ContentSkeleton } from "../ContentSkeleton";
 import { useEffect, useState } from 'react';
 import { FlatList, Modal, Pressable, View } from 'react-native';
@@ -11,6 +12,7 @@ import { fetchMedia, klipyEnabled, mediaKinds, type MediaKind } from '../../klip
 import type { PaymentMedia } from '../../types';
 
 export function MediaPicker({ value, onChange }: { value: PaymentMedia | null; onChange: (media: PaymentMedia | null) => void }) {
+  const { colors } = useTheme();
   const [open, setOpen] = useState(false), [kind, setKind] = useState<MediaKind>('gifs');
   const [input, setInput] = useState(''), [search, setSearch] = useState('');
   useEffect(() => { const timer = setTimeout(() => setSearch(input.trim()), 250); return () => clearTimeout(timer); }, [input]);
@@ -21,13 +23,13 @@ export function MediaPicker({ value, onChange }: { value: PaymentMedia | null; o
   });
   const items = results.data?.pages.flatMap(page => page.items).flatMap(item => item.media ? [item.media] : []) || [];
   return <View className="gap-3">
-    {value && <View className="gap-2 rounded-xl bg-white p-3">
+    {value && <View className="gap-2 rounded-xl bg-surface p-3">
       <Image source={{ uri: value.preview }} style={{ height: 150, width: '100%' }} contentFit="contain" accessibilityLabel={value.title} />
       <Button title="Remove attachment" tone="plain" onPress={() => onChange(null)} />
     </View>}
     <Pressable accessibilityRole="button" accessibilityLabel="Add GIF, sticker, meme or clip" onPress={() => setOpen(true)}
       className="h-12 w-12 items-center justify-center rounded-lg">
-      <Ionicons name="images-outline" size={25} color="#191916" /><Text className="text-xs font-bold">GIF</Text>
+      <Ionicons name="images-outline" size={25} color={colors.ink} /><Text className="text-xs font-bold">GIF</Text>
     </Pressable>
     <Modal visible={open} animationType="slide" onRequestClose={() => setOpen(false)}>
       <SafeAreaView className="flex-1 bg-canvas">
@@ -35,14 +37,14 @@ export function MediaPicker({ value, onChange }: { value: PaymentMedia | null; o
           <View className="flex-row items-center justify-between">
             <Text className="text-xl font-bold">Add a little personality</Text>
             <Pressable accessibilityRole="button" accessibilityLabel="Close media picker" onPress={() => setOpen(false)} className="h-12 w-12 items-center justify-center">
-              <Ionicons name="close" size={28} color="#191916" />
+              <Ionicons name="close" size={28} color={colors.ink} />
             </Pressable>
           </View>
           <TextInput accessibilityLabel="Search media" placeholder="Search KLIPY" value={input} onChangeText={setInput}
-            className="rounded-lg border border-edge bg-white p-3 text-base" />
+            className="rounded-lg border border-edge bg-surface p-3 text-base" />
           <View className="flex-row gap-2">{mediaKinds.map(item => <Pressable key={item.value} accessibilityRole="tab"
             accessibilityState={{ selected: kind === item.value }} onPress={() => setKind(item.value)}
-            className={`flex-1 items-center rounded-lg py-3 ${kind === item.value ? 'bg-accent' : 'bg-white'}`}>
+            className={`flex-1 items-center rounded-lg py-3 ${kind === item.value ? 'bg-accent' : 'bg-surface'}`}>
             <Text className="text-sm font-medium">{item.label}</Text>
           </Pressable>)}</View>
           <Text className="text-sm text-muted">Powered by KLIPY</Text>

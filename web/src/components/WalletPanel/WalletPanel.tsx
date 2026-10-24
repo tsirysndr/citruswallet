@@ -96,7 +96,7 @@ export function WalletPanel({ className }: { className?: string }) {
             href={metamaskStoreUrl()}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex w-full items-center justify-center gap-2.5 rounded-[6px] bg-ink px-4 py-3 text-[13px] font-semibold text-white hover:opacity-90"
+            className="flex w-full items-center justify-center gap-2.5 rounded-[6px] bg-ink px-4 py-3 text-[13px] font-semibold text-canvas hover:opacity-90"
           >
             <img src="/metamask.png" alt="" width={28} height={28} />
             Install MetaMask for your browser

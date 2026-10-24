@@ -80,7 +80,7 @@ export function Account() {
           title="Your handle. Your wallet."
           subtitle="Send assets to the people you know. Your keys stay with you."
         />
-        <View className="gap-5 rounded-3xl bg-white p-6">
+        <View className="gap-5 rounded-3xl bg-surface p-6">
           <Heading title="Welcome to Peachlet" />
           <Text className="my-1 text-left text-base leading-6 text-muted">Sign in with your Atmosphere Account</Text>
           <AtmosphereApps />
@@ -130,7 +130,7 @@ export function Account() {
         />
         <IdentitySheet />
       </View>
-      <View className="gap-4 rounded-3xl bg-ink p-6">
+      <View className="gap-4 rounded-3xl bg-balance p-6">
         <View className="flex-row items-center justify-between">
           <Text className="text-lg text-white">Total balance</Text>
           <Pressable accessibilityRole="button" accessibilityLabel={hidden ? "Show balance" : "Hide balance"}

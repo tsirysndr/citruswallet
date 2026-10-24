@@ -17,7 +17,7 @@ export function BalanceAccess({ session, balances, available, loading, refresh }
   const switchNetwork = !builtIn && !!balances?.address && !balances.onNetwork;
   const title = locked ? 'Unlock wallet' : connect ? 'Connect MetaMask' : switchNetwork ? `Switch to ${session.network.name}` : 'Refresh balance';
   return <div className="mt-3 flex flex-wrap items-center gap-3">
-    <Button className="!bg-white !text-ink !px-4 !py-2 text-sm" disabled={loading && !locked} onClick={() => run(async () => {
+    <Button className="!bg-raised !text-ink !px-4 !py-2 text-sm" disabled={loading && !locked} onClick={() => run(async () => {
       if (locked) { await requestUnlock(); status('Wallet unlocked.'); }
       else if (connect || switchNetwork) {
         const wallet = await connectWallet(session.network);

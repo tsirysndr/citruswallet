@@ -30,7 +30,7 @@ export function IdentityPopover({ children, className, label = 'Account informat
       const rect = trigger.current!.getBoundingClientRect();
       setPosition({ left: Math.max(12, Math.min(rect.right - 360, window.innerWidth - 372)), ...(above ? { bottom: Math.max(12, window.innerHeight - rect.top + 8) } : { top: Math.min(rect.bottom + 8, Math.max(12, window.innerHeight - 420)) }) });
     }}>{children ?? <Avatar actor={actor} size="size-12" />}</button>
-    {position && createPortal(<div ref={panel} id={id} role="dialog" aria-label="Account information" className="fixed z-[70] w-[min(360px,calc(100vw-24px))] overflow-y-auto rounded-2xl border border-edge bg-white shadow-lg" style={{ ...position, maxHeight: Math.max(120, window.innerHeight - (position.top ?? position.bottom ?? 0) - 12) }}>
+    {position && createPortal(<div ref={panel} id={id} role="dialog" aria-label="Account information" className="fixed z-[70] w-[min(360px,calc(100vw-24px))] overflow-y-auto rounded-2xl border border-edge bg-raised shadow-lg" style={{ ...position, maxHeight: Math.max(120, window.innerHeight - (position.top ?? position.bottom ?? 0) - 12) }}>
       <div className="flex justify-end px-3 pt-3"><button ref={closeButton} type="button" aria-label="Close account information" onClick={close} className="flex size-9 items-center justify-center rounded-full"><X size={20} /></button></div>
       <IdentityPanel />
     </div>, document.body)}

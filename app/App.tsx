@@ -1,3 +1,4 @@
+import { ThemeProvider, useTheme } from './src/theme';
 import { useWalletOnboarding } from "./src/useWalletOnboarding";
 import { Landing } from './src/components/Landing';
 import { Settings } from './src/screens/Settings';
@@ -52,6 +53,7 @@ const client = new QueryClient({
   },
 });
 function Shell() {
+  const { appearance, colors } = useTheme();
   const scroll = useRef<ScrollView>(null);
   const [invite, setInvite] = useAtom(inviteTokenAtom);
   const [refreshing, setRefreshing] = useState(false);
@@ -153,7 +155,7 @@ function Shell() {
   </>;
   if (ready && !session.isPending && !session.data?.did && !entryStarted && !invite) return <Landing onGetStarted={() => setEntryStarted(true)} />;
   if (needsSetup === null || needsSetup) return <SafeAreaView className="flex-1 bg-canvas" edges={['top', 'bottom']}>
-    {session.data?.did && <WalletUnlock />}<StatusBar style="dark" />
+    {session.data?.did && <WalletUnlock />}<StatusBar style={appearance === "dark" ? "light" : "dark"} />
     <View className="flex-row items-center gap-3 px-5 py-4"><Image source={require('./assets/icon.png')} style={{ width: 42, height: 42 }} /><Text className="text-xl font-bold">Peachlet</Text></View>
     <KeyboardAvoidingView className="flex-1" behavior={Platform.OS === 'ios' ? 'padding' : undefined}><ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: 20 }}>
       {ready && !session.isPending && !session.error ? <WalletEntry onFinished={() => { setNeedsSetup(false); setScreen(invite ? 'Wallet' : 'Account'); }} /> : <ContentSkeleton label="Opening Peachlet" />}
@@ -162,14 +164,14 @@ function Shell() {
   </SafeAreaView>;
   return (
     <SafeAreaView className="flex-1 bg-canvas" edges={["top", "bottom"]}>
-      <WalletUnlock /><StatusBar style="dark" />
+      <WalletUnlock /><StatusBar style={appearance === "dark" ? "light" : "dark"} />
       {!hideHeader && <View className="flex-row items-center justify-between px-5 py-4">
         <Pressable accessibilityRole="button" accessibilityLabel="Peachlet home" disabled={busy} onPress={() => { Keyboard.dismiss(); setScreen("Account"); }} className="min-w-0 flex-1 flex-row items-center gap-3">
           <Image source={require('./assets/icon.png')} accessibilityLabel="Peachlet logo" style={{ width: 42, height: 42 }} />
           <Text numberOfLines={1} adjustsFontSizeToFit className="flex-shrink text-xl font-bold text-ink">Peachlet</Text>
         </Pressable>
         <View className="items-end pl-2">
-          <View className="flex-row items-center gap-2"><NotificationsInbox /><Pressable accessibilityRole="button" accessibilityLabel="Settings" hitSlop={10} onPress={() => setScreen("Settings")}><SettingsIcon size={23} color="#292d26" /></Pressable></View>
+          <View className="flex-row items-center gap-2"><NotificationsInbox /><Pressable accessibilityRole="button" accessibilityLabel="Settings" hitSlop={10} onPress={() => setScreen("Settings")}><SettingsIcon size={23} color={colors.ink} /></Pressable></View>
           <Text className="text-xs text-muted">
             <Text style={{ color: "#39e75f" }}>● </Text>
             {session.data?.network.name || "Ethereum"}
@@ -222,7 +224,7 @@ export default function App() {
     <SafeAreaProvider>
       <Provider>
         <QueryClientProvider client={client}>
-          <Shell />
+          <ThemeProvider><Shell /></ThemeProvider>
         </QueryClientProvider>
       </Provider>
     </SafeAreaProvider>

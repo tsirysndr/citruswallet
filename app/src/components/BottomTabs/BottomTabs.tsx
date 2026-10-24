@@ -1,3 +1,4 @@
+import { useTheme } from '../../theme';
 import { Pressable, View } from 'react-native';
 import History from 'lucide-react-native/icons/rotate-ccw-clock';
 import Send from 'lucide-react-native/icons/send';
@@ -11,14 +12,15 @@ const tabs: { name: Screen; icon: LucideIcon }[] = [
   { name: 'Payments', icon: Send }, { name: 'Activity', icon: History },
 ];
 export function BottomTabs({ screen, onChange }: { screen: Screen; onChange: (screen: Screen) => void }) {
+  const { colors } = useTheme();
   return <View testID="bottom-navigation" style={{ marginHorizontal: 16, marginBottom: 10, marginTop: 8, padding: 6, borderRadius: 40,
-    backgroundColor: '#fff', borderWidth: 1, borderColor: '#e7e7df', flexDirection: 'row', gap: 4,
+    backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.edge, flexDirection: 'row', gap: 4,
     boxShadow: '0px 3px 12px #20211a0d' }}>
     {tabs.map(({ name, icon: Icon }) => <Pressable key={name} accessibilityRole="tab" accessibilityLabel={name}
       accessibilityState={{ selected: screen === name }} onPress={() => onChange(name)}
       style={{ flex: 1, minWidth: 0, minHeight: 62, borderRadius: 32, alignItems: 'center', justifyContent: 'center', gap: 4,
-        backgroundColor: screen === name ? '#ffb995' : 'transparent' }}>
-      <Icon size={24} strokeWidth={1.75} color="#191916" />
+        backgroundColor: screen === name ? colors.accent : 'transparent' }}>
+      <Icon size={24} strokeWidth={1.75} color={colors.ink} />
       <Text numberOfLines={1} adjustsFontSizeToFit className="text-xs font-medium text-ink">{name}</Text>
     </Pressable>)}
   </View>;

@@ -41,7 +41,7 @@ export function HandleInput({ value, onChange, onSelect, excludeDid, label = 'Ha
   const show = focused && normalized === search && normalized !== selected && normalized.length >= 2 && !normalized.startsWith('did:');
   return <View className="gap-2">
     {!hideLabel && <Text className="text-sm text-muted">{label}</Text>}
-    <View className="flex-row items-center rounded-lg border border-edge bg-white px-3">
+    <View className="flex-row items-center rounded-lg border border-edge bg-surface px-3">
       <Text accessible={false} className="mr-2 text-2xl text-muted">@</Text>
       <TextInput accessibilityLabel={label} placeholder="you.bsky.social" placeholderTextColor="#696b63"
         editable={!busy} value={value} onChangeText={text => { setSelected(''); onChange(text.replace(/^@+/, '')); }}
@@ -50,7 +50,7 @@ export function HandleInput({ value, onChange, onSelect, excludeDid, label = 'Ha
         onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
         className="min-h-12 flex-1 py-3 text-base text-ink" />
     </View>
-    {show && !!actors.length && <View className="overflow-hidden rounded-lg border border-edge bg-white">
+    {show && !!actors.length && <View className="overflow-hidden rounded-lg border border-edge bg-surface">
       {actors.map(actor => <Pressable key={actor.did} accessibilityRole="button" accessibilityLabel={`Use @${actor.handle}`}
         disabled={busy} onPress={() => { setSelected(actor.handle); onChange(actor.handle); onSelect?.(actor); }} className="flex-row items-center gap-3 px-3 py-2">
         <Avatar actor={actor} /><View className="flex-1"><Text numberOfLines={1} className="font-semibold text-ink">{actor.displayName || actor.handle}</Text><Text numberOfLines={1} className="text-sm text-muted">@{actor.handle}</Text></View>

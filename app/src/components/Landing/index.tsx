@@ -15,7 +15,7 @@ export function Landing({ onGetStarted }: { onGetStarted: () => void }) {
       <View style={{ flex: 1, justifyContent: 'center', paddingVertical: 36 }}>
         <Text className="font-bold" style={{ color: '#482719', fontSize: 14, marginBottom: 20 }}>A little more human.</Text>
         <Text accessibilityRole="header" className="font-bold" style={{ color: '#191916', fontSize: 58, lineHeight: 62, letterSpacing: -2 }}>Send ETH.{'\n'}To a handle.</Text>
-        <Text style={{ color: '#482719', fontSize: 19, lineHeight: 28, marginTop: 24 }}>Send crypto to a short, readable <Text accessibilityRole="link" onPress={() => void Linking.openURL('https://atproto.com')} style={{ textDecorationLine: 'underline' }}>AT Protocol</Text> handle instead of a long wallet address. Your wallet. Your keys. Your people.</Text>
+        <Text style={{ color: '#482719', fontSize: 19, lineHeight: 28, marginTop: 24 }}>Send crypto to a short, readable <Text accessibilityRole="link" onPress={() => void Linking.openURL('https://atproto.com')} style={{ color: '#482719', textDecorationLine: 'underline' }}>AT Protocol</Text> handle instead of a long wallet address. Your wallet. Your keys. Your people.</Text>
         <View style={{ gap: 12, marginTop: 36 }}><Text className="font-mono" style={{ color: '#482719', opacity: 0.5, textDecorationLine: 'line-through', fontSize: 17 }}>0x7F4a…9c2D</Text><Text className="font-mono" style={{ color: '#191916', fontSize: 20 }}>→ @alice.bsky.social</Text></View>
       </View>
       <View style={{ flexDirection: 'row', gap: 24, paddingVertical: 20 }}>

@@ -13,7 +13,7 @@ export function ConnectedAddresses() {
       {session.links.map((link) => (
         <View
           key={`${link.chain_id}:${link.address}`}
-          className="gap-4 rounded-3xl bg-white p-5"
+          className="gap-4 rounded-3xl bg-surface p-5"
         >
           <Text selectable className="font-mono text-sm">
             {link.address}

@@ -1,3 +1,4 @@
+import { useTheme } from '../../theme';
 import { useEffect, useRef, useState } from "react";
 import { AccessibilityInfo, Animated, Easing, Image, Linking, Pressable, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -26,6 +27,7 @@ const apps = [
 ];
 const width = apps.length * 52;
 export function AtmosphereApps() {
+  const { colors } = useTheme();
   const offset = useRef(new Animated.Value(0)).current;
   const [paused, setPaused] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(true);
@@ -57,7 +59,7 @@ export function AtmosphereApps() {
         className="flex-1 text-sm text-muted underline">What is an atmosphere account?</Text>
       {!reduceMotion && <Pressable accessibilityRole="button" accessibilityLabel={paused ? "Play app animation" : "Pause app animation"}
         onPress={() => setPaused(!paused)} hitSlop={8} style={{ padding: 8 }}>
-        <Ionicons name={paused ? "play-outline" : "pause-outline"} size={18} color="#696b63" />
+        <Ionicons name={paused ? "play-outline" : "pause-outline"} size={18} color={colors.muted} />
       </Pressable>}
     </View>
   </View>;

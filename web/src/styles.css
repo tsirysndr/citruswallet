@@ -48,13 +48,13 @@
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --canvas: #20211e; --raised: #34362f; --sunken: #23251f;
-  --edge: #4b4e42; --edge-soft: #3b3e34; --rule: #414439;
+  --canvas: #000000; --raised: #171717; --sunken: #101010;
+  --edge: #363636; --edge-soft: #292929; --rule: #363636;
   --ink: #f5f5ed; --ink-soft: #d2d4c9; --ink-muted: #b4b8a9; --ink-faint: #a5ab98;
   --accent: #ffb995; --accent-ink: #482719; --accent-quiet: #54372c; --accent-strong: #ffb995;
   --info: #c5dfaa; --highlight: #e6d5fc; --highlight-bg: #44374e;
   --good: #c5dfaa; --good-bg: #35452b; --good-edge: #536747; --bad: #ff9aa6;
-  --focus: #ffb995; --shadow: #0003; --surface: #2a2c25; --panel: #32352c;
+  --focus: #ffb995; --shadow: #0003; --surface: #121212; --panel: #171717;
 }
 @layer base {
   body { margin: 0; background: var(--canvas); color: var(--ink); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
@@ -400,7 +400,7 @@ textarea:focus-visible { outline: none; }
 @media (max-width: 639px) { .notification-popover { position: fixed; top: 74px; right: 16px; } }
 .notification-item { display: flex; flex-direction: column; gap: 8px; padding: 16px; border: 1px solid var(--edge-soft); background: var(--panel); text-align: left; border-radius: 8px; cursor: pointer; }
 .notification-item:hover { border-color: var(--accent-strong); }
-.notification-count { position: absolute; top: -4px; right: -6px; display: flex; align-items: center; justify-content: center; min-width: 19px; height: 19px; padding: 0 5px; border: 2px solid #f7f3f0; border-radius: 999px; background: #dc2626; color: white; font-size: 11px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.notification-count { position: absolute; top: -4px; right: -6px; display: flex; align-items: center; justify-content: center; min-width: 19px; height: 19px; padding: 0 5px; border: 2px solid var(--canvas); border-radius: 999px; background: #dc2626; color: white; font-size: 11px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
 
 .payment-status-waiting { background-color: #fff0c2; color: #795600; border-color: transparent; }
 .payment-status-ready { background-color: #ddf4df; color: #23613b; border-color: transparent; }
