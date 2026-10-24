@@ -1,3 +1,12 @@
+const mockPrepare = jest.fn(async tx => ({ ...tx }));
+const mockSign = jest.fn(async () => '0xdead');
+const mockBroadcast = jest.fn(async () => '0xhash');
+const mockChain = jest.fn(async () => 4326);
+jest.mock('viem', () => ({ ...jest.requireActual('viem'),
+  createPublicClient: () => ({ getChainId: mockChain }),
+  createWalletClient: () => ({ prepareTransactionRequest: mockPrepare, signTransaction: mockSign, sendRawTransaction: mockBroadcast }),
+}));
+jest.mock('../src/fee-quote', () => ({ estimateFees: jest.fn(async (tx, chainId) => ({ ...tx, chainId, value: BigInt(tx.value).toString(), nonce: Number(BigInt(tx.nonce)), gasLimit: '63349', maxFeePerGas: '1000000', maxPriorityFeePerGas: '0', maxFeeWei: '63349000000', expiresAt: Date.now() + 60000 })) }));
 const { TextEncoder, TextDecoder } = require('node:util');
 global.TextEncoder = TextEncoder;
 global.TextDecoder = TextDecoder;
@@ -96,4 +105,27 @@ test('device-protected wallets can switch to an independently encrypted password
   vault.lockNativeWallet();
   await vault.unlockNativeVault('another long password');
   expect(vault.nativeAddress()).toBe('0x9858EfFD232B4033E47d90003D41EC34EcaEda94');
+});
+
+
+test('native signing uses the exact MegaETH quote and reserved nonce after approval', async () => {
+  await vault.createProtectedNativeVault(secret, 'device', '');
+  const network = { chainId: 4326, chainIdHex: '0x10e6', name: 'MegaETH', rpcUrls: ['https://rpc.example'], nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 } };
+  const tx = { from: vault.nativeAddress(), to: '0x1111111111111111111111111111111111111111', value: '0x1', nonce: '0x7', data: '0x', chainId: '0x10e6' };
+  const approval = jest.spyOn(require('react-native').Alert, 'alert').mockImplementation((title, text, buttons) => buttons[1].onPress());
+  try {
+    await vault.nativeProvider(network).request({ method: 'eth_sendTransaction', params: [tx] });
+    expect(mockPrepare).toHaveBeenCalledWith(expect.objectContaining({ gas: 63349n, maxFeePerGas: 1000000n, nonce: 7, value: 1n, to: tx.to }));
+    expect(mockSign).toHaveBeenCalledTimes(1);
+    expect(mockBroadcast).toHaveBeenCalledWith({ serializedTransaction: '0xdead' });
+  } finally { approval.mockRestore(); }
+});
+
+test('native signing refuses a wrong-chain quote before approval or broadcast', async () => {
+  await vault.createProtectedNativeVault(secret, 'device', '');
+  const network = { chainId: 4326, chainIdHex: '0x10e6', name: 'MegaETH', rpcUrls: ['https://rpc.example'], nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 } };
+  const tx = { from: vault.nativeAddress(), to: '0x1111111111111111111111111111111111111111', value: '0x1', nonce: '0x7', data: '0x', chainId: '0x10e6' };
+  require('../src/fee-quote').estimateFees.mockResolvedValueOnce({ chainId: 1 });
+  await expect(vault.nativeProvider(network).request({ method: 'eth_sendTransaction', params: [tx] })).rejects.toThrow('does not match');
+  expect(mockSign).not.toHaveBeenCalled(); expect(mockBroadcast).not.toHaveBeenCalled();
 });

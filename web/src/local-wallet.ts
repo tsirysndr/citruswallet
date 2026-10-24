@@ -1,3 +1,5 @@
+import { feeQuoteParameters } from '@citruswallet/wallet-core';
+import { estimateFees } from './fee-quote';
 import { answerApproval, requestApproval } from "./wallet-approval";
 import { deviceNetwork } from "./network";
 import { accountFromSecret, normalizeSecret, decryptSecret, encryptSecret, validateEnvelope, validatePassword, type WalletSecret, type VaultEnvelope } from '@citruswallet/wallet-core';
@@ -95,11 +97,14 @@ export const localProvider: Eip1193Provider = {
     if (!tx || tx.from?.toLowerCase() !== account.address.toLowerCase() || tx.chainId !== network.chainIdHex) throw new Error('Transaction network or sender changed.');
     const client = createWalletClient({ account, chain, transport: http(url) });
     if (!/^0x[0-9a-f]+$/i.test(tx.nonce) || !Number.isSafeInteger(Number(BigInt(tx.nonce)))) throw new Error("Invalid transaction nonce.");
-    const prepared = await client.prepareTransactionRequest({ to: tx.to, value: BigInt(tx.value), nonce: Number(BigInt(tx.nonce)), data: tx.data, account });
+    const quote = await estimateFees(tx, network.chainId);
+    const quotedFees = feeQuoteParameters(quote, tx, network.chainId);
+    const prepared = await client.prepareTransactionRequest({ ...quotedFees, to: tx.to, value: BigInt(tx.value), nonce: Number(BigInt(tx.nonce)), data: tx.data, account });
     const fee = prepared.gas * (prepared.maxFeePerGas ?? prepared.gasPrice ?? 0n);
     // A separate confirmation follows simulation/fee estimation, before signing.
     if (!await requestApproval({ network: network.name, to: tx.to, value: formatEther(BigInt(tx.value)), fee: formatEther(fee), nonce: prepared.nonce, token: tx.data !== '0x' })) throw Object.assign(new Error('Payment cancelled.'), { code: 4001 });
     if (generation !== epoch || !secret || configuredNetwork?.chainId !== network.chainId) throw Object.assign(new Error('Wallet locked or network changed. Review again.'), { code: 4001 });
+    feeQuoteParameters(quote, tx, network.chainId); // Recheck expiry after user approval.
     const serializedTransaction = await client.signTransaction(prepared);
     if (generation !== epoch || !secret || configuredNetwork?.chainId !== network.chainId) throw Object.assign(new Error("Wallet locked. Review again."), { code: 4001 });
     return client.sendRawTransaction({ serializedTransaction });

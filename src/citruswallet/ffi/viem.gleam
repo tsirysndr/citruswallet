@@ -265,3 +265,21 @@ pub fn simulate_transfer(
     ]),
   )
 }
+
+pub fn estimate_fees(client: Client) -> Promise(Result(Js, Exception)) {
+  read(
+    client,
+    "estimateFeesPerGas",
+    [js.object([#("type", js.string("eip1559"))])],
+    fn(value) { Some(value) },
+  )
+}
+
+pub fn estimate_gas(
+  client: Client,
+  parameters: Js,
+) -> Promise(Result(String, Exception)) {
+  read(client, "estimateGas", [parameters], fn(value) {
+    Some(js.big_int_digits(value))
+  })
+}

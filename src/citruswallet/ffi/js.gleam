@@ -157,3 +157,6 @@ fn outcome(settled: Js) -> Result(a, Exception) {
 fn text(value: Js, fallback: String) -> String {
   option.unwrap(as_string(value), fallback)
 }
+
+@external(javascript, "../../ffi.mjs", "bigIntMultiply")
+pub fn multiply_integers(left: String, right: String) -> String

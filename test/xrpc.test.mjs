@@ -11,7 +11,7 @@ import { Chain } from '../build/dev/javascript/citruswallet/citruswallet/chain.m
 import { Settings } from '../build/dev/javascript/citruswallet/citruswallet/xrpc/context.mjs';
 import * as storeModule from '../build/dev/javascript/citruswallet/citruswallet/store.mjs';
 import * as oauthModule from '../build/dev/javascript/citruswallet/citruswallet/oauth.mjs';
-import { mainnet } from '../build/dev/javascript/citruswallet/citruswallet/network.mjs';
+import { mainnet, megaeth } from '../build/dev/javascript/citruswallet/citruswallet/network.mjs';
 import { Directory } from '../build/dev/javascript/citruswallet/citruswallet/directory.mjs';
 import { Identity } from '../build/dev/javascript/citruswallet/citruswallet/identity.mjs';
 import { None, Some } from '../build/dev/javascript/gleam_stdlib/gleam/option.mjs';
@@ -23,7 +23,7 @@ const bob = 'did:plc:bob';
 const account = privateKeyToAccount('0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80');
 const env = { incoming: { socket: { remoteAddress: '127.0.0.1', remoteFamily: 'IPv4', remotePort: 10000 } } };
 
-function fixture(t, chain = new None()) {
+function fixture(t, chain = new None(), network = mainnet) {
   const opened = storeModule.open(':memory:', './drizzle');
   assert.ok(opened instanceof Ok);
   const store = opened[0];
@@ -42,7 +42,7 @@ function fixture(t, chain = new None()) {
   };
   const directory = new Directory(async () => new Ok(toList([])), async () => new Ok(new None()));
   const lookup = async identifier => new Ok(new Identity(identifier?.[0] === 'alice.test' ? alice : bob, new Some('bob.test')));
-  const app = build(new Settings(store, oauth, origin, 0, mainnet, lookup, directory, 'https://bsky.social', chain, './web/dist'));
+  const app = build(new Settings(store, oauth, origin, 0, network, lookup, directory, 'https://bsky.social', chain, './web/dist'));
   let cookie = '';
   let csrf = '';
   async function raw(path, options = {}) {
@@ -469,4 +469,42 @@ test('network selection is explicit and cannot supply arbitrary server RPC targe
     const rejected = await f.raw('/xrpc/app.citruswallet.getSession', { headers: { 'x-citrus-chain-id': invalid } });
     assert.equal(rejected.status, 400);
   }
+});
+
+
+for (const network of [mainnet, megaeth]) test(`fee estimates use chain ${network.chain_id} and exact ETH/ERC-20 transactions`, async t => {
+  const estimates = [];
+  let actualChain = network.chain_id, fail = false;
+  const gas = network.chain_id === 1 ? 21000n : 63349n;
+  const client = {
+    getChainId: async () => actualChain,
+    estimateFeesPerGas: async () => ({ maxFeePerGas: 123456789012345678n, maxPriorityFeePerGas: 0n }),
+    estimateGas: async tx => { estimates.push(tx); if (fail) throw new Error('execution reverted'); return gas; },
+  };
+  const f = fixture(t, new Some(new Chain(client)), network);
+  const input = { chainId: network.chain_id, from: account.address, to: '0x1111111111111111111111111111111111111111', value: '10000000000000000', data: '0x', nonce: 7 };
+  await assert.rejects(f.call('estimateFees', input), e => [401, 403].includes(e.status));
+  await f.login();
+  await assert.rejects(f.call('estimateFees', input), e => e.status === 403);
+  const challenge = await f.call('createChallenge', { address: account.address, public: false });
+  await f.call('verifyChallenge', { id: challenge.id, signature: await account.signMessage({ message: challenge.message }) });
+  const quote = await f.call('estimateFees', input);
+  assert.equal(quote.chainId, network.chain_id);
+  assert.equal(quote.gasLimit, gas.toString());
+  assert.equal(quote.maxFeeWei, (gas * 123456789012345678n).toString());
+  assert.ok(quote.expiresAt > Date.now() && quote.expiresAt <= Date.now() + 60000);
+  assert.deepEqual(estimates[0], { account: input.from.toLowerCase(), to: input.to, value: BigInt(input.value), data: '0x', nonce: 7, blockTag: 'pending', maxFeePerGas: 123456789012345678n, maxPriorityFeePerGas: 0n });
+  const tokenInput = { ...input, value: '0', data: '0xa9059cbb' + input.to.slice(2).padStart(64, '0') + '123'.padStart(64, '0') };
+  const tokenQuote = await f.call('estimateFees', tokenInput);
+  assert.equal(tokenQuote.data, tokenInput.data);
+  assert.equal(estimates[1].data, tokenInput.data);
+  for (const change of [{ chainId: 999 }, { value: '-1' }, { value: '1e18' }, { data: '0x1234' }, { nonce: -1 }, { to: 'bad' }]) {
+    await assert.rejects(f.call('estimateFees', { ...input, ...change }), e => e.status === 400);
+  }
+  assert.equal(estimates.length, 2);
+  actualChain = 999;
+  await assert.rejects(f.call('estimateFees', input), e => e.status === 503);
+  assert.equal(estimates.length, 2);
+  actualChain = network.chain_id; fail = true;
+  await assert.rejects(f.call('estimateFees', input), e => e.status === 503);
 });

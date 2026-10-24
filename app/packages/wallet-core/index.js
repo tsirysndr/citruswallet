@@ -106,3 +106,24 @@ export function recoveryChallenge(phrase) {
     return { index, choices: shuffled([...choices]) };
   });
 }
+
+// Bind a short-lived server fee quote to the exact transaction reviewed locally.
+// Only fee fields are returned: a quote cannot replace the recipient or amount.
+export function feeQuoteParameters(quote, transaction, chainId, now = Date.now()) {
+  const integer = value => typeof value === 'string' && /^(0|[1-9]\d*)$/.test(value) && value.length <= 156;
+  if (!quote || quote.chainId !== chainId || transaction.chainId !== `0x${chainId.toString(16)}` ||
+      quote.from?.toLowerCase() !== transaction.from?.toLowerCase() ||
+      quote.to?.toLowerCase() !== transaction.to?.toLowerCase() ||
+      quote.data?.toLowerCase() !== transaction.data?.toLowerCase() ||
+      quote.value !== BigInt(transaction.value).toString() ||
+      !Number.isSafeInteger(quote.nonce) || quote.nonce !== Number(BigInt(transaction.nonce)))
+    throw new Error('Fee estimate does not match this transaction. Review again.');
+  if (!Number.isSafeInteger(quote.expiresAt) || quote.expiresAt <= now || quote.expiresAt > now + 120_000)
+    throw new Error('Fee estimate expired. Review the payment again.');
+  if (![quote.gasLimit, quote.maxFeePerGas, quote.maxPriorityFeePerGas, quote.maxFeeWei].every(integer))
+    throw new Error('Invalid network fee estimate.');
+  const gas = BigInt(quote.gasLimit), maxFeePerGas = BigInt(quote.maxFeePerGas), maxPriorityFeePerGas = BigInt(quote.maxPriorityFeePerGas);
+  if (gas <= 0n || maxFeePerGas < maxPriorityFeePerGas || gas * maxFeePerGas !== BigInt(quote.maxFeeWei))
+    throw new Error('Invalid network fee estimate.');
+  return { gas, maxFeePerGas, maxPriorityFeePerGas, type: 'eip1559' };
+}

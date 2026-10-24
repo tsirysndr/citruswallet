@@ -1,0 +1,51 @@
+// Authoritative Lexicon source. Generate with bun run lex:generate.
+lexicon = 1
+id = "app.citruswallet.estimateFees"
+defs = new Dynamic {
+  `main` = new Dynamic {
+    `type` = "procedure"
+    `description` = "Estimate fees for an exact ETH or ERC-20 transfer on the selected chain. Never signs or broadcasts."
+    `input` = new Dynamic {
+      `encoding` = "application/json"
+      `schema` = new Dynamic {
+        `type` = "object"
+        `required` = List("chainId", "from", "to", "value", "data", "nonce")
+        `properties` = new Dynamic {
+          `chainId` = new Dynamic { `type` = "integer"
+`minimum` = 1 }
+          `from` = new Dynamic { `type` = "string"
+`maxLength` = 42 }
+          `to` = new Dynamic { `type` = "string"
+`maxLength` = 42 }
+          `value` = new Dynamic { `type` = "string"
+`maxLength` = 78 }
+          `data` = new Dynamic { `type` = "string"
+`maxLength` = 138 }
+          `nonce` = new Dynamic { `type` = "integer"
+`minimum` = 0
+`maximum` = 9007199254740991 }
+        }
+      }
+    }
+    `output` = new Dynamic {
+      `encoding` = "application/json"
+      `schema` = new Dynamic {
+        `type` = "object"
+        `required` = List("chainId", "from", "to", "value", "data", "nonce", "gasLimit", "maxFeePerGas", "maxPriorityFeePerGas", "maxFeeWei", "expiresAt")
+        `properties` = new Dynamic {
+          `chainId` = new Dynamic { `type` = "integer" }
+          `from` = new Dynamic { `type` = "string" }
+          `to` = new Dynamic { `type` = "string" }
+          `value` = new Dynamic { `type` = "string" }
+          `data` = new Dynamic { `type` = "string" }
+          `nonce` = new Dynamic { `type` = "integer" }
+          `gasLimit` = new Dynamic { `type` = "string" }
+          `maxFeePerGas` = new Dynamic { `type` = "string" }
+          `maxPriorityFeePerGas` = new Dynamic { `type` = "string" }
+          `maxFeeWei` = new Dynamic { `type` = "string" }
+          `expiresAt` = new Dynamic { `type` = "integer" }
+        }
+      }
+    }
+  }
+}

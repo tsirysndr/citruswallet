@@ -9,6 +9,7 @@ import * as AppCitruswalletCreateChallenge from './types/app/citruswallet/create
 import * as AppCitruswalletCreateInvitation from './types/app/citruswallet/createInvitation'
 import * as AppCitruswalletCreatePayment from './types/app/citruswallet/createPayment'
 import * as AppCitruswalletDeletePayment from './types/app/citruswallet/deletePayment'
+import * as AppCitruswalletEstimateFees from './types/app/citruswallet/estimateFees'
 import * as AppCitruswalletExchangeNativeSession from './types/app/citruswallet/exchangeNativeSession'
 import * as AppCitruswalletGetAddresses from './types/app/citruswallet/getAddresses'
 import * as AppCitruswalletGetAsset from './types/app/citruswallet/getAsset'
@@ -46,6 +47,7 @@ export * as AppCitruswalletCreateInvitation from './types/app/citruswallet/creat
 export * as AppCitruswalletCreatePayment from './types/app/citruswallet/createPayment'
 export * as AppCitruswalletDefs from './types/app/citruswallet/defs'
 export * as AppCitruswalletDeletePayment from './types/app/citruswallet/deletePayment'
+export * as AppCitruswalletEstimateFees from './types/app/citruswallet/estimateFees'
 export * as AppCitruswalletExchangeNativeSession from './types/app/citruswallet/exchangeNativeSession'
 export * as AppCitruswalletGetAddresses from './types/app/citruswallet/getAddresses'
 export * as AppCitruswalletGetAsset from './types/app/citruswallet/getAsset'
@@ -172,6 +174,18 @@ export class AppCitruswalletNS {
   ): Promise<AppCitruswalletDeletePayment.Response> {
     return this._client.call(
       'app.citruswallet.deletePayment',
+      opts?.qp,
+      data,
+      opts,
+    )
+  }
+
+  estimateFees(
+    data: AppCitruswalletEstimateFees.InputSchema,
+    opts?: AppCitruswalletEstimateFees.CallOptions,
+  ): Promise<AppCitruswalletEstimateFees.Response> {
+    return this._client.call(
+      'app.citruswallet.estimateFees',
       opts?.qp,
       data,
       opts,

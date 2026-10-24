@@ -12,6 +12,8 @@ pub const create_payment = "app.citruswallet.createPayment"
 
 pub const delete_payment = "app.citruswallet.deletePayment"
 
+pub const estimate_fees = "app.citruswallet.estimateFees"
+
 pub const exchange_native_session = "app.citruswallet.exchangeNativeSession"
 
 pub const get_addresses = "app.citruswallet.getAddresses"

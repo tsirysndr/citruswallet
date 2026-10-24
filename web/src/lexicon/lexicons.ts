@@ -743,6 +743,105 @@ export const schemaDict = {
       },
     },
   },
+  AppCitruswalletEstimateFees: {
+    lexicon: 1,
+    id: 'app.citruswallet.estimateFees',
+    defs: {
+      main: {
+        type: 'procedure',
+        description:
+          'Estimate fees for an exact ETH or ERC-20 transfer on the selected chain. Never signs or broadcasts.',
+        input: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['chainId', 'from', 'to', 'value', 'data', 'nonce'],
+            properties: {
+              chainId: {
+                type: 'integer',
+                minimum: 1,
+              },
+              from: {
+                type: 'string',
+                maxLength: 42,
+              },
+              to: {
+                type: 'string',
+                maxLength: 42,
+              },
+              value: {
+                type: 'string',
+                maxLength: 78,
+              },
+              data: {
+                type: 'string',
+                maxLength: 138,
+              },
+              nonce: {
+                type: 'integer',
+                minimum: 0,
+                maximum: 9007199254740991,
+              },
+            },
+          },
+        },
+        output: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: [
+              'chainId',
+              'from',
+              'to',
+              'value',
+              'data',
+              'nonce',
+              'gasLimit',
+              'maxFeePerGas',
+              'maxPriorityFeePerGas',
+              'maxFeeWei',
+              'expiresAt',
+            ],
+            properties: {
+              chainId: {
+                type: 'integer',
+              },
+              from: {
+                type: 'string',
+              },
+              to: {
+                type: 'string',
+              },
+              value: {
+                type: 'string',
+              },
+              data: {
+                type: 'string',
+              },
+              nonce: {
+                type: 'integer',
+              },
+              gasLimit: {
+                type: 'string',
+              },
+              maxFeePerGas: {
+                type: 'string',
+              },
+              maxPriorityFeePerGas: {
+                type: 'string',
+              },
+              maxFeeWei: {
+                type: 'string',
+              },
+              expiresAt: {
+                type: 'integer',
+              },
+            },
+          },
+        },
+      },
+    },
+  },
   AppCitruswalletExchangeNativeSession: {
     lexicon: 1,
     id: 'app.citruswallet.exchangeNativeSession',
@@ -1717,6 +1816,7 @@ export const ids = {
   AppCitruswalletCreatePayment: 'app.citruswallet.createPayment',
   AppCitruswalletDefs: 'app.citruswallet.defs',
   AppCitruswalletDeletePayment: 'app.citruswallet.deletePayment',
+  AppCitruswalletEstimateFees: 'app.citruswallet.estimateFees',
   AppCitruswalletExchangeNativeSession:
     'app.citruswallet.exchangeNativeSession',
   AppCitruswalletGetAddresses: 'app.citruswallet.getAddresses',

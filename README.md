@@ -166,6 +166,7 @@ Authenticated procedures retain HttpOnly cookies, exact `Origin`, and `x-csrf-to
 | POST | `app.citruswallet.createChallenge` | `address`, `public` |
 | POST | `app.citruswallet.createInvitation` | `id` |
 | POST | `app.citruswallet.createPayment` | `identifier`, `expectedDid`, `amount` |
+| POST | `app.citruswallet.estimateFees` | `chainId`, `from`, `to`, `value` (decimal wei), `data`, `nonce` |
 | GET | `app.citruswallet.getAddresses` | `did` |
 | GET | `app.citruswallet.getInvitation` | `token` |
 | GET | `app.citruswallet.getPayment` | `id` |
@@ -339,3 +340,10 @@ Expo offers device unlock or a wallet password (at least 12 characters). On Andr
 Secrets never enter API requests, React Query, telemetry, or public AT Protocol records. Keep the recovery backup offline: clearing browser data, uninstalling, losing the device, or losing the password/PIN can make the local vault inaccessible. Citrus cannot reset a wallet password or recover funds. Browser self-custody also relies on the integrity of the served application and device; this implementation has not received an independent security audit.
 
 Network settings select MegaETH or Ethereum, with optional HTTPS RPC overrides verified against `eth_chainId`. Custom RPCs run only on the client; API verification uses fixed server-configured RPCs. Existing production environments with explicit `EVM_CHAIN_ID=1` retain that setting until it is changed. Background confirmation checks cover both mainnets. Signing preserves the server-reserved nonce, verifies sender/chain, estimates fees, requires confirmation, and aborts if the wallet locks before broadcast.
+
+
+### Network fee estimates
+
+Built-in wallets on web and Expo call `app.citruswallet.estimateFees` before payment approval. The authenticated sender must be linked on the selected chain; the body's `chainId` must match `x-citrus-chain-id` (or the server default). The Gleam handler accepts bounded ETH and ERC-20 transfer requests, verifies the server RPC's chain ID, and asks that RPC for EIP-1559 fees and `eth_estimateGas` using the exact sender, destination, value, calldata, and reserved nonce. Ethereum (1) and MegaETH (4326) never share a fixed gas limit. MegaETH estimates therefore include its chain-specific compute and storage costs.
+
+Responses echo the transaction and return `gasLimit`, `maxFeePerGas`, `maxPriorityFeePerGas`, and `maxFeeWei` as decimal integer strings, plus `expiresAt` in Unix milliseconds. Quotes expire after 60 seconds. Both clients validate the transaction binding and fee arithmetic, display the maximum execution fee, and recheck expiry after approval. A stale quote or failed simulation stops signing; there is no fixed-gas fallback. Custom RPCs remain client-only for broadcasting; server estimates use `ETH_RPC_URL` / `MEGAETH_RPC_URL`. MetaMask continues to manage its own gas estimation. This endpoint never receives private keys, signs, or broadcasts. Deploy the API before distributing clients that require this endpoint.

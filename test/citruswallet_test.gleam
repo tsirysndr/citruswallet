@@ -11,6 +11,7 @@ import citruswallet/profiles
 import citruswallet/rate_limit
 import citruswallet/store
 import citruswallet/validate
+import citruswallet/xrpc/fees
 import gleam/dynamic/decode
 import gleam/javascript/promise
 import gleam/list
@@ -720,4 +721,19 @@ pub fn first_login_records_did_when_appview_is_unavailable_test() {
   assert actor.avatar == None
   assert profiles.get(store, actor.did) != None
   store.close(store)
+}
+
+pub fn fee_transfer_validation_test() {
+  assert fees.valid_transfer(alice_wallet, bob_wallet, "1", "0x", 0)
+  assert !fees.valid_transfer(alice_wallet, bob_wallet, "-1", "0x", 0)
+  assert !fees.valid_transfer(alice_wallet, bob_wallet, "1e18", "0x", 0)
+  assert !fees.valid_transfer(alice_wallet, bob_wallet, "1", "0x", -1)
+  assert !fees.valid_transfer(alice_wallet, "bad", "1", "0x", 0)
+  assert !fees.valid_transfer(alice_wallet, bob_wallet, "0", "0xdeadbeef", 0)
+  let transfer =
+    "0xa9059cbb000000000000000000000000"
+    <> string.drop_start(bob_wallet, 2)
+    <> "0000000000000000000000000000000000000000000000000000000000000001"
+  assert fees.valid_transfer(alice_wallet, bob_wallet, "0", transfer, 7)
+  assert !fees.valid_transfer(alice_wallet, bob_wallet, "1", transfer, 7)
 }

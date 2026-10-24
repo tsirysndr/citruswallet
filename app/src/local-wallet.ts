@@ -1,3 +1,5 @@
+import { feeQuoteParameters } from '@citruswallet/wallet-core';
+import { estimateFees } from './fee-quote';
 import { storeDeviceSecret, readDeviceSecret, removeDeviceSecret } from './device-vault';
 export { deviceUnlockAvailable } from './device-vault';
 import { deviceNetwork } from "./network";
@@ -191,10 +193,13 @@ export function nativeProvider(selected: Network) {
     if (!tx || tx.from?.toLowerCase() !== account.address.toLowerCase() || tx.chainId !== network.chainIdHex) throw new Error('Transaction network or sender changed.');
     const client = createWalletClient({ account, chain, transport: http(url) });
     if (!/^0x[0-9a-f]+$/i.test(tx.nonce) || !Number.isSafeInteger(Number(BigInt(tx.nonce)))) throw new Error("Invalid transaction nonce.");
-    const prepared = await client.prepareTransactionRequest({ account, to: tx.to, value: BigInt(tx.value), nonce: Number(BigInt(tx.nonce)), data: tx.data });
+    const quote = await estimateFees(tx, network.chainId);
+    const quotedFees = feeQuoteParameters(quote, tx, network.chainId);
+    const prepared = await client.prepareTransactionRequest({ ...quotedFees, account, to: tx.to, value: BigInt(tx.value), nonce: Number(BigInt(tx.nonce)), data: tx.data });
     const fee = prepared.gas * (prepared.maxFeePerGas ?? prepared.gasPrice ?? 0n);
     if (!await confirm(`Network: ${network.name}\nTo: ${tx.to}\nMaximum network fee: ${formatEther(fee)} ETH`)) throw Object.assign(new Error('Cancelled.'), { code: 4001 });
     if (ticket !== generation || !secret) throw Object.assign(new Error('Wallet locked. Review again.'), { code: 4001 });
+    feeQuoteParameters(quote, tx, network.chainId); // Recheck expiry after user approval.
     const serializedTransaction = await client.signTransaction(prepared);
     if (ticket !== generation || !secret) throw Object.assign(new Error('Wallet locked. Review again.'), { code: 4001 });
     return client.sendRawTransaction({ serializedTransaction });

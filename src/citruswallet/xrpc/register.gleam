@@ -4,12 +4,14 @@ import citruswallet/xrpc/address
 import citruswallet/xrpc/asset
 import citruswallet/xrpc/auth
 import citruswallet/xrpc/context.{type Server}
+import citruswallet/xrpc/fees
 import citruswallet/xrpc/methods
 import citruswallet/xrpc/native
 import citruswallet/xrpc/notification
 import citruswallet/xrpc/payment
 
 pub fn register(app: hono.App, server: Server) -> Nil {
+  hono.xrpc(app, methods.estimate_fees, context.serve(server, fees.estimate))
   hono.xrpc(
     app,
     methods.mark_all_notifications_read,

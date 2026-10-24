@@ -11,3 +11,6 @@ export function decryptSecret(envelope: VaultEnvelope, password: string): Promis
 export function validateEnvelope(envelope: unknown): VaultEnvelope;
 export type RecoveryPrompt = { index: number; choices: string[] };
 export function recoveryChallenge(phrase: string): RecoveryPrompt[];
+export type FeeTransaction = { from: string; to: string; value: string; data: string; nonce: string; chainId: string };
+export type FeeQuote = { chainId: number; from: string; to: string; value: string; data: string; nonce: number; gasLimit: string; maxFeePerGas: string; maxPriorityFeePerGas: string; maxFeeWei: string; expiresAt: number };
+export function feeQuoteParameters(quote: FeeQuote, transaction: FeeTransaction, chainId: number, now?: number): { gas: bigint; maxFeePerGas: bigint; maxPriorityFeePerGas: bigint; type: 'eip1559' };

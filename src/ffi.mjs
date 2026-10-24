@@ -60,3 +60,5 @@ export const cellGet = (cell) => cell.value;
 export const cellSet = (cell, value) => {
   cell.value = value;
 };
+
+export const bigIntMultiply = (left, right) => (BigInt(left) * BigInt(right)).toString();
