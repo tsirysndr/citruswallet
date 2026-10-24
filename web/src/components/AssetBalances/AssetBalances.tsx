@@ -1,3 +1,4 @@
+import { AssetLogo } from "../AssetLogo";
 import { formatBalance } from "@citruswallet/amounts";
 import { useAssets } from "../../assets";
 import type { Session } from "../../types";
@@ -10,11 +11,11 @@ function WalletAssets({ session, address, hidden }: { session: Session; address:
     <p className="break-all font-mono text-xs text-ink-muted">{address}</p>
     {query.isPending && <ContentSkeleton label="Loading assets" />}
     {(query.isError || query.data?.pages.some(page => !page.discoveryAvailable)) && <p className="text-xs text-ink-muted">Some token balances are unavailable. Try refreshing.</p>}
-    <div className="max-h-64 overflow-y-auto">{entries.map(({ asset, balanceAtomic }) => <div key={asset.id} className="border-b border-edge py-3">
+    <div className="max-h-64 overflow-y-auto">{entries.map(({ asset, balanceAtomic }) => <div key={asset.id} className="flex items-center gap-3 border-b border-edge py-3"><AssetLogo asset={asset} /><div className="min-w-0 flex-1">
       <div className="flex justify-between gap-3"><strong className="text-sm">{asset.symbol}</strong><span className="break-all text-right font-mono text-sm">{hidden ? "••••••" : formatBalance(balanceAtomic, asset.decimals)}</span></div>
       <p className="text-xs text-ink-muted">{asset.name}</p>
       {asset.contractAddress && <p className="break-all font-mono text-xs text-ink-faint">{asset.contractAddress}</p>}
-    </div>)}</div>
+    </div></div>)}</div>
     {query.hasNextPage && <Button variant="subtle" disabled={query.isFetchingNextPage} onClick={() => void query.fetchNextPage()}>Load more assets</Button>}
   </div>;
 }

@@ -33,7 +33,7 @@ export function AssetPicker({ session, value, onChange }: { session: Session; va
     {links.length > 0 ? <select id="asset-wallet" className="w-full rounded-md border border-edge bg-sunken p-3 font-mono text-xs" value={address} onChange={event => { generation.current++; setLoading(false); setWallet(event.target.value); onChange(nativeAsset(session.network.chainId)); }}>
       {links.map(link => <option key={link.address} value={link.address}>{link.address}</option>)}
     </select> : <p className="text-xs text-ink-muted">Link a wallet to discover its tokens.</p>}
-    <Button ref={trigger} type="button" variant="subtle" className="inline-flex items-center gap-2" aria-label={`${value.symbol} · Choose asset`} aria-haspopup="dialog" aria-controls={dialogId} aria-expanded={open} onClick={show}>{value.symbol}<ChevronDown size={16} aria-hidden="true" /></Button>
+    <Button ref={trigger} type="button" variant="subtle" className="inline-flex items-center gap-2" aria-label={`${value.symbol} · Choose asset`} aria-haspopup="dialog" aria-controls={dialogId} aria-expanded={open} onClick={show}><AssetLogo asset={value} size={24} />{value.symbol}<ChevronDown size={16} aria-hidden="true" /></Button>
     {value.contractAddress && <p className="break-all font-mono text-xs text-ink-muted">{value.contractAddress}</p>}
     <dialog ref={dialog} id={dialogId} className="asset-picker-dialog" aria-labelledby={`${dialogId}-title`} onClose={finishClose} onCancel={event => { event.preventDefault(); close(); }} onClick={event => {
       if (event.target !== event.currentTarget) return;

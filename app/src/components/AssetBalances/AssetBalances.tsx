@@ -1,3 +1,4 @@
+import { AssetLogo } from "../AssetLogo";
 import { ScrollView, View } from "react-native";
 import { formatBalance } from "@citruswallet/amounts";
 import { useAssets } from "../../assets";
@@ -12,11 +13,11 @@ function WalletAssets({ session, address, hidden }: { session: Session; address:
     <Text selectable className="font-mono text-xs text-muted">{address}</Text>
     {query.isPending && <ContentSkeleton label="Loading assets" />}
     {(query.isError || query.data?.pages.some(page => !page.discoveryAvailable)) && <Text className="text-xs text-muted">Some token balances are unavailable. Try refreshing.</Text>}
-    <ScrollView nestedScrollEnabled style={{ maxHeight: 280 }}>{entries.map(({ asset, balanceAtomic }) => <View key={asset.id} className="gap-1 border-b border-edge py-3">
+    <ScrollView nestedScrollEnabled style={{ maxHeight: 280 }}>{entries.map(({ asset, balanceAtomic }) => <View key={asset.id} className="flex-row items-center gap-3 border-b border-edge py-3"><AssetLogo asset={asset} /><View className="min-w-0 flex-1 gap-1">
       <View className="flex-row justify-between gap-3"><Text className="text-base font-semibold">{asset.symbol}</Text><Text className="flex-1 text-right font-mono text-sm">{hidden ? "••••••" : formatBalance(balanceAtomic, asset.decimals)}</Text></View>
       <Text className="text-xs text-muted">{asset.name}</Text>
       {asset.contractAddress && <Text selectable className="font-mono text-xs text-muted">{asset.contractAddress}</Text>}
-    </View>)}</ScrollView>
+    </View></View>)}</ScrollView>
     {query.hasNextPage && <Button title="Load more assets" tone="plain" disabled={query.isFetchingNextPage} onPress={() => void query.fetchNextPage()} />}
   </View>;
 }

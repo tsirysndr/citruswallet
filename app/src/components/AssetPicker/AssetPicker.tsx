@@ -27,7 +27,7 @@ export function AssetPicker({ session, value, onChange }: { session: Session; va
   }
   return <View className="gap-2">
     <Pressable accessibilityRole="button" accessibilityLabel={`${value.symbol} · Choose asset`} accessibilityState={{ expanded: open, disabled: busy }} disabled={busy} onPress={() => setOpen(true)} className="min-h-12 flex-row items-center justify-center gap-2 rounded-lg bg-white px-4 py-3">
-      <Text className="text-base font-semibold text-ink">{value.symbol}</Text>
+      <AssetLogo asset={value} size={24} /><Text className="text-base font-semibold text-ink">{value.symbol}</Text>
       <ChevronDown size={18} color="#191916" accessible={false} />
     </Pressable>
     {value.contractAddress && <Text selectable className="font-mono text-xs text-muted">{value.contractAddress}</Text>}
