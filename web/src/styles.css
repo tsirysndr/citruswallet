@@ -440,3 +440,16 @@ dialog .klipy-empty button { background: transparent; }
 .landing-footer nav { display: flex; gap: 24px; }
 .landing-footer a:hover { text-decoration: underline; }
 @media (max-width: 480px) { .landing-footer > span { display: none; } .landing-start { padding: 12px 14px; } }
+
+/* Keep the product preview alongside the message on larger screens. */
+.landing-hero { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); align-items: center; gap: clamp(24px, 5vw, 80px); padding-block: 32px; max-width: 1280px; }
+.landing-hero h1 { font-size: clamp(64px, 7.5vw, 108px); }
+.landing-phone { display: flex; align-items: center; justify-content: center; }
+.landing-phone img { display: block; width: auto; max-width: 100%; height: min(72svh, 720px); object-fit: contain; filter: drop-shadow(0 18px 22px rgb(72 39 25 / 14%)); }
+@media (max-width: 700px) {
+  .landing-hero { grid-template-columns: 1fr; gap: 24px; padding-block: 32px; }
+  .landing-hero h1 { font-size: clamp(54px, 12vw, 76px); }
+  .landing-description { margin-top: 18px; font-size: 17px; }
+  .landing-example { margin-top: 20px; font-size: 13px; gap: 10px; }
+  .landing-phone img { height: clamp(200px, 31svh, 320px); }
+}
