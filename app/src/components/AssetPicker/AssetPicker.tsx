@@ -1,3 +1,4 @@
+import { AssetLogo } from "../AssetLogo";
 import ChevronDown from "lucide-react-native/icons/chevron-down";
 import { useAtomValue } from "jotai";
 import { busyAtom } from "../../state";
@@ -42,10 +43,12 @@ export function AssetPicker({ session, value, onChange }: { session: Session; va
         {address && /^0x[0-9a-fA-F]{40}$/.test(search.trim()) && <Button title="Look up token" disabled={loading} onPress={() => void pick(`eip155:${session.network.chainId}/erc20:${search.trim().toLowerCase()}`)} />}
         <ScrollView className="flex-1" contentContainerStyle={{ gap: 8 }}>
           {inventory.isPending && !!address && <ContentSkeleton label="Loading assets" />}
-          {entries.filter(({ asset }) => `${asset.symbol} ${asset.name} ${asset.contractAddress ?? ''}`.toLowerCase().includes(search.toLowerCase())).map(({ asset, balanceAtomic }) => <Pressable key={asset.id} accessibilityRole="button" disabled={loading} onPress={() => void pick(asset.id)} className="gap-2 rounded-xl bg-white p-4">
+          {entries.filter(({ asset }) => `${asset.symbol} ${asset.name} ${asset.contractAddress ?? ''}`.toLowerCase().includes(search.toLowerCase())).map(({ asset, balanceAtomic }) => <Pressable key={asset.id} accessibilityRole="button" disabled={loading} onPress={() => void pick(asset.id)} className="flex-row items-center gap-3 rounded-xl bg-white p-4">
+            <AssetLogo asset={asset} /><View className="min-w-0 flex-1 gap-2">
             <View className="flex-row justify-between"><Text className="text-base font-semibold">{asset.symbol}</Text><Text className="font-mono text-sm">{formatBalance(balanceAtomic, asset.decimals, 6)}</Text></View>
             <Text className="text-sm text-muted">{asset.name}</Text>
             {asset.contractAddress && <Text className="font-mono text-xs text-muted">{asset.contractAddress}</Text>}
+            </View>
           </Pressable>)}
           {inventory.hasNextPage && <Button title="Load more assets" tone="ghost" disabled={inventory.isFetchingNextPage} onPress={() => void inventory.fetchNextPage()} />}
         </ScrollView>

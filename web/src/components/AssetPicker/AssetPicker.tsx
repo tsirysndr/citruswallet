@@ -1,3 +1,4 @@
+import { AssetLogo } from "../AssetLogo";
 import { ChevronDown, Search, X } from "lucide-react";
 import { useState, useRef, useId } from "react";
 import { formatBalance } from "@citruswallet/amounts";
@@ -50,10 +51,12 @@ export function AssetPicker({ session, value, onChange }: { session: Session; va
       {inventory.isPending && address && <ContentSkeleton label="Loading assets" />}
       {(inventory.isError || inventory.data?.pages.some(page => !page.discoveryAvailable)) && <p className="text-xs text-ink-muted">Token discovery is unavailable. Paste a contract address to look it up on-chain.</p>}
       <div className="min-h-0 overflow-y-auto overscroll-contain" aria-busy={loading || inventory.isFetching}>
-        {matches.map(({ asset, balanceAtomic }) => <button type="button" key={asset.id} disabled={loading} onClick={() => void pick(asset.id)} className="flex w-full flex-col gap-1 rounded-lg p-3 text-left hover:bg-sunken">
+        {matches.map(({ asset, balanceAtomic }) => <button type="button" key={asset.id} disabled={loading} onClick={() => void pick(asset.id)} className="flex w-full items-center gap-3 rounded-lg p-3 text-left hover:bg-sunken">
+          <AssetLogo asset={asset} /><span className="flex min-w-0 flex-1 flex-col gap-1">
           <span className="flex w-full justify-between gap-3"><strong>{asset.symbol}</strong><span className="font-mono text-xs" title={formatBalance(balanceAtomic, asset.decimals)}>{formatBalance(balanceAtomic, asset.decimals, 6)}</span></span>
           <span className="text-xs text-ink-muted">{asset.name}</span>
           {asset.contractAddress && <span className="break-all font-mono text-xs text-ink-faint">{asset.contractAddress}</span>}
+          </span>
         </button>)}
         {!inventory.isPending && !inventory.isError && matches.length === 0 && <p role="status" className="py-8 text-center text-sm text-ink-muted">No assets match your search.</p>}
       </div>
